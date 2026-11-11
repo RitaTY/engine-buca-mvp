@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Engine · Initiative prioritization and Lean BuCA (prototype)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,400;6..12,500;6..12,700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#2F2D2D;--ink2:#716A6A;--bg:#fff;--bg2:#F8F6F6;--bg3:#F3F0F0;--green:#007250;--green-l:#84DC99;--green-t:#E8F5EE;--red:#E5384C;--orange:#EA714F;--dred:#A63B3C;--purple:#3E235B;--grad:linear-gradient(90deg,#E5384C,#EA714F);--sh:0 5px 10px rgba(26,23,27,.10);--sh2:0 10px 15px rgba(26,23,27,.05);--line:#E6E1E1}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Nunito Sans","Source Sans 3",system-ui,sans-serif;font-size:16px;line-height:24px}
+h1,h2,h3,h4{margin:0;font-weight:700}
+h1{font-size:40px;line-height:44px}h2{font-size:24px;line-height:28px}h3{font-size:20px;line-height:24px;font-weight:500}h4{font-size:16px;line-height:24px}
+a{color:var(--green)}
+button,select,input,textarea{font-family:inherit;font-size:16px;color:var(--ink)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+.ann{background:var(--purple);color:#fff;font-size:14px;line-height:20px;padding:8px 0}
+.ann b{font-weight:700}
+header.top{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line)}
+.topin{display:flex;align-items:center;gap:24px;height:64px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:20px;text-decoration:none;color:var(--ink)}
+.brand i{display:block;width:28px;height:28px;border-radius:0 10px 10px 0;background:var(--grad)}
+.brand small{font-weight:400;color:var(--ink2);font-size:14px}
+nav.main{display:flex;gap:4px;flex:1;overflow-x:auto}
+nav.main a{padding:8px 12px;border-radius:8px;text-decoration:none;color:var(--ink);font-size:16px;white-space:nowrap}
+nav.main a:hover{background:var(--bg2)}
+nav.main a.on{font-weight:700;box-shadow:inset 0 -4px 0 var(--green-l);border-radius:8px 8px 0 0}
+.rolebox{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink2)}
+.rolebox select{height:40px;border:1px solid var(--ink2);border-radius:9999px;padding:0 14px;background:#fff;font-size:14px;font-weight:700;color:var(--ink)}
+main{padding:32px 0 80px}
+.hero{background:var(--grad);color:#fff;border-radius:0 24px 24px 0;padding:28px 32px 28px 24px;margin-left:-24px;max-width:860px}
+.hero p{margin:8px 0 0;font-size:18px;line-height:28px}
+.hero .meta{font-size:14px;line-height:20px;opacity:.95;margin-bottom:6px}
+.card{background:#fff;border-radius:16px;box-shadow:var(--sh);padding:24px}
+.muted{color:var(--ink2)}.small{font-size:14px;line-height:20px}.cap{font-size:12px;line-height:16px;font-weight:700}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:52px;padding:12px 20px;border-radius:8px;border:2px solid var(--green);background:var(--green);color:#fff;font-size:18px;font-weight:400;cursor:pointer;text-decoration:none}
+.btn:hover{background:#005c40;border-color:#005c40}
+.btn.sec{background:#fff;color:var(--green)}.btn.sec:hover{background:var(--green-t)}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--green);padding:8px 10px;min-height:40px;font-size:16px;text-decoration:underline;text-decoration-color:var(--green-l);text-decoration-thickness:4px;text-underline-offset:6px}
+.btn.sm{min-height:40px;font-size:16px;padding:8px 14px}
+.btn[disabled]{opacity:.4;cursor:not-allowed}
+.btn.full{width:100%}
+.row{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:32px;align-items:start}
+.stack>*+*{margin-top:16px}
+label.f{display:block;font-size:14px;line-height:20px;font-weight:700;margin-bottom:4px}
+label.f span{font-weight:400;color:var(--ink2)}
+input.i,select.i,textarea.i{width:100%;min-height:48px;border:1px solid var(--ink2);border-radius:8px;padding:8px 16px;background:#fff}
+textarea.i{min-height:88px;resize:vertical;line-height:24px}
+input.i:focus,select.i:focus,textarea.i:focus,.btn:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var(--green-l);outline-offset:1px}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.fg .w{grid-column:1/-1}
+.val{min-height:24px;white-space:pre-wrap}
+.val.empty{color:var(--ink2)}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:12px;line-height:16px;font-weight:700;padding:4px 10px;border-radius:9999px;background:var(--bg3);color:var(--ink);white-space:nowrap}
+.chip.g{background:var(--green-t);color:var(--green)}
+.chip.r{background:#FBE7E9;color:var(--dred)}
+.chip.a{background:#FDEFE6;color:#8A3B16}
+.chip.p{background:#EEE9F4;color:var(--purple)}
+.chip.o{background:#fff;border:1px solid var(--line);color:var(--ink2)}
+.stepper{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin:24px 0}
+.st{border-top:4px solid var(--bg3);padding-top:8px;font-size:14px;line-height:18px}
+.st b{display:block;font-weight:700}.st span{color:var(--ink2);font-size:12px}
+.st.done{border-color:var(--green)}.st.now{border-color:var(--orange)}
+.st.now b{color:var(--dred)}
+.art{border-radius:16px;box-shadow:var(--sh);background:#fff;overflow:hidden}
+.art+.art{margin-top:12px}
+.arth{display:flex;align-items:center;gap:14px;padding:16px 20px;cursor:pointer;user-select:none}
+.arth:hover{background:var(--bg2)}
+.num{flex:none;width:32px;height:32px;border-radius:9999px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;border:2px solid var(--bg3);color:var(--ink2)}
+.art.done .num{background:var(--green);border-color:var(--green);color:#fff}
+.art.now .num{border-color:var(--red);color:var(--red)}
+.art.locked .arth{opacity:.6}
+.arth .t{flex:1;min-width:0}
+.arth .t b{display:block}
+.arth .t span{font-size:14px;color:var(--ink2)}
+.artb{padding:4px 20px 24px 66px;border-top:1px solid var(--bg3)}
+.artb .lead{font-size:14px;color:var(--ink2);margin:12px 0 16px}
+.chev{transition:transform .15s;color:var(--ink2)}
+.open .chev{transform:rotate(90deg)}
+.ai{background:var(--bg2);border-radius:16px;padding:16px 20px;margin-top:16px}
+.ai h4{display:flex;align-items:center;gap:8px}
+.ai ul{margin:8px 0 0;padding-left:20px}
+.meter{height:8px;border-radius:9999px;background:var(--bg3);overflow:hidden;margin-top:4px}
+.meter i{display:block;height:100%;background:var(--green)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi{background:var(--bg2);border-radius:16px;padding:14px 16px}
+.kpi b{display:block;font-size:24px;line-height:28px}
+.kpi span{font-size:14px;color:var(--ink2)}
+.navlist{background:#fff;border-radius:16px;box-shadow:var(--sh);overflow:hidden}
+.navrow{display:flex;align-items:center;gap:16px;padding:16px 20px;min-height:72px;text-decoration:none;color:var(--ink);border-top:1px solid var(--bg3);cursor:pointer}
+.navrow:first-child{border-top:0}
+.navrow:hover{background:var(--bg2)}
+.navrow .t{flex:1;min-width:0}.navrow .t b{display:block}.navrow .t span{font-size:14px;color:var(--ink2)}
+.ico{flex:none;width:40px;height:40px;border-radius:9999px;border:1.5px solid var(--red);color:var(--red);display:flex;align-items:center;justify-content:center}
+.board{display:grid;grid-template-columns:repeat(8,minmax(200px,1fr));gap:12px;overflow-x:auto;padding-bottom:12px}
+.col{background:var(--bg2);border-radius:16px;padding:12px;min-height:320px}
+.col h4{font-size:14px;line-height:20px}
+.col h4 span{font-weight:400;color:var(--ink2)}
+.bc{display:block;background:#fff;border-radius:12px;box-shadow:var(--sh);padding:12px;margin-top:10px;text-decoration:none;color:var(--ink);font-size:14px;line-height:20px}
+.bc:hover{box-shadow:0 0 0 2px var(--green-l),var(--sh)}
+.bc b{display:block;margin-bottom:6px}
+table.t{width:100%;border-collapse:collapse;font-size:14px;line-height:20px}
+table.t th{text-align:left;font-weight:700;color:var(--ink2);padding:10px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+table.t td{padding:12px 8px;border-bottom:1px solid var(--bg3);vertical-align:top}
+table.t tr.cl{cursor:pointer}table.t tr.cl:hover td{background:var(--bg2)}
+.r{text-align:right}
+.gate{list-style:none;padding:0;margin:12px 0;font-size:14px;line-height:20px}
+.gate li{display:flex;gap:8px;padding:4px 0}
+.gate li.ok{color:var(--green)}.gate li.no{color:var(--ink)}
+.gate li.no::before{content:"";flex:none;width:14px;height:14px;margin-top:3px;border-radius:9999px;border:1.5px solid var(--ink2)}
+.err{color:var(--dred);font-size:14px;margin-top:8px;min-height:20px}
+.tl{font-size:14px;line-height:20px}
+.tl li{padding:6px 0;border-top:1px solid var(--bg3);list-style:none}
+.tl{padding:0;margin:0}
+.tl time{color:var(--ink2);font-size:12px;margin-right:6px}
+.bar{position:relative;height:28px;border-radius:8px;background:var(--bg3);overflow:hidden;display:flex}
+.bar i{display:block;height:100%}
+.bar .c1{background:var(--green)}.bar .c2{background:var(--green-l)}
+.bar .c3{background:repeating-linear-gradient(135deg,rgba(234,113,79,.55) 0 6px,rgba(234,113,79,.25) 6px 12px)}
+.bar .over{background:repeating-linear-gradient(135deg,rgba(229,56,76,.85) 0 6px,rgba(229,56,76,.5) 6px 12px)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:14px;color:var(--ink2)}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-2px;margin-right:6px}
+.rules{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 16px}
+.check li{list-style:none;display:flex;gap:10px;padding:4px 0}
+.check{padding:0;margin:12px 0 0}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 20px;border-radius:8px;box-shadow:var(--sh);font-size:16px;z-index:50;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw}
+.toast.on{opacity:1}
+.sec-title{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin:40px 0 16px}
+footer{border-top:1px solid var(--line);padding:24px 0;color:var(--ink2);font-size:14px}
+.idtag{display:inline-block;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;line-height:16px;font-weight:700;letter-spacing:.02em;color:var(--ink2);background:var(--bg3);border-radius:4px;padding:2px 6px;margin-right:6px;vertical-align:1px}
+.hero .idtag{background:rgba(255,255,255,.22);color:#fff}
+.lib{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.lchip{display:inline-flex;align-items:center;gap:8px;padding:8px 14px 8px 10px;border-radius:9999px;border:1px solid var(--line);background:#fff;box-shadow:var(--sh);cursor:grab;font-size:14px;color:var(--ink)}
+.lchip svg{color:var(--red)}.lchip:hover{border-color:var(--green)}.lchip:active{cursor:grabbing}
+.levers{border-radius:16px}.levers.dropz{border:2px dashed var(--line);padding:8px;min-height:64px;transition:border-color .15s,background .15s}
+.levers.dropz.over,.icard.over,.dcard.over{border-color:var(--green);background:var(--green-t)}
+.lever{background:var(--bg2);border-radius:12px;padding:12px 16px 16px}.lever+.lever{margin-top:8px}
+.lvh{display:flex;align-items:center;gap:12px;margin-bottom:12px}.lvh .t{flex:1;min-width:0}.lvh .t b{display:block;font-size:16px}.lvh .t span{font-size:14px;color:var(--ink2)}
+.ico.sm{width:36px;height:36px;background:#fff}
+.lvv{font-weight:700;white-space:nowrap}
+.xbtn{flex:none;width:32px;height:32px;border-radius:9999px;border:1px solid var(--line);background:#fff;color:var(--ink2);font-size:18px;line-height:1;cursor:pointer}
+.xbtn:hover{border-color:var(--dred);color:var(--dred)}.xbtn.sm{width:22px;height:22px;font-size:14px;margin-left:4px}
+.tri{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:32px;align-items:start}
+.dcard,.icard{position:relative;background:#fff;border-radius:16px;box-shadow:var(--sh);padding:16px;border:2px solid transparent;transition:border-color .15s,background .15s}
+.dcard[draggable=true]{cursor:grab}.dcard.dragging{opacity:.45}
+.icard .drophint{margin-top:10px;font-size:12px;line-height:16px;color:var(--ink2);border:1.5px dashed var(--line);border-radius:8px;padding:8px;text-align:center}
+.cand{border-color:var(--orange)}
+.simtag{position:absolute;top:-10px;right:12px;background:var(--orange);color:#fff;font-size:12px;line-height:16px;font-weight:700;padding:2px 8px;border-radius:9999px}
+.grip{color:var(--ink2);letter-spacing:-3px;margin-right:8px;font-weight:700}
+.bchip{display:inline-flex;align-items:center;background:var(--bg2);border-radius:9999px;padding:4px 6px 4px 8px;font-size:14px;line-height:20px}
+.bchip a{color:var(--ink);text-decoration:none}.bchip .idtag{margin-right:6px}
+@media (max-width:900px){.tri{grid-template-columns:1fr}}
+.seg{display:inline-flex;background:var(--bg3);border-radius:9999px;padding:4px;gap:4px}
+.seg a{padding:8px 18px;border-radius:9999px;text-decoration:none;color:var(--ink);font-size:16px}
+.seg a.on{background:#fff;box-shadow:var(--sh);font-weight:700}
+.calwrap{overflow-x:auto;margin-top:16px;background:#fff;border-radius:16px;box-shadow:var(--sh);padding:8px 16px 16px}
+.cal{min-width:960px}
+.calrow{display:grid;grid-template-columns:300px 1fr;align-items:center;border-top:1px solid var(--bg3);min-height:60px;cursor:pointer;transition:opacity .15s,background .15s}
+.calrow:not(.calhead):hover{background:var(--bg2)}
+.calhead{border-top:0;min-height:36px;cursor:default}
+.callab{padding:8px 12px 8px 4px;display:flex;flex-direction:column;min-width:0}
+.callab .caltitle{font-weight:700;font-size:14px;line-height:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.calkey{text-decoration:none;line-height:16px}
+.caltrack{position:relative;height:100%;min-height:44px;background-image:linear-gradient(to right,var(--line) 1px,transparent 1px);background-size:calc(300% / var(--n)) 100%}
+.calhead .caltrack{background:none}
+.qlab{position:absolute;top:8px;font-size:12px;line-height:16px;font-weight:700;color:var(--ink2);padding-left:6px;border-left:1px solid var(--line)}
+.calbar{position:absolute;top:50%;transform:translateY(-50%);height:26px;border-radius:0 8px 8px 0;font-size:12px;line-height:26px;padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700}
+.calbar.delivery{background:var(--green);color:#fff}.calbar.funded{background:var(--green-l);color:#0B4A35}
+.calbar.estimate{background:repeating-linear-gradient(135deg,rgba(234,113,79,.45) 0 6px,rgba(234,113,79,.18) 6px 12px);color:#712B13;border:1px dashed var(--orange)}
+.calbar.done{background:#D3D1C7;color:#444441}
+.caltg{position:absolute;top:50%;transform:translate(-50%,-50%);color:var(--red);font-size:16px;line-height:1}
+.todayl{position:absolute;top:0;bottom:0;border-left:2px solid var(--ink);opacity:.5}
+.calrow.dim{opacity:.3}.calrow.sel{background:var(--green-t)}.calrow.rel{background:#FDEFE6}
+.relcard{padding:8px 24px}
+.relrow{display:grid;grid-template-columns:190px 1fr auto;grid-template-areas:"chip pair btn" "chip why btn";column-gap:16px;row-gap:2px;padding:14px 0;border-top:1px solid var(--bg3);align-items:start}
+.relrow:first-child{border-top:0}
+.relrow .chip{grid-area:chip;justify-self:start}.relpair{grid-area:pair}.relwhy{grid-area:why;color:var(--ink)}.relbtns{grid-area:btn;display:flex;gap:4px;align-items:center}
+.relrow.cmp{grid-template-columns:1fr;grid-template-areas:"chip" "pair" "why";padding:10px 0}
+@media (max-width:900px){.relrow{grid-template-columns:1fr;grid-template-areas:"chip" "pair" "why" "btn"}}
+.nextcard{border-top:4px solid var(--orange);border-radius:0 0 16px 16px;background:linear-gradient(#FDF3EE,#FDF3EE)}
+.nextwho{display:flex;flex-direction:column;gap:2px;margin-top:8px}.nextwho span:last-child{font-size:16px;line-height:24px}
+.nextrole{font-size:20px;line-height:24px;font-weight:700}
+.stl{text-decoration:none;color:var(--ink)}.stl:hover b{text-decoration:underline;text-decoration-color:var(--green-l);text-decoration-thickness:3px}
+.hist li{padding:0;border-top:1px solid var(--bg3)}
+.hist a{display:grid;grid-template-columns:auto 1fr;column-gap:6px;padding:8px 6px;margin:0 -6px;border-radius:8px;text-decoration:none;color:var(--ink)}
+.hist a:hover{background:var(--bg2)}.hist time{grid-row:1;padding-top:1px}
+.hist .hart{grid-column:2;font-size:12px;line-height:16px;font-weight:700;color:var(--green);margin-top:2px}
+.art{scroll-margin-top:96px}
+@keyframes flash{0%,40%{box-shadow:0 0 0 3px var(--orange),var(--sh)}100%{box-shadow:var(--sh)}}
+.art.flash{animation:flash 2.2s ease-out}
+@media (prefers-reduced-motion:reduce){.art.flash{animation:none;box-shadow:0 0 0 3px var(--orange),var(--sh)}}
+.hl{font-weight:700;color:var(--green);text-decoration:none;box-shadow:inset 0 -6px 0 var(--green-l)}
+pre.code{background:var(--bg2);border-radius:8px;padding:12px;font-size:12px;line-height:16px;overflow:auto;max-height:220px}
+@media (max-width:900px){.grid2{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}.fg{grid-template-columns:1fr}.stepper{grid-template-columns:repeat(4,1fr)}h1{font-size:32px;line-height:36px}.artb{padding-left:20px}.topin{flex-wrap:wrap;height:auto;padding:10px 24px;gap:8px}nav.main{order:3;flex-basis:100%}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="ann"><div class="wrap" id="annText">Connecting to the shared board…</div></div>
+<header class="top"><div class="wrap topin">
+  <a class="brand" href="#home"><i></i>Engine <small>CS portfolio</small></a>
+  <nav class="main" id="nav"></nav>
+  <div class="rolebox"><span>Viewing as</span><select id="roleSel" aria-label="Viewing as role"></select></div>
+</div></header>
+<main><div class="wrap" id="app"></div></main>
+<footer><div class="wrap row" style="justify-content:space-between"><span>Engine MVP · Initiative prioritization and Lean BuCA · prototype, not connected to ADO, Aha or Power BI</span><button class="btn ghost" data-act="reset" id="resetBtn" style="display:none">Reset example data</button></div></footer>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+const ROLES={owner:{n:'Initiative owner',s:'VC/VS, CoE, NextGen'},lead:{n:'Portfolio lead',s:'Process owner'},finance:{n:'Business control',s:'Finance'},heads:{n:'Heads + MT',s:'Investors'},cap:{n:'Capability lead',s:'Capacity owner'},po:{n:'PO / delivery',s:'Execution'}};
+const STAGES=[
+ {n:1,name:'Collect',nl:'Vraag',art:'Demand record',who:'owner',lead:'Captures in a few fields which problem or idea needs attention, and from where.'},
+ {n:2,name:'Triage',nl:'Schifting',art:'Initiative overview',who:'lead',lead:'Bundles demand into one recognisable initiative, big enough to assess as one investment.'},
+ {n:3,name:'Outcome',nl:'Meetbaarheid',art:'Outcome card',who:'owner',lead:'Makes explicit which measurable result must change: KPI, baseline and target.'},
+ {n:4,name:'Value',nl:'Calculaties',art:'Lean BuCA',who:'finance',lead:'Translates the expected outcome into financial and operational value using central Finance rules.'},
+ {n:5,name:'Decide',nl:'Kiezen',art:'Decision log',who:'heads',lead:'Records why an initiative gets Fund, Prove, Queue or Stop, and who decided.'},
+ {n:6,name:'Capacity',nl:'Kunnen we dit?',art:'Capacity view',who:'cap',lead:'Shows per team whether chosen items can be delivered, before individuals are planned.'},
+ {n:7,name:'Deliver',nl:'Doorzetten',art:'Delivery structure',who:'po',lead:'Turns approved initiatives into the Aha/ADO structure needed for execution.'},
+ {n:8,name:'Review',nl:'Leren',art:'Closed-loop overview',who:'lead',lead:'Compares what was promised with what was delivered: KPI, value and capacity.'}];
+const SOURCES=['B2C value chain','B2B value chain','Heat','NextGen','CoE / expert leads','PO of a value chain','Other'];
+const KPIS=['Contacts per 1,000 customers','Average handling time (sec)','First contact resolution (%)','Self-service share (%)','Cost per contact (€)','tNPS','Service level (%)','Bill accuracy (%)'];
+const QS=['2027 Q1','2027 Q2','2027 Q3','2027 Q4'];
+const OPEN={};
+const nf=n=>Math.round(+n||0).toLocaleString('en-GB');
+const LEVERS={
+ avoided:{n:'Avoided contacts',d:'Contacts that no longer happen',f:[['n','Contacts avoided per month']],v:(l,R)=>({eur:(+l.n||0)*12*R.contactCost,hrs:0}),sum:(l,R)=>`${nf(l.n)} contacts × 12 × €${R.contactCost}`},
+ aht:{n:'Shorter handling time',d:'Same contacts, handled faster',f:[['vol','Contacts in scope per month'],['pct','Share affected (%)'],['min','Minutes saved per contact']],v:(l,R)=>{const h=(+l.vol||0)*12*(+l.pct||0)/100*(+l.min||0)/60;return {eur:h*R.hourly,hrs:h}},sum:(l,R)=>`${nf(l.vol)} × 12 × ${+l.pct||0}% × ${+l.min||0} min ÷ 60 = ${nf((+l.vol||0)*12*(+l.pct||0)/100*(+l.min||0)/60)} h × €${R.hourly}`},
+ repeat:{n:'Fewer repeat contacts',d:'Customers who no longer call back',f:[['vol','Contacts in scope per month'],['rep','Repeat rate today (%)'],['red','Repeats removed (%)']],v:(l,R)=>({eur:(+l.vol||0)*12*(+l.rep||0)/100*(+l.red||0)/100*R.contactCost,hrs:0}),sum:(l,R)=>`${nf(l.vol)} × 12 × ${+l.rep||0}% repeats × ${+l.red||0}% removed = ${nf((+l.vol||0)*12*(+l.rep||0)/100*(+l.red||0)/100)} contacts × €${R.contactCost}`},
+ manual:{n:'Less manual work',d:'Back-office or planning hours freed',f:[['hpw','Hours saved per week']],v:(l,R)=>{const h=(+l.hpw||0)*46;return {eur:h*R.hourly,hrs:h}},sum:(l,R)=>`${+l.hpw||0} h × 46 working weeks = ${nf((+l.hpw||0)*46)} h × €${R.hourly}`},
+ extcost:{n:'Lower external cost',d:'Vendor, postage or licence savings',f:[['eur','Saved per year (€)']],v:l=>({eur:+l.eur||0,hrs:0}),sum:l=>`€${nf(l.eur)} per year`},
+ retention:{n:'Fewer customers lost',d:'Churn avoided through better service',f:[['cust','Customers kept per year']],v:(l,R)=>({eur:(+l.cust||0)*R.margin,hrs:0}),sum:(l,R)=>`${nf(l.cust)} customers × €${R.margin} margin`}};
+const LV_ICON={avoided:'M4 12h16M12 4v16',aht:'M12 7v5l3 2M12 3a9 9 0 100 18 9 9 0 000-18z',repeat:'M4 12a8 8 0 0114-5l2 2M20 12a8 8 0 01-14 5l-2-2M18 4v5h-5M6 20v-5h5',manual:'M5 20V10l7-6 7 6v10zM9 20v-6h6v6',extcost:'M15 8a4 4 0 10 0 8M7 11h6M7 13h6',retention:'M12 20s-7-4.5-7-10a4 4 0 017-2.6A4 4 0 0119 10c0 5.5-7 10-7 10z'};
+const lvIcon=t=>`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${LV_ICON[t]||LV_ICON.avoided}"/></svg>`;
+const ic={chev:'<svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>',
+check:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>',
+spark:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E5384C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>',
+lock:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>',
+inbox:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 13h4l2 3h4l2-3h4"/><path d="M4 13l2-8h12l2 8v6H4z"/></svg>'};
+
+function seed(){
+ const now=Date.now(),d=n=>now-n*864e5;
+ const base=(o)=>Object.assign({status:'active',demand:{},ai:null,overview:{bundled:[]},outcome:{},buca:{fin:'none',duration:4},decisions:[],capacity:{},delivery:{},review:{},log:[]},o);
+ const items=[
+ base({id:'a1',title:'Proactive meter-reading reminders',stage:5,owner:'VC Move & Meter (B2C)',created:d(40),
+  demand:{source:'B2C value chain',problem:'Customers miss the yearly meter-reading window. They get an estimated annual bill, which leads to disputes and extra contacts in January to March.',affected:'B2C customers with a yearly reading moment',frequency:'About 2,200 avoidable contacts per month in peak season',okr:'o1',whyNow:'Peak season starts in January.'},
+  ai:{quality:84,fit:88,okr:'o1',type:'CI',flags:['Peak-season volume should be checked against the yearly average'],summary:'Reduce estimated-bill disputes by reminding customers before their meter-reading window closes.',by:'example'},
+  overview:{type:'CI',bundled:['f1'],note:'Merged with the SMS nudge demand.'},
+  outcome:{kpi:'Contacts per 1,000 customers',baseline:41,baselineSource:'Power BI · CS contact reasons',target:37,targetDate:'2027 Q3',method:'Monthly, contact reason "estimated bill"',ready:true},
+  buca:{avoided:2200,volume:0,pct:0,minutes:0,effort:6,duration:4,ext:10000,run:8000,team:'dc',evidence:'measured',effortBy:'cap',fin:'approved',finNote:'Realisation kept at 80%. Peak-season volume is used as an annual average; acceptable for a Lean BuCA.'},
+  log:[{at:d(40),role:'owner',text:'Demand record submitted'},{at:d(36),role:'lead',text:'Accepted at triage, labelled CI. Merged "Meter reading SMS nudge".'},{at:d(25),role:'lead',text:'Outcome card confirmed as measurable'},{at:d(9),role:'finance',text:'Lean BuCA approved'}]}),
+ base({id:'b1',title:'Agentic assist for billing questions',stage:5,owner:'CoE Billing expert leads',created:d(50),
+  demand:{source:'CoE / expert leads',problem:'Agents spend a long time searching across billing systems to explain bill corrections. Answers vary between agents.',affected:'Billing queue agents and customers with bill questions',frequency:'About 30,000 billing contacts per month',okr:'o3',whyNow:'Knowledge base migration is finishing this quarter.'},
+  ai:{quality:78,fit:81,okr:'o3',type:'Change',flags:['Minutes saved per contact is an estimate, not measured','Depends on knowledge base migration'],summary:'Give billing agents an AI assistant that pulls the right explanation from billing systems during the call.',by:'example'},
+  overview:{type:'Change',bundled:[]},
+  outcome:{kpi:'Average handling time (sec)',baseline:540,baselineSource:'Verint · billing queue',target:450,targetDate:'2027 Q4',method:'Weekly AHT on billing queue, assisted vs. not assisted',ready:true},
+  buca:{avoided:0,volume:30000,pct:40,minutes:1.5,effort:12,duration:4,ext:40000,run:30000,team:'ai',evidence:'estimated',effortBy:'cap',fin:'approved',finNote:'Approved with lower confidence: minutes saved come from a 2-week pilot.'},
+  log:[{at:d(50),role:'owner',text:'Demand record submitted'},{at:d(45),role:'lead',text:'Accepted at triage, labelled Change'},{at:d(30),role:'lead',text:'Outcome card confirmed as measurable'},{at:d(6),role:'finance',text:'Lean BuCA approved'}]}),
+ base({id:'c1',title:'Auto-routing of heat-pump service calls',stage:4,owner:'Heat operations',created:d(30),
+  demand:{source:'Heat',problem:'Heat-pump service calls land in the general queue and are transferred two or three times before they reach a specialist.',affected:'Heat customers with a service question',frequency:'About 4,000 calls per month',okr:'o2',whyNow:'Heat customer base is growing fast.'},
+  ai:{quality:80,fit:76,okr:'o2',type:'CI',flags:[],summary:'Route heat-pump calls straight to specialists using IVR intent.',by:'example'},
+  overview:{type:'CI',bundled:[]},
+  outcome:{kpi:'First contact resolution (%)',baseline:62,baselineSource:'Verint · Heat queue',target:72,targetDate:'2027 Q2',method:'Monthly FCR on Heat queue',ready:true},
+  buca:{avoided:300,volume:4000,pct:60,minutes:2,effort:4,duration:3,ext:15000,run:5000,team:'cct',evidence:'estimated',fin:'pending'},
+  log:[{at:d(30),role:'owner',text:'Demand record submitted'},{at:d(26),role:'lead',text:'Accepted at triage, labelled CI'},{at:d(14),role:'lead',text:'Outcome card confirmed as measurable'},{at:d(2),role:'owner',text:'Lean BuCA sent to Finance'}]}),
+ base({id:'d1',title:'Intraday steering automation for WFM',stage:3,owner:'NextGen',created:d(20),
+  demand:{source:'NextGen',problem:'Planners copy Verint data into a blended Erlang sheet by hand every morning to advise on staffing per interval.',affected:'WFM planners and team leads',frequency:'Daily, about 1.5 hours per planner',okr:'o3',whyNow:'Winter peak makes intraday steering critical.'},
+  ai:{quality:74,fit:64,okr:'o3',type:'CI',flags:['The customer impact is indirect; say how service level improves'],summary:'Automate the daily intraday staffing advice from Verint data.',by:'example'},
+  overview:{type:'CI',bundled:[]},
+  outcome:{kpi:'Service level (%)',baseline:'',baselineSource:'',target:'',targetDate:'',method:''},
+  log:[{at:d(20),role:'owner',text:'Demand record submitted'},{at:d(15),role:'lead',text:'Accepted at triage, labelled CI'}]}),
+ base({id:'e1',title:'Self-service move-house flow',stage:2,owner:'VC Move & Meter (B2C)',created:d(5),
+  demand:{source:'B2C value chain',problem:'Customers who move house call to pass on their new address and meter readings because the online flow stops halfway when there is no known end date.',affected:'B2C customers who move house',frequency:'About 6,000 move-house calls per month',okr:'o4',whyNow:'Summer moving peak.'},
+  ai:null,log:[{at:d(5),role:'owner',text:'Demand record submitted'}]}),
+ base({id:'f1',title:'Meter reading SMS nudge',stage:2,owner:'PO Customer Contact',created:d(4),status:'merged',mergedInto:'a1',
+  demand:{source:'PO of a value chain',problem:'Send customers an SMS before their meter reading is due so fewer bills are estimated.',affected:'B2C customers',frequency:'Yearly per customer',okr:'o1',whyNow:''},
+  log:[{at:d(4),role:'owner',text:'Demand record submitted'},{at:d(3),role:'lead',text:'Merged into "Proactive meter-reading reminders"'}]}),
+ base({id:'j1',title:'Estimated bill complaints after meter reading',stage:2,owner:'CoE Billing expert leads',created:d(3),
+  demand:{source:'CoE / expert leads',problem:'In January to March many customers complain that their annual bill is estimated because no meter reading came in. Agents explain and correct by hand.',affected:'B2C customers with an estimated annual bill',frequency:'About 900 complaints per month in peak season',okr:'o1',whyNow:'Peak season is coming.'},
+  log:[{at:d(3),role:'owner',text:'Demand record submitted'}]}),
+ base({id:'k1',title:'Meter readings for movers by phone',stage:2,owner:'PO Customer Contact',created:d(2),
+  demand:{source:'PO of a value chain',problem:'Customers who move house call to pass on meter readings for the old and new address because the online move flow does not ask for them.',affected:'B2C customers who move house',frequency:'About 2,500 calls per month',okr:'o4',whyNow:''},
+  log:[{at:d(2),role:'owner',text:'Demand record submitted'}]}),
+ base({id:'g1',title:'Payment arrangement self-service',stage:7,owner:'B2B value chain',created:d(90),
+  demand:{source:'B2B value chain',problem:'Small business customers call to set up a payment arrangement, which agents set up by hand.',affected:'SME customers with payment problems',frequency:'About 1,800 calls per month',okr:'o4',whyNow:''},
+  ai:{quality:82,fit:79,okr:'o4',type:'Change',flags:[],summary:'Let SME customers set up a payment arrangement online.',by:'example'},
+  overview:{type:'Change',bundled:[]},
+  outcome:{kpi:'Self-service share (%)',baseline:12,baselineSource:'Power BI · B2B channels',target:30,targetDate:'2027 Q2',method:'Monthly share of arrangements made online',ready:true},
+  buca:{avoided:900,volume:0,pct:0,minutes:0,effort:8,duration:4,ext:20000,run:12000,team:'dc',evidence:'measured',effortBy:'cap',fin:'approved',finNote:'OK.'},
+  decisions:[{verdict:'Fund',reason:'Clear self-service win, measured volumes.',conditions:'Report adoption after 3 months.',role:'heads',at:d(50),cycle:'2026 Q4'}],
+  capacity:{team:'dc',fte:2,startQ:'2027 Q1',endQ:'2027 Q2',rag:'green'},
+  delivery:{},
+  log:[{at:d(50),role:'heads',text:'Fund: Clear self-service win, measured volumes.'},{at:d(40),role:'cap',text:'Capacity committed: Digital Care, 2 FTE, 2027 Q1 to 2027 Q2'}]}),
+ base({id:'h1',title:'Callback scheduling in the app',stage:8,owner:'VC Service (B2C)',created:d(200),
+  demand:{source:'B2C value chain',problem:'Customers wait in the queue at peak hours and abandon.',affected:'B2C customers calling at peak hours',frequency:'Daily peaks',okr:'o2',whyNow:''},
+  ai:{quality:80,fit:83,okr:'o2',type:'CI',flags:[],summary:'Offer an in-app callback slot instead of waiting.',by:'example'},
+  overview:{type:'CI',bundled:[]},
+  outcome:{kpi:'Service level (%)',baseline:68,baselineSource:'Verint',target:78,targetDate:'2026 Q3',method:'Weekly SL',ready:true},
+  buca:{avoided:0,volume:20000,pct:15,minutes:1,effort:5,duration:3,ext:5000,run:6000,team:'dc',evidence:'estimated',effortBy:'cap',fin:'approved'},
+  decisions:[{verdict:'Fund',reason:'Peak relief',conditions:'',role:'heads',at:d(170),cycle:'2026 Q2'}],
+  capacity:{team:'dc',fte:1.5,startQ:'2026 Q2',endQ:'2026 Q3',rag:'green'},
+  delivery:{generated:true,adoId:'ADO-48211',pushed:true,epic:'Callback scheduling in the app',features:['Measurement setup','Build callback slot picker','Rollout and adoption','Benefit tracking'],ac:'Service level (%) moves from 68 to 78 by 2026 Q3'},
+  review:{actualKpi:75,actualValue:38000,actualEffort:6.5,learnings:'Adoption grew slower than expected; in-app placement mattered more than the feature itself.',submitted:true},
+  log:[{at:d(20),role:'po',text:'Marked delivered'},{at:d(3),role:'owner',text:'Actuals submitted'}]})];
+ items.forEach((it,k)=>{it.key='ENG-'+(101+k);migrate(it)});
+ return Object.assign(defaultCfg(),{v:2,items});
+}
+function defaultCfg(){return {cycle:'2027 Q1',links:[],dismissed:[],
+  rules:{hourly:52,fteHours:1400,contactCost:6.5,realisation:80,horizon:3,margin:110},
+  okrs:[{id:'o1',t:'Reduce failure demand',kw:'estimated bill dispute repeat error avoidable reminder meter'},{id:'o2',t:'Lower customer effort',kw:'wait queue transfer effort abandon route callback specialist'},{id:'o3',t:'Lower cost to serve',kw:'handling time aht agent manual cost hours automate search'},{id:'o4',t:'Grow self-service share',kw:'online self-service app flow digital portal'},{id:'o5',t:'Accurate first-time billing',kw:'bill correction accuracy invoice'}],
+  teams:[{id:'dc',n:'Digital Care',supply:4},{id:'cct',n:'Contact Center Tech',supply:3},{id:'ai',n:'Data & AI',supply:2.5},{id:'bp',n:'Billing Platform',supply:3},{id:'wfm',n:'WFM & Planning',supply:1.5}]}}
+function migrate(i){i.buca=i.buca||{fin:'none',duration:4};const b=i.buca;
+ if(!Array.isArray(b.levers)){b.levers=[];if(+b.avoided>0)b.levers.push({t:'avoided',n:+b.avoided});if(+b.volume>0)b.levers.push({t:'aht',vol:+b.volume,pct:+b.pct||0,min:+b.minutes||0});delete b.avoided;delete b.volume;delete b.pct;delete b.minutes}
+ i.overview=i.overview||{bundled:[]};i.overview.bundled=i.overview.bundled||[];i.log=i.log||[];i.decisions=i.decisions||[];['demand','outcome','capacity','delivery','review'].forEach(k=>i[k]=i[k]||{});return i}
+const CFG_KEYS=['cycle','rules','okrs','teams','links','dismissed'];
+const cfgBody=()=>{const o={};CFG_KEYS.forEach(k=>o[k]=S[k]);return o};
+function applyCfg(c){const d=defaultCfg();CFG_KEYS.forEach(k=>S[k]=c&&c[k]!=null?c[k]:d[k]);S.rules=Object.assign({},d.rules,S.rules)}
+
+/* ---------- persistence: shared db, or this browser ---------- */
+const LS='engine-buca-v2';
+let S={items:null},MODE='loading',DB=null,USER=null,ME=null,RO=false,CAN_ADMIN=false;
+let ROLE='owner';try{ROLE=localStorage.getItem('engine-role')||'owner'}catch(e){}
+Object.defineProperty(S,'role',{get:()=>ROLE,set:v=>{ROLE=v;try{localStorage.setItem('engine-role',v)}catch(e){}},enumerable:false});
+const lastW={},chain={},dirty=new Set();let cfgDirty=false,flushT=null;
+function saveLocal(){try{const o=cfgBody();o.v=2;o.items=S.items;localStorage.setItem(LS,JSON.stringify(o))}catch(e){}}
+function save(i,now){if(MODE!=='shared'){saveLocal();return}if(RO)return;if(i)dirty.add(i.id);clearTimeout(flushT);flushT=setTimeout(flush,now?0:600)}
+function saveCfg(now){if(MODE!=='shared'){saveLocal();return}if(RO)return;cfgDirty=true;clearTimeout(flushT);flushT=setTimeout(flush,now?0:600)}
+function flush(){dirty.forEach(id=>{const it=item(id);if(it)dbWrite('items/'+id,it)});dirty.clear();if(cfgDirty){cfgDirty=false;dbWrite('cfg/main',cfgBody())}}
+function dbWrite(path,obj,del){const body=del?null:JSON.parse(JSON.stringify(obj));lastW[path]=del?null:JSON.stringify(body);
+ const run=()=>del?DB.doc(path).delete():DB.doc(path).set(body);
+ chain[path]=(chain[path]||Promise.resolve()).then(()=>run().catch(e=>{if(e&&e.code==='unavailable')return new Promise(r=>setTimeout(r,400+Math.random()*600)).then(run);throw e})).catch(writeErr);return chain[path]}
+function writeErr(e){const c=e&&e.code;if(c==='invalid_argument'){RO=true;setAnn();render();toast('You can look around, but not change the shared board. Ask the owner for Contributor access.')}
+ else if(c==='quota_exceeded')toast('The shared board is full. Ask the page owner to remove old initiatives.');else if(c==='revoked'){RO=true;setAnn();render()}else toast('A change could not be saved. Try again.')}
+function setAnn(){const a=document.getElementById('annText');if(!a)return;
+ a.innerHTML=MODE==='shared'?(RO?'<b>Shared test board, view only.</b> You can look around but not change anything. Ask the owner for Contributor access.':'<b>Shared test board.</b> Everyone with access sees the same initiatives, live. Example figures are made up. Switch roles at the top right to walk each journey.')
+  :MODE==='local'?'<b>Prototype, not connected.</b> Changes stay in this browser. Example figures are made up. Switch roles at the top right to walk each journey.':'Connecting to the shared board…';
+ const rb=document.getElementById('resetBtn');if(rb)rb.style.display=MODE==='local'||(MODE==='shared'&&CAN_ADMIN)?'':'none'}
+function startLocal(){MODE='local';let d=null;try{d=JSON.parse(localStorage.getItem(LS))}catch(e){}
+ if(!d||d.v!==2)d=seed();applyCfg(d);S.items=d.items.map(migrate);setAnn();render()}
+let pendingRender=false;
+function editing(){const a=document.activeElement;return a&&a.closest&&a.closest('#app')&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)}
+function softRender(){if(editing()||(typeof DRAG!=='undefined'&&DRAG)){pendingRender=true;return}render()}
+function flushPending(){if(pendingRender)setTimeout(()=>{if(!editing()&&!DRAG&&pendingRender){pendingRender=false;render()}},60)}
+document.addEventListener('focusout',()=>{if(pendingRender)setTimeout(()=>{if(!editing()&&pendingRender){pendingRender=false;render()}},60)});
+async function init(){let tries=0;while(!(window.claude&&window.claude.use)&&tries<15){await new Promise(r=>setTimeout(r,100));tries++}
+ if(!(window.claude&&window.claude.use))return startLocal();
+ try{[DB,USER]=await Promise.all([window.claude.use('db').catch(()=>null),window.claude.use('user').catch(()=>null)])}catch(e){}
+ if(!DB)return startLocal();
+ MODE='shared';
+ if(USER){try{ME=await USER.id()}catch(e){}try{if(await USER.can('data.write')===false)RO=true}catch(e){}try{CAN_ADMIN=!!(await USER.canEdit())}catch(e){}}
+ setAnn();render();
+ let gotCfg=false,gotItems=false,cfgExists=false;
+ const timer=setTimeout(()=>{if(!(gotCfg&&gotItems)){S.loadNote='The shared board can\'t be reached yet. It will appear as soon as it answers.';softRender()}},10000);
+ const settle=()=>{if(gotCfg&&gotItems){clearTimeout(timer);S.loadNote='';S.empty=!cfgExists&&!(S.items||[]).length}softRender()};
+ DB.doc('cfg/main').onSnapshot(sn=>{const d=sn.exists?sn.data():null;cfgExists=!!d;
+   let ch=!gotCfg;if(!d){if(!S.rules){applyCfg(null);ch=true}}else if(lastW['cfg/main']!==JSON.stringify(d)&&!cfgDirty){applyCfg(JSON.parse(JSON.stringify(d)));ch=true}
+   if(!sn.metadata.fromCache)gotCfg=true;if(ch)settle()},()=>{gotCfg=true;if(!S.rules)applyCfg(null);settle()});
+ DB.collection('items').onSnapshot(q=>{const old=new Map((S.items||[]).map(i=>[i.id,i]));
+   const next=q.docs.map(d=>{const id=d.id,data=d.data(),loc=old.get(id);if(loc&&(dirty.has(id)||lastW['items/'+id]===JSON.stringify(data)))return loc;return migrate(Object.assign(JSON.parse(JSON.stringify(data)),{id}))});
+   dirty.forEach(id=>{if(!next.find(x=>x.id===id)&&old.get(id))next.push(old.get(id))});
+   next.sort((x,y)=>(x.created||0)-(y.created||0));if(!S.rules)applyCfg(null);
+   const same=S.items&&gotItems&&next.length===S.items.length&&next.every((x,k)=>x===S.items[k]);S.items=next;
+   if(!q.metadata.fromCache)gotItems=true;if(same)return;settle()},()=>{gotItems=true;S.items=S.items||[];settle()});
+}
+let resetArmed=0;
+async function resetData(btn){if(MODE==='local'){const d=seed();applyCfg(d);S.items=d.items;saveLocal();location.hash='#home';render();toast('Example data restored');return}
+ if(!CAN_ADMIN)return;if(Date.now()-resetArmed>5000){resetArmed=Date.now();btn.textContent='Click again to replace ALL shared data';return}
+ resetArmed=0;btn.textContent='Resetting…';const d=seed();const keep=new Set(d.items.map(i=>i.id));
+ try{for(const i of S.items||[])if(!keep.has(i.id))await dbWrite('items/'+i.id,null,true);
+  applyCfg(d);await dbWrite('cfg/main',cfgBody());S.items=d.items;S.empty=false;for(const i of d.items)await dbWrite('items/'+i.id,i);
+  location.hash='#home';render();toast('Shared example data restored')}catch(e){toast('Reset failed')}btn.textContent='Reset example data'}
+function newKey(){const n=Math.max(100,...(S.items||[]).map(i=>+(String(i.key||'').split('-')[1])||0))+1;return 'ENG-'+n}
+const keyTag=i=>`<span class="idtag">${esc(i.key)}</span>`;
+const who=uid=>uid?`<span data-uid="${esc(uid)}">${uid===ME?'You':'Someone'}</span>`:'';
+async function fillNames(){if(!USER)return;const els=[...document.querySelectorAll('[data-uid]')];const ids=[...new Set(els.map(e=>e.dataset.uid))].filter(Boolean);if(!ids.length)return;
+ try{const ps=await USER.profiles(ids);els.forEach(e=>{const p=ps&&ps[e.dataset.uid];const n=p&&p.name;if(n)e.textContent=e.dataset.uid===ME?n+' (you)':n})}catch(e){}}
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const gp=(o,p)=>p.split('.').reduce((a,k)=>a==null?a:a[k],o);
+function sp(o,p,v){const k=p.split('.');let a=o;for(let i=0;i<k.length-1;i++){a[k[i]]=a[k[i]]||{};a=a[k[i]]}a[k[k.length-1]]=v}
+const isNum=v=>v!==''&&v!=null&&!isNaN(+v);
+const eur=n=>{if(!isFinite(n))return '—';const a=Math.abs(n),s=n<0?'−':'';return s+'€'+(a>=1e6?(a/1e6).toFixed(1)+'m':a>=1e3?Math.round(a/1e3)+'k':Math.round(a))};
+const dt=t=>new Date(t).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+const item=id=>S.items.find(x=>x.id===id);
+const team=id=>S.teams.find(t=>t.id===id);
+const okr=id=>S.okrs.find(o=>o.id===id);
+const dead=i=>['declined','stopped','merged','closed'].includes(i.status);
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('on'),2600)}
+let ART_CTX=null;
+function log(i,text,art){i.log.push({at:Date.now(),role:S.role,by:ME||null,text,art:art!=null?art:(ART_CTX!=null?ART_CTX:i.stage)})}
+function artOf(l){if(l.art!=null)return l.art;const t=l.text.toLowerCase();
+ if(/relationship/.test(t))return 'rel';if(/demand record submitted/.test(t))return 1;if(/triage|merged|bundled|taken out|took /.test(t))return 2;if(/outcome card/.test(t))return 3;
+ if(/lean buca|effort confirmed/.test(t))return 4;if(/^(fund|prove first|queue|stop)\b/.test(t))return 5;if(/capacity|not deliverable/.test(t))return 6;if(/delivered|delivery structure|pushed/.test(t))return 7;if(/actuals|realised value|closed/.test(t))return 8;
+ return {owner:1,lead:2,finance:4,heads:5,cap:6,po:7}[l.role]||1}
+
+function leverVal(l){const d=LEVERS[l.t];return d?d.v(l,S.rules):{eur:0,hrs:0}}
+function calc(i){const R=S.rules,b=i.buca||{};const real=(isNum(b.realOverride)?+b.realOverride:R.realisation)/100;
+ const lv=(b.levers||[]).map(l=>Object.assign({l},leverVal(l)));const gross=lv.reduce((a,x)=>a+x.eur,0),hours=lv.reduce((a,x)=>a+x.hrs,0),annual=gross*real;
+ const build=(+b.effort||0)/12*R.fteHours*R.hourly+(+b.ext||0),run=+b.run||0;
+ const net=annual*R.horizon-build-run*R.horizon,monthly=(annual-run)/12,payback=monthly>0?build/monthly:Infinity;
+ return {lv,gross,hours,annual,build,run,net,payback,fte:hours/R.fteHours,ask:(+b.effort||0)/(+b.duration||4),real}}
+function conf(i){const b=i.buca||{},o=i.outcome||{};let s=({measured:45,estimated:28,guess:10})[b.evidence]||0;
+ if(o.baselineSource)s+=20;if(isNum(o.baseline)&&isNum(o.target))s+=15;if(b.effortBy==='cap')s+=20;
+ return {s,l:s>=70?'High':s>=45?'Medium':'Low'}}
+function capOf(tid,exclude){const t=team(tid);if(!t)return null;let committed=0,funded=0,slate=0;
+ S.items.forEach(i=>{if(i.id===exclude||dead(i)&&i.status!=='closed')return;
+  if(i.stage===7&&i.capacity.team===tid)committed+=+i.capacity.fte||0;
+  else if(i.stage===6&&(i.capacity.team||i.buca.team)===tid)funded+=calc(i).ask;
+  else if(i.stage===5&&i.buca.fin==='approved'&&i.buca.team===tid&&i.status!=='stopped')slate+=calc(i).ask});
+ return {t,committed,funded,slate,free:t.supply-committed-funded}}
+function capFlag(i){const c=capOf(i.buca.team,i.id);if(!c)return {l:'No team',k:'o'};const a=calc(i).ask;
+ return a>c.free?{l:'Red',k:'r',txt:`Asks ${a.toFixed(1)} FTE, ${Math.max(c.free,0).toFixed(1)} free`}:a>.7*c.free?{l:'Amber',k:'a',txt:`Asks ${a.toFixed(1)} of ${c.free.toFixed(1)} free FTE`}:{l:'Green',k:'g',txt:`Asks ${a.toFixed(1)} of ${c.free.toFixed(1)} free FTE`}}
+function rankScore(i){const w={High:1,Medium:.8,Low:.6}[conf(i).l];const fit=(i.ai&&i.ai.fit)||50;return calc(i).net*w*fit/100}
+function words(s){return new Set(String(s).toLowerCase().replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(w=>w.length>3&&!['customers','customer','about','their','which','that','with','from','month','because','there','calls'].includes(w)))}
+function simScore(p,q){const a=words(p.title+' '+(p.demand.problem||'')),b=words(q.title+' '+(q.demand.problem||''));let n=0;a.forEach(w=>b.has(w)&&n++);return n/Math.max(1,Math.min(a.size,b.size))}
+function similar(i){return S.items.filter(x=>x.id!==i.id&&x.status!=='merged'&&x.status!=='declined').map(x=>({x,s:simScore(i,x)})).filter(o=>o.s>=.18).sort((p,q)=>q.s-p.s).slice(0,3)}
+
+function req(n,i){const m=[],d=i.demand,o=i.outcome,b=i.buca,c=i.capacity,r=i.review;
+ if(n===1){if(!i.title||i.title.length<5)m.push('A short name');if(!d.source)m.push('Where the demand comes from');if(!d.problem||d.problem.length<40)m.push('The problem, in at least two sentences');if(!d.affected)m.push('Who is affected');if(!d.frequency)m.push('How often it happens');if(!d.okr)m.push('The OKR it serves')}
+ if(n===2){if(!i.overview.type)m.push('Label: Run, CI or Change')}
+ if(n===3){if(!o.kpi)m.push('KPI');if(!isNum(o.baseline))m.push('Baseline as a number');if(!o.baselineSource)m.push('Where the baseline comes from');if(!isNum(o.target))m.push('Target as a number');if(!o.targetDate)m.push('Target date');if(!o.method)m.push('How it is measured')}
+ if(n===4){if(!(b.levers||[]).some(l=>leverVal(l).eur>0))m.push('At least one benefit lever with numbers');if(!(+b.effort>0))m.push('Effort in FTE-months');if(!b.team)m.push('Expected delivery team');if(!b.evidence)m.push('How the assumptions are backed')}
+ if(n===6){if(!c.team)m.push('Delivery team');if(!(+c.fte>0))m.push('FTE committed');if(!c.startQ)m.push('Start quarter');if(!c.endQ)m.push('End quarter');if(!['green','amber'].includes(c.rag))m.push('Status green or amber')}
+ if(n===7){if(!i.delivery.generated)m.push('Generate the delivery structure');if(!i.delivery.pushed)m.push('Push to Aha/ADO')}
+ if(n===8){if(!isNum(r.actualKpi))m.push('Actual KPI');if(!isNum(r.actualValue))m.push('Actual value per year');if(!isNum(r.actualEffort))m.push('Actual effort');if(!r.learnings)m.push('What we learned')}
+ return m}
+function turn(i){if(dead(i))return [];switch(i.stage){case 1:return['owner'];case 2:return['lead'];case 3:return i.outcome.ready?['lead']:['owner'];
+ case 4:return i.buca.fin==='pending'?['finance']:(i.buca.effortBy==='cap'?['owner']:['owner','cap']);case 5:return['heads'];case 6:return['cap'];case 7:return['po'];
+ case 8:return !i.review.submitted?['owner']:!i.review.valueOk?['finance']:['lead']}return[]}
+function artState(n,i){if(i.status==='closed')return 'done';if(n<i.stage)return 'done';if(n===i.stage)return 'now';return 'locked'}
+function statusChip(i){const m={returned:['Sent back','r'],declined:['Declined','r'],stopped:['Stopped','r'],merged:['Merged','o'],queued:['Queued','p'],closed:['Closed','g']};
+ if(m[i.status])return `<span class="chip ${m[i.status][1]}">${m[i.status][0]}</span>`;
+ if(i.stage===4)return {none:'<span class="chip o">BuCA draft</span>',pending:'<span class="chip a">With Finance</span>',returned:'<span class="chip r">Finance questions</span>',approved:'<span class="chip g">BuCA approved</span>'}[i.buca.fin]||'';
+ return ''}
+
+/* ---------- fields ---------- */
+function fld(path,label,i,ed,opt={}){if(RO)ed=false;const v=gp(i,path),id='f_'+path.replace(/\./g,'_');const hint=opt.hint?` <span>${esc(opt.hint)}</span>`:'';
+ if(!ed){let shown=v;if(opt.options){const o=opt.options.find(o=>(o.v??o)==v);shown=o?(o.l??o):v}
+  const empty=shown===''||shown==null;return `<div class="${opt.w?'w':''}"><div class="f" style="font-size:14px;font-weight:700">${esc(label)}</div><div class="val ${empty?'empty':''}">${empty?'Not filled in yet':esc(shown)+(opt.suf&&!empty?' '+esc(opt.suf):'')}</div></div>`}
+ let ctl;const num=opt.num?' data-num="1" inputmode="decimal"':'';
+ if(opt.options)ctl=`<select class="i" id="${id}" data-f="${path}"><option value="">Choose…</option>${opt.options.map(o=>{const ov=o.v??o,ol=o.l??o;return `<option value="${esc(ov)}" ${ov==v?'selected':''}>${esc(ol)}</option>`}).join('')}</select>`;
+ else if(opt.area)ctl=`<textarea class="i" id="${id}" data-f="${path}" placeholder="${esc(opt.ph||'')}">${esc(v)}</textarea>`;
+ else ctl=`<input class="i" type="${opt.type||'text'}" id="${id}" data-f="${path}"${num} value="${esc(v)}" placeholder="${esc(opt.ph||'')}">`;
+ return `<div class="${opt.w?'w':''}"><label class="f" for="${id}">${esc(label)}${hint}</label>${ctl}</div>`}
+
+/* ---------- artifacts ---------- */
+function A1(i,ed){const s=similar(i).filter(o=>o.x.id!==i.mergedInto);
+ return `<div class="fg">${fld('title','Short name',i,ed,{w:1,ph:'For example: Proactive meter-reading reminders'})}
+ ${fld('demand.source','Where it comes from',i,ed,{options:SOURCES})}
+ ${fld('demand.okr','OKR it serves',i,ed,{options:S.okrs.map(o=>({v:o.id,l:o.t}))})}
+ ${fld('demand.problem','Problem',i,ed,{w:1,area:1,hint:'What goes wrong today, and what does it cause?',ph:'Describe the situation in general terms. No customer names or numbers.'})}
+ ${fld('demand.affected','Who is affected',i,ed,{ph:'For example: B2C customers who move house'})}
+ ${fld('demand.frequency','How often',i,ed,{ph:'For example: about 6,000 calls per month'})}
+ ${fld('demand.whyNow','Why now',i,ed,{w:1,area:1,hint:'optional'})}</div>
+ ${aiPanel(i,ed||(S.role==='lead'&&i.stage===2))}
+ ${s.length&&!dead(i)?`<div class="small" style="margin-top:12px"><b>Looks similar:</b> ${s.map(o=>`<a class="hl" href="#i-${o.x.id}">${esc(o.x.key)} ${esc(o.x.title)}</a>`).join(', ')}</div>`:''}`}
+function aiPanel(i,canRun){const a=i.ai;
+ const btn=canRun?`<button class="btn sec sm" data-act="aicheck" id="aibtn">${a?'Run the check again':'Check quality and fit'}</button>`:'';
+ if(!a)return `<div class="ai"><h4>${ic.spark}Quality and strategic fit</h4><p class="small muted" style="margin:6px 0 12px">The check scores how clear the demand is and how well it fits the OKRs. It doesn't judge the value; people do that later.</p>${btn}<div class="err" id="aierr"></div></div>`;
+ return `<div class="ai"><h4>${ic.spark}Quality and strategic fit <span class="chip o">${a.by==='claude'?'Checked by Claude':a.by==='rules'?'Rule-based check':'Example'}</span></h4>
+ <div class="fg" style="margin-top:10px"><div><div class="small">Clarity of the demand <b>${a.quality}/100</b></div><div class="meter"><i style="width:${a.quality}%"></i></div></div>
+ <div><div class="small">Fit with ${esc((okr(a.okr)||{}).t||'the OKRs')} <b>${a.fit}/100</b></div><div class="meter"><i style="width:${a.fit}%"></i></div></div></div>
+ ${a.summary?`<p class="small" style="margin:12px 0 0"><b>In one line:</b> ${esc(a.summary)}</p>`:''}
+ ${a.type?`<p class="small" style="margin:4px 0 0"><b>Suggested label:</b> ${esc(a.type)}</p>`:''}
+ ${a.flags&&a.flags.length?`<ul class="small">${a.flags.map(f=>`<li>${esc(f)}</li>`).join('')}</ul>`:''}
+ ${btn?`<div style="margin-top:12px">${btn}</div>`:''}<div class="err" id="aierr"></div></div>`}
+function A2(i,ed){const b=(i.overview.bundled||[]).map(item).filter(Boolean);
+ return `<div class="fg">${fld('overview.type','Label',i,ed,{options:['Run','CI','Change'],hint:i.ai&&i.ai.type?'AI suggests '+i.ai.type:''})}
+ <div><div class="f" style="font-size:14px;font-weight:700">OKR</div><div class="val">${esc((okr(i.demand.okr)||{}).t||'—')}</div></div>
+ <div class="w"><div class="f" style="font-size:14px;font-weight:700">Initiative in one line</div><div class="val">${esc(i.ai&&i.ai.summary||i.demand.problem||'—')}</div></div>
+ <div class="w"><div class="f" style="font-size:14px;font-weight:700">Demand records bundled</div><div class="val">${b.length?b.map(x=>bchip(i,x)).join(' '):'Only this demand record'}</div></div>
+ ${fld('overview.note','Triage note',i,ed,{w:1,area:1,hint:'optional'})}</div>`}
+const KPI_HINT={o1:'Contacts per 1,000 customers',o2:'First contact resolution (%)',o3:'Average handling time (sec)',o4:'Self-service share (%)',o5:'Bill accuracy (%)'};
+function A3(i,ed){const sug=KPI_HINT[i.demand.okr];
+ return `<div class="fg">${fld('outcome.kpi','KPI that should move',i,ed,{options:KPIS,w:1,hint:sug&&ed&&i.outcome.kpi!==sug?'Suggested for this OKR: '+sug:''})}
+ ${fld('outcome.baseline','Baseline today',i,ed,{num:1,ph:'Number'})}
+ ${fld('outcome.baselineSource','Source of the baseline',i,ed,{ph:'For example: Power BI · CS contact reasons'})}
+ ${fld('outcome.target','Target',i,ed,{num:1,ph:'Number'})}
+ ${fld('outcome.targetDate','Target date',i,ed,{options:['2026 Q4'].concat(QS)})}
+ ${fld('outcome.method','How it is measured',i,ed,{w:1,area:1,ph:'Report, frequency and filter'})}</div>
+ ${ed&&sug&&i.outcome.kpi!==sug?`<button class="btn ghost" data-act="usekpi" style="margin-top:8px">Use the suggested KPI</button>`:''}`}
+function A4(i){const r=S.role,b=i.buca,live=!dead(i)&&i.stage===4,draft=live&&['none','returned'].includes(b.fin);
+ const edO=draft&&r==='owner'&&!RO,edC=draft&&(r==='owner'||r==='cap'),edF=live&&b.fin==='pending'&&r==='finance';const R=S.rules;
+ return `<div class="small muted">Finance rules, set centrally ${ic.lock}</div>
+ <div class="rules"><span class="chip o">€${R.hourly} per FTE hour</span><span class="chip o">${R.fteHours} productive hours per FTE</span><span class="chip o">€${R.contactCost} per contact</span><span class="chip o">${R.realisation}% realisation</span><span class="chip o">${R.horizon}-year horizon</span><span class="chip o">€${R.margin} margin per kept customer</span></div>
+ <h4>Benefit levers</h4><p class="small muted" style="margin:2px 0 10px">${edO?'Drag a lever onto the business case, or click it. Then fill in its numbers. Use as many as apply.':'The levers this business case counts on.'}</p>
+ ${edO?`<div class="lib" role="list" aria-label="Lever library">${Object.entries(LEVERS).map(([t,d])=>`<button class="lchip" role="listitem" draggable="true" data-lever="${t}" data-act="addLever" title="${esc(d.d)}">${lvIcon(t)}<span>${esc(d.n)}</span></button>`).join('')}</div>`:''}
+ <div class="levers ${edO?'dropz':''}" ${edO?'data-leverdrop="1"':''}>${(b.levers||[]).map((l,k)=>{const d=LEVERS[l.t];if(!d)return '';return `<div class="lever"><div class="lvh"><span class="ico sm">${lvIcon(l.t)}</span><span class="t"><b>${esc(d.n)}</b><span>${esc(d.d)}</span></span><span class="lvv" id="lv-${k}">${eur(leverVal(l).eur)}/yr</span>${edO?`<button class="xbtn" data-act="rmLever" data-k="${k}" aria-label="Remove ${esc(d.n)}">×</button>`:''}</div><div class="fg">${d.f.map(([key,label])=>fld(`buca.levers.${k}.${key}`,label,i,edO,{num:1})).join('')}</div></div>`}).join('')||`<p class="small muted" style="margin:0;padding:16px;text-align:center">${edO?'Drop a lever here':'No levers yet'}</p>`}</div>
+ <div style="margin-bottom:20px"></div>
+ ${fld('buca.evidence','How the assumptions are backed',i,edO,{options:[{v:'measured',l:'Measured in a report'},{v:'estimated',l:'Estimated from a pilot or sample'},{v:'guess',l:'Educated guess'}]})}
+ <div style="margin-bottom:20px"></div>
+ <h4>Cost and effort</h4><div class="fg" style="margin:8px 0 20px">
+ ${fld('buca.effort','Effort to deliver (FTE-months)',i,edC,{num:1,hint:b.effortBy==='cap'?'confirmed by capability lead':'capability lead confirms'})}
+ ${fld('buca.duration','Delivery time (months)',i,edC,{num:1})}
+ ${fld('buca.team','Expected delivery team',i,edC,{options:S.teams.map(t=>({v:t.id,l:t.n}))})}
+ ${fld('buca.ext','External one-off cost (€)',i,edO,{num:1,ph:'0'})}
+ ${fld('buca.run','Running cost per year (€)',i,edO,{num:1,ph:'0'})}</div>
+ ${edF||b.fin==='approved'||isNum(b.realOverride)||b.finNote?`<h4>Finance review</h4><div class="fg" style="margin:8px 0 20px">${fld('buca.realOverride','Realisation for this case (%)',i,edF,{num:1,hint:'leave empty to use '+R.realisation+'%'})}${fld('buca.finNote','Finance note',i,edF,{w:1,area:1})}</div>`:''}
+ <div id="calc">${calcPanel(i)}</div>`}
+function calcPanel(i){const c=calc(i),k=conf(i),R=S.rules,b=i.buca;const fl=[];
+ (b.levers||[]).forEach(l=>{if(l.t==='aht'){if(+l.pct>60)fl.push('Shorter handling time: more than 60% of contacts affected is unusual. Check it against WFM data.');if(+l.min>5)fl.push('Shorter handling time: more than 5 minutes saved per contact is above typical gains.')}
+  if(l.t==='repeat'&&+l.red>50)fl.push('Fewer repeat contacts: removing more than half of repeats is ambitious.');
+  if(l.t==='manual'&&+l.hpw>36)fl.push('Less manual work: more than a full working week per week saved. Is this more than one person?');
+  if(l.t==='retention'&&+l.cust>0)fl.push('Fewer customers lost: retention is hard to attribute. Finance may lower the realisation.')});
+ const types=(b.levers||[]).map(l=>l.t);if(types.includes('avoided')&&types.includes('repeat'))fl.push('Avoided contacts and fewer repeat contacts may count the same contacts twice.');
+ if(b.evidence==='guess')fl.push('Guess-level evidence lowers the confidence.');
+ if(!i.outcome.baselineSource)fl.push('The outcome card has no baseline source.');
+ if(c.annual>0&&c.payback>R.horizon*12)fl.push(`Doesn't pay back within the ${R.horizon}-year horizon.`);
+ if(b.effortBy!=='cap')fl.push('Effort hasn\'t been confirmed by a capability lead yet.');
+ return `<div class="kpis"><div class="kpi"><b>${eur(c.annual)}</b><span>Benefit per year</span></div><div class="kpi"><b>${eur(c.net)}</b><span>${R.horizon}-year net value</span></div>
+ <div class="kpi"><b>${isFinite(c.payback)?Math.ceil(c.payback)+' mo':'—'}</b><span>Payback</span></div><div class="kpi"><b>${k.l}</b><span>Confidence (${k.s}/100)</span></div></div>
+ <details class="small" style="margin-top:12px"><summary style="cursor:pointer;color:var(--green);font-weight:700">Show the sum</summary><p style="margin:8px 0 0">${c.lv.map(x=>{const d=LEVERS[x.l.t];return d?`${esc(d.n)}: ${d.sum(x.l,R)} = ${eur(x.eur)}`:''}).join('<br>')||'No levers yet'}<br>Total ${eur(c.gross)} × ${Math.round(c.real*100)}% realisation = <b>${eur(c.annual)} per year</b>${c.hours?` (${c.fte.toFixed(1)} FTE freed)`:''}<br>Delivery cost: ${+b.effort||0} FTE-months ÷ 12 × ${R.fteHours} h × €${R.hourly} + ${eur(+b.ext||0)} external = ${eur(c.build)}<br>Net: ${eur(c.annual)} × ${R.horizon} − ${eur(c.build)} − ${eur(c.run)} × ${R.horizon} = ${eur(c.net)}</p></details>
+ ${fl.length?`<div class="ai"><h4>${ic.spark}Assumption check</h4><ul class="small">${fl.map(f=>`<li>${esc(f)}</li>`).join('')}</ul></div>`:''}`}
+function A5(i){const ds=i.decisions||[];const sl=slate();const pos=sl.findIndex(x=>x.id===i.id);
+ return `${i.stage===5&&!dead(i)?`<p class="small">On the decision agenda for <b>${esc(S.cycle)}</b>${pos>=0?`, ranked <b>${pos+1} of ${sl.length}</b>`:''}. Capacity signal: <span class="chip ${capFlag(i).k}">${capFlag(i).l}</span> ${esc(capFlag(i).txt||'')}</p>`:''}
+ ${ds.length?`<table class="t"><thead><tr><th>Cycle</th><th>Decision</th><th>Why</th><th>Conditions</th><th>When</th></tr></thead><tbody>${ds.map(d=>`<tr><td>${esc(d.cycle)}</td><td><span class="chip ${d.verdict==='Fund'||d.verdict==='Prove first'?'g':d.verdict==='Queue'?'p':'r'}">${esc(d.verdict)}</span></td><td>${esc(d.reason)}</td><td>${esc(d.conditions||'—')}</td><td>${dt(d.at)}</td></tr>`).join('')}</tbody></table>`:'<p class="small muted">No decision yet.</p>'}`}
+function A6(i,ed){const t=i.capacity.team||i.buca.team;const c=t?capOf(t,i.id):null;const ask=calc(i).ask;
+ return `<div class="fg">${fld('capacity.team','Delivery team',i,ed,{options:S.teams.map(t=>({v:t.id,l:t.n}))})}
+ ${fld('capacity.fte','FTE committed',i,ed,{num:1,hint:'BuCA asks '+ask.toFixed(1)})}
+ ${fld('capacity.startQ','Start quarter',i,ed,{options:QS})}${fld('capacity.endQ','End quarter',i,ed,{options:QS})}
+ ${fld('capacity.start','Start month',i,ed,{type:'month',hint:'optional, more precise'})}${fld('capacity.end','End month',i,ed,{type:'month',hint:'optional'})}
+ ${fld('capacity.rag','Can we do this?',i,ed,{options:[{v:'green',l:'Green: yes'},{v:'amber',l:'Amber: yes, with risk'},{v:'red',l:'Red: not now'}]})}</div>
+ ${c?`<div style="margin-top:16px"><div class="small"><b>${esc(c.t.n)}</b>: ${c.t.supply} FTE available for change</div>${teamBar(c,+i.capacity.fte||ask)}</div>`:''}`}
+function A7(i,ed){const d=i.delivery;
+ if(!d.generated)return ed?`<p class="small">Generate the epic and features from the outcome card and Lean BuCA. You can edit them before pushing.</p><button class="btn sec sm" data-act="gen">Generate delivery structure</button>`:'<p class="small muted">Generated when the PO picks it up.</p>';
+ const json=JSON.stringify({type:'Epic',externalRef:i.key,title:d.epic,description:i.demand.problem,acceptanceCriteria:d.ac,tags:[i.overview.type,i.demand.source],value:Math.round(calc(i).annual),effortFteMonths:+i.buca.effort,children:(d.features||[]).map(f=>({type:'Feature',title:f}))},null,2);
+ return `<div class="fg">${fld('delivery.epic','Epic',i,ed&&!d.pushed,{w:1})}${fld('delivery.ac','Acceptance criteria (from the outcome card)',i,ed&&!d.pushed,{w:1,area:1})}</div>
+ <div style="margin-top:12px"><div class="small" style="font-weight:700">Features</div><ol class="small" style="margin:6px 0 0;padding-left:20px">${(d.features||[]).map(f=>`<li>${esc(f)}</li>`).join('')}</ol></div>
+ <p class="small" style="margin-top:12px">${d.pushed?`<span class="chip g">${ic.check} In ADO as ${esc(d.adoId)}</span> <span class="muted">(simulated)</span>`:'<span class="chip o">Not pushed yet</span>'}</p>
+ <details class="small"><summary style="cursor:pointer;color:var(--green);font-weight:700">Export for Aha/ADO</summary><pre class="code" id="json">${esc(json)}</pre><button class="btn sec sm" data-act="copyjson">Copy</button></details>`}
+function A8(i){const r=i.review,o=i.outcome,c=calc(i),live=!dead(i)&&i.stage===8;const edO=live&&S.role==='owner'&&!r.submitted;
+ const rows=[['KPI ('+(o.kpi||'')+')',o.target,r.actualKpi,'',o.baseline],['Value per year',Math.round(c.annual),r.actualValue,'€'],['Effort (FTE-months)',+i.buca.effort,r.actualEffort,'']];
+ return `<div class="fg">${fld('review.actualKpi','Actual KPI',i,edO,{num:1})}${fld('review.actualValue','Actual value per year (€)',i,edO,{num:1})}${fld('review.actualEffort','Actual effort (FTE-months)',i,edO,{num:1})}<div></div>${fld('review.learnings','What we learned',i,edO,{w:1,area:1})}</div>
+ <table class="t" style="margin-top:16px"><thead><tr><th>Measure</th><th class="r">Promised</th><th class="r">Actual</th><th class="r">Result</th></tr></thead><tbody>${rows.map(([n,p,a,u,base])=>{let res='—';if(isNum(p)&&isNum(a)){if(isNum(base)&&+base!==+p){const pct=Math.round((a-base)/(p-base)*100);res=pct+'% of the promised change'}else{res=Math.round(a/p*100)+'% of promise'}}
+  return `<tr><td>${esc(n)}</td><td class="r">${u==='€'?eur(p):esc(p??'—')}</td><td class="r">${isNum(a)?(u==='€'?eur(+a):esc(a)):'—'}</td><td class="r">${res}</td></tr>`}).join('')}</tbody></table>
+ ${r.valueOk?`<p class="small"><span class="chip g">${ic.check} Finance confirmed realised value</span></p>`:''}${r.verdict?`<p class="small"><b>Verdict:</b> ${esc(r.verdict)}${r.verdictNote?' · '+esc(r.verdictNote):''}</p>`:''}`}
+function canEdit(n,i){const r=S.role;if(dead(i))return false;
+ return n===1?r==='owner'&&i.stage===1:n===2?r==='lead'&&i.stage===2:n===3?r==='owner'&&i.stage===3&&!i.outcome.ready:n===6?r==='cap'&&i.stage===6:n===7?r==='po'&&i.stage===7:false}
+function artBody(n,i){const ed=canEdit(n,i);return [null,A1,A2,A3,A4,A5,A6,A7,A8][n](i,ed)}
+
+/* ---------- step card ---------- */
+function stepCard(i){const r=S.role,who=turn(i),mine=who.includes(r)&&!RO;
+ if(dead(i)){const t={declined:'Declined at triage.',stopped:'Stopped by the Heads.',merged:'Merged into another initiative.',closed:'Closed. The loop is complete.'}[i.status];
+  return `<div class="card"><h3>Status</h3><p class="small" style="margin:8px 0 0">${t}${i.mergedInto?` <a class="hl" href="#i-${i.mergedInto}">Open it</a>`:''}</p></div>`}
+ if(!mine){const NX={"1owner": "submits the demand record", "2lead": "triages the initiative", "3owner": "completes the outcome card", "3lead": "checks that the outcome is measurable", "4owner": "completes the Lean BuCA", "4cap": "confirms the effort estimate", "4finance": "reviews and approves the Lean BuCA", "5heads": "decides: Fund, Prove first, Queue or Stop", "6cap": "commits a team, FTE and dates", "7po": "pushes to Aha/ADO and delivers", "8owner": "submits the actual results", "8finance": "confirms the realised value", "8lead": "closes the loop with a verdict"};const last=i.log.length?i.log[i.log.length-1].at:i.created;const days=Math.max(0,Math.floor((Date.now()-(last||Date.now()))/864e5));const sa=STAGES[i.stage-1];
+  return `<div class="card nextcard"><div class="cap" style="color:var(--dred);letter-spacing:.04em">NEXT STEP</div>
+  ${who.map(w=>`<div class="nextwho"><span class="nextrole">${esc(ROLES[w].n)}</span><span>${esc(NX[i.stage+w]||'takes the next step')}</span></div>`).join('<div class="small muted" style="margin:4px 0">or</div>')}
+  <p class="small" style="margin:12px 0 0">Stage ${i.stage} · ${esc(sa.name)} · <a class="hl" href="#i-${i.id}-a${i.stage}" data-art="${i.stage}">${esc(sa.art)}</a></p>
+  <p class="small muted" style="margin:4px 0 0">Waiting ${days===0?'since today':days===1?'1 day':days+' days'}${days>=14?' · <b style="color:var(--dred)">longer than 2 weeks</b>':''}</p>
+  ${RO?'':`<div class="row" style="gap:8px;margin-top:16px">${who.map(w=>`<button class="btn sec sm" data-act="asRole" data-r="${w}">Switch to ${esc(ROLES[w].n)}</button>`).join('')}</div>`}</div>`}
+ let title='Your step',body='',gateN=0,btns='',reason=false,cond=false;
+ const s=i.stage;
+ if(s===1){gateN=1;body=i.status==='returned'?'The portfolio lead sent this back. Update the demand record, then submit again.':'Fill in the demand record. When everything below is ticked, submit it for triage.';btns=`<button class="btn full" data-act="submit">Submit for triage</button>`}
+ if(s===2){gateN=2;body='Label the initiative, check for similar demand, then accept it or send it back.';reason=true;
+  const sim=similar(i);btns=`<button class="btn full" data-act="accept">Accept</button><div class="row" style="margin-top:8px"><button class="btn ghost" data-act="sendback">Send back</button><button class="btn ghost" data-act="decline">Decline</button></div>
+  ${sim.length?`<label class="f" for="mergeSel" style="margin-top:12px">Merge into</label><div class="row" style="flex-wrap:nowrap"><select class="i" id="mergeSel">${sim.map(o=>`<option value="${o.x.id}">${esc(o.x.key)} · ${esc(o.x.title)}</option>`).join('')}</select><button class="btn sec sm" data-act="merge">Merge</button></div>`:''}`}
+ if(s===3&&r==='owner'){gateN=3;body='Make the outcome measurable. The portfolio lead checks it before it goes to Finance.';btns=`<button class="btn full" data-act="outcomeReady">Send outcome card for check</button>`}
+ if(s===3&&r==='lead'){body='Is the outcome measurable with a real report? Confirm it, or send it back with a question.';reason=true;btns=`<button class="btn full" data-act="confirmOutcome">Confirm as measurable</button><button class="btn ghost" data-act="sendbackOutcome">Send back with a question</button>`}
+ if(s===4&&r==='owner'){gateN=4;body=i.buca.fin==='returned'?'Finance has questions (see the Finance note). Update the assumptions and send it again.':'Fill in the volumes and assumptions. The value is calculated with the central Finance rules; you can\'t change those.';btns=`<button class="btn full" data-act="toFinance">Send Lean BuCA to Finance</button>`}
+ if(s===4&&r==='cap'){title='Your input';body='Confirm the effort, delivery time and expected team in the Lean BuCA, so Finance and the Heads see a realistic estimate.';btns=`<button class="btn full" data-act="confirmEffort">Confirm effort estimate</button>`}
+ if(s===4&&r==='finance'){body='Check the assumptions against the rules. Adjust realisation if needed, then approve or return with questions.';reason=true;btns=`<button class="btn full" data-act="approve">Approve Lean BuCA</button><button class="btn ghost" data-act="returnBuca">Return with questions</button>`}
+ if(s===5){body=`Decide for cycle ${esc(S.cycle)}. A reason is always required.`;reason=true;cond=true;const f=capFlag(i);
+  btns=`<p class="small" style="margin:0 0 12px">Capacity signal: <span class="chip ${f.k}">${f.l}</span> ${esc(f.txt||'')}</p><button class="btn full" data-act="fund">Fund</button><div class="row" style="margin-top:8px"><button class="btn ghost" data-act="prove">Prove first</button><button class="btn ghost" data-act="queue">Queue</button><button class="btn ghost" data-act="stop">Stop</button></div>`}
+ if(s===6){gateN=6;body='Commit a team, FTE and quarters. If it can\'t be done now, flag it with a reason.';reason=true;btns=`<button class="btn full" data-act="commit">Commit capacity</button><button class="btn ghost" data-act="flagRed">Flag as not deliverable now</button>`}
+ if(s===7){gateN=7;body='Generate the delivery structure, check it, and push it to Aha/ADO. Mark it delivered when the work is done.';
+  btns=i.delivery.pushed?`<button class="btn full" data-act="delivered">Mark as delivered</button>`:`<button class="btn full" data-act="push" ${i.delivery.generated?'':'disabled'}>Push to Aha/ADO</button>`}
+ if(s===8&&r==='owner'){gateN=8;body='Fill in what was actually achieved, and what you learned.';btns=`<button class="btn full" data-act="submitActuals">Submit actuals</button>`}
+ if(s===8&&r==='finance'){body='Check the actual value against the Lean BuCA.';btns=`<button class="btn full" data-act="valueOk">Confirm realised value</button>`}
+ if(s===8&&r==='lead'){body='Close the loop with a verdict. A reason is required unless the promise was kept.';reason=true;btns=`<button class="btn full" data-act="kept">Promise kept</button><div class="row" style="margin-top:8px"><button class="btn ghost" data-act="partly">Partly kept</button><button class="btn ghost" data-act="notkept">Not kept</button></div>`}
+ return `<div class="card" style="border-top:4px solid var(--orange);border-radius:0 0 16px 16px"><h3>${title}</h3><p class="small" style="margin:8px 0 0">${body}</p>
+ ${gateN?`<div id="gate">${gateHtml(gateN,i)}</div>`:''}
+ ${reason?`<label class="f" for="reason" style="margin-top:12px">Reason <span>${s===5?'required':'required to send back, decline or flag'}</span></label><textarea class="i" id="reason" style="min-height:72px"></textarea>`:''}
+ ${cond?`<label class="f" for="cond" style="margin-top:12px">Conditions <span>optional</span></label><input class="i" id="cond" placeholder="For example: report adoption after 3 months">`:''}
+ <div style="margin-top:16px">${btns}</div><div class="err" id="acterr"></div></div>`}
+function gateHtml(n,i){const m=req(n,i);return m.length?`<ul class="gate">${m.map(x=>`<li class="no">${esc(x)}</li>`).join('')}</ul>`:`<ul class="gate"><li class="ok">${ic.check} Everything needed is filled in</li></ul>`}
+
+/* ---------- views ---------- */
+function slate(){return S.items.filter(i=>i.stage===5&&i.buca.fin==='approved'&&['active','queued'].includes(i.status)).sort((a,b)=>rankScore(b)-rankScore(a))}
+function waiting(){return S.items.filter(i=>turn(i).includes(S.role))}
+function vHome(){const w=waiting(),r=S.role;
+ const primary=r==='owner'?`<button class="btn" data-act="new">New demand</button>`:r==='heads'?`<a class="btn" href="#agenda">Open decision agenda</a>`:r==='finance'?`<a class="btn" href="#rules">Finance rules</a>`:r==='cap'?`<a class="btn" href="#capacity">Capacity view</a>`:r==='lead'?`<a class="btn" href="#triage">Open the triage board</a>`:`<a class="btn" href="#board">Open the pipeline</a>`;
+ const counts=STAGES.map(s=>S.items.filter(i=>i.stage===s.n&&!dead(i)).length);
+ return `<div class="hero"><div class="meta">Viewing as ${esc(ROLES[r].n)} · ${esc(ROLES[r].s)}</div><h1>From demand to decision</h1><p>One flow, eight artifacts. Automation prepares the work; people decide.</p></div>
+ <div class="row" style="margin-top:24px">${primary}</div>
+ <div class="sec-title"><h2>Waiting for you <span class="muted" style="font-weight:400">(${w.length})</span></h2></div>
+ ${w.length?`<div class="navlist">${w.map(i=>`<a class="navrow" href="#i-${i.id}"><span class="ico">${ic.inbox}</span><span class="t"><b>${keyTag(i)}${esc(i.title||'Untitled demand')}</b><span>Stage ${i.stage} · ${STAGES[i.stage-1].name}: ${esc(STAGES[i.stage-1].art)} ${i.status==='returned'?'· sent back':''}</span></span>${statusChip(i)}${ic.chev}</a>`).join('')}</div>`:`<div class="card"><p class="muted" style="margin:0">Nothing waiting for ${esc(ROLES[r].n)} right now. Try another role at the top right.</p></div>`}
+ <div class="sec-title"><h2>Pipeline at a glance</h2><a class="hl" href="#board">See all</a></div>
+ <div class="stepper" style="margin-top:0">${STAGES.map((s,k)=>`<a href="#board" class="st ${counts[k]?'now':''}" style="text-decoration:none;color:var(--ink)"><b>${counts[k]} · ${s.name}</b><span>${s.nl}</span></a>`).join('')}</div>
+ <div class="sec-title"><h2>How it works</h2></div>
+ <div class="card"><ul class="check">${['Each initiative builds eight artifacts, one per stage. Every artifact has one owner who signs it off.','A stage only opens when the gate before it is met: the list under "Your step" shows what\'s missing.','AI checks quality and OKR fit, flags weak assumptions and drafts the delivery structure. It never decides.','The Lean BuCA uses Finance\'s central rules, so every business case can be compared.'].map(t=>`<li><span style="color:var(--green)">${ic.check}</span><span>${t}</span></li>`).join('')}</ul></div>`}
+function card(i){const mine=turn(i).includes(S.role);return `<a class="bc" href="#i-${i.id}" data-search="${esc((i.key+' '+i.title).toLowerCase())}">${keyTag(i)}<b style="margin-top:6px">${esc(i.title||'Untitled demand')}</b><div class="row" style="gap:6px">${i.overview.type?`<span class="chip o">${esc(i.overview.type)}</span>`:''}${statusChip(i)}${mine?'<span class="chip a">Your step</span>':''}</div><div class="muted" style="margin-top:6px">${esc(i.demand.source||'')}</div></a>`}
+function vBoard(){return `<div class="hero"><h1>Pipeline</h1><p>Every initiative, by stage. Cards marked "Your step" wait on your role.</p></div>
+ ${TABS_HTML()}
+ <div style="margin-top:20px;max-width:420px"><label class="f" for="find">Find by ID or name</label><input class="i" id="find" placeholder="For example: ENG-103"></div>
+ <div class="board" style="margin-top:16px">${STAGES.map(s=>{const its=S.items.filter(i=>i.stage===s.n&&(i.status!=='merged'));return `<div class="col"><h4>${s.n} ${s.name} <span>· ${s.nl}</span></h4><div class="small muted">${esc(s.art)}</div>${its.map(card).join('')||'<p class="small muted">Empty</p>'}</div>`}).join('')}</div>`}
+function bchip(t,x){const ed=S.role==='lead'&&!RO&&t.stage<=5&&!dead(t);return `<span class="bchip">${keyTag(x)}<a href="#i-${x.id}">${esc(x.title)}</a>${ed?`<button class="xbtn sm" data-act="unbundle" data-t="${t.id}" data-s="${x.id}" aria-label="Take ${esc(x.key)} out again">×</button>`:''}</span>`}
+function volOf(i){const f=String(i.demand.frequency||'');const m=f.replace(/(\d),(\d{3})/g,'$1$2').match(/\d+(\.\d+)?/);return m&&/month/i.test(f)?+m[0]:null}
+function addLever(i,t){if(!LEVERS[t])return;i.buca.levers=i.buca.levers||[];i.buca.levers.push({t});save(i);render();const k=i.buca.levers.length-1;const el=document.getElementById('f_buca_levers_'+k+'_'+LEVERS[t].f[0][0]);if(el){el.focus();el.scrollIntoView({block:'center',behavior:'smooth'})}toast(LEVERS[t].n+' added')}
+function bundle(srcId,tgtId){if(RO||S.role!=='lead'){toast('Only the portfolio lead bundles demand. Switch role at the top right.');return}
+ const a=item(srcId),t=item(tgtId);if(!a||!t||a.id===t.id||dead(t))return;
+ (a.overview.bundled||[]).forEach(bid=>{const x=item(bid);if(x){x.mergedInto=t.id;save(x)}if(!t.overview.bundled.includes(bid))t.overview.bundled.push(bid)});a.overview.bundled=[];
+ a.status='merged';a.mergedInto=t.id;if(!t.overview.bundled.includes(a.id))t.overview.bundled.push(a.id);
+ log(a,'Bundled into '+t.key+' "'+t.title+'"',2);log(t,'Bundled demand record '+a.key+' "'+a.title+'"',2);save(a,true);save(t,true);render();toast(a.key+' bundled into '+t.key)}
+function unbundle(tgtId,srcId){if(RO||S.role!=='lead')return;const t=item(tgtId),a=item(srcId);if(!t||!a)return;
+ t.overview.bundled=t.overview.bundled.filter(x=>x!==srcId);a.status='active';a.stage=2;delete a.mergedInto;
+ log(t,'Took '+a.key+' out of this initiative',2);log(a,'Taken out of '+t.key+', back in triage',2);save(a,true);save(t,true);render();toast(a.key+' is back in triage')}
+function markTargets(id){const src=item(id);document.querySelectorAll('[data-drop]').forEach(el=>{if(el.dataset.drop===id)return;const sc=simScore(src,item(el.dataset.drop));if(sc>=.15){el.classList.add('cand');const tg=document.createElement('span');tg.className='simtag';tg.textContent=Math.round(Math.min(sc,1)*100)+'% similar';el.appendChild(tg)}})}
+function vTriage(){const ed=S.role==='lead'&&!RO;
+ const loose=S.items.filter(i=>i.stage===2&&i.status==='active'&&!(i.overview.bundled||[]).length);
+ const inits=S.items.filter(i=>!dead(i)&&i.stage<=5&&!loose.includes(i)&&(i.stage>=3||(i.overview.bundled||[]).length));
+ const others=inits.filter(x=>x);const opts=x=>S.items.filter(t=>t.id!==x.id&&!dead(t)&&t.stage>=2&&t.stage<=5).map(t=>`<option value="${t.id}">${esc(t.key)} · ${esc(t.title)}</option>`).join('');
+ const dcard=i=>`<div class="dcard" ${ed?`draggable="true" data-drag="${i.id}"`:''} data-drop="${i.id}">
+  <div class="row" style="gap:8px;justify-content:space-between"><span>${ed?'<span class="grip" aria-hidden="true">⋮⋮</span>':''}${keyTag(i)}</span><a class="small" href="#i-${i.id}">Open</a></div>
+  <b style="display:block;margin:6px 0 4px">${esc(i.title)}</b><div class="small muted">${esc(i.demand.source||'')}${i.demand.frequency?' · '+esc(i.demand.frequency):''}</div>
+  ${ed?`<div class="row small" style="gap:8px;margin-top:10px;flex-wrap:nowrap"><select class="i" style="min-height:36px;padding:4px 10px;font-size:14px" id="bs-${i.id}" aria-label="Bundle ${esc(i.key)} into"><option value="">Bundle into…</option>${opts(i)}</select><button class="btn sec sm" style="min-height:36px" data-act="bundleSel" data-src="${i.id}">Bundle</button></div>`:''}</div>`;
+ const icard=i=>{const b=(i.overview.bundled||[]).map(item).filter(Boolean);const vols=[i,...b].map(volOf);const tot=vols.every(v=>v!=null)&&b.length?vols.reduce((p,q)=>p+q,0):null;
+  return `<div class="icard" data-drop="${i.id}"><div class="row" style="gap:8px;justify-content:space-between">${keyTag(i)}<span class="chip o">Stage ${i.stage} · ${STAGES[i.stage-1].name}</span></div>
+  <a href="#i-${i.id}" style="color:var(--ink);text-decoration:none"><b style="display:block;margin:6px 0 4px">${esc(i.title)}</b></a>
+  <div class="small muted">${esc(i.demand.source||'')}${i.overview.type?' · '+esc(i.overview.type):''}</div>
+  <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px">${b.map(x=>bchip(i,x)).join('')}</div>
+  ${tot!=null?`<div class="small" style="margin-top:8px"><b>About ${nf(tot)} per month</b> across ${b.length+1} demand records</div>`:''}
+  ${ed?'<div class="drophint">Drop demand here to bundle</div>':''}</div>`};
+ return `<div class="hero"><div class="meta">Portfolio lead</div><h1>Triage board</h1><p>Drag a demand record onto an initiative to bundle them. Similar initiatives light up while you drag.</p></div>
+ ${ed?'':`<p class="small muted" style="margin-top:20px">Only the portfolio lead bundles demand. ${RO?'':'Switch role at the top right to try it.'}</p>`}
+ <div class="tri" style="margin-top:24px"><section><h2 style="font-size:20px;line-height:24px">Demand to triage <span class="muted" style="font-weight:400">(${loose.length})</span></h2><p class="small muted" style="margin:4px 0 12px">Submitted, not yet bundled or accepted. You can also drop one onto another.</p><div class="stack">${loose.map(dcard).join('')||'<div class="card small muted">Nothing waiting for triage.</div>'}</div></section>
+ <section><h2 style="font-size:20px;line-height:24px">Initiatives <span class="muted" style="font-weight:400">(${inits.length})</span></h2><p class="small muted" style="margin:4px 0 12px">Accepted initiatives up to the decision. Click × to take a demand record out again, until the Heads decide.</p><div class="stack">${inits.map(icard).join('')}</div></section></div>`}
+/* ---------- calendar + relationships ---------- */
+const ymOf=v=>{if(!v)return null;let m=String(v).match(/^(\d{4})-(\d{2})/);if(m)return +m[1]*12+(+m[2]-1);m=String(v).match(/(\d{4}) Q([1-4])/);return m?+m[1]*12+(+m[2]-1)*3:null};
+const qEnd=v=>{const m=String(v||'').match(/(\d{4}) Q([1-4])/);return m?+m[1]*12+(+m[2])*3-1:ymOf(v)};
+const ymLabel=(n,long)=>new Date(Math.floor(n/12),n%12,1).toLocaleDateString('en-GB',long?{month:'short',year:'numeric'}:{month:'short'});
+const teamOf=i=>(i.capacity&&i.capacity.team)||(i.buca&&i.buca.team);
+const fteOf=i=>+(i.capacity&&i.capacity.fte)||calc(i).ask;
+function span(i){if(i.status==='merged'||i.status==='declined'||i.status==='stopped')return null;const c=i.capacity||{},b=i.buca||{};
+ let s=ymOf(c.start||c.startQ),e=c.end?ymOf(c.end):qEnd(c.endQ),kind;
+ if(i.status==='closed'||i.stage===8)kind='done';else if(i.stage===7)kind='delivery';else if(i.stage===6)kind=s!=null?'funded':'estimate';else kind='estimate';
+ if(kind==='estimate'){if(i.stage<4||!(+b.effort>0))return null;s=ymOf(S.cycle)+(i.status==='queued'?3:0);e=s+Math.max(1,Math.ceil(+b.duration||4))-1}
+ if(s==null)return null;if(e==null||e<s)e=s+Math.max(1,Math.ceil(+b.duration||3))-1;return {s,e,kind}}
+const REL={competes:{l:'Competes for capacity',c:'r',w:5},kpi:{l:'Same KPI',c:'a',w:4},depends:{l:'Depends on',c:'o',w:4,dir:1},sequence:{l:'Do in sequence',c:'o',w:3,dir:1},similar:{l:'Similar scope',c:'p',w:3},team:{l:'Same team, same time',c:'o',w:2},synergy:{l:'Synergy',c:'g',w:2}};
+const relKey=(a,b,t)=>(REL[t]&&REL[t].dir?[a,b]:[a,b].sort()).join('>')+'|'+t;
+let AI_LINKS=[],CAL_SEL=null;
+function ruleLinks(){const its=S.items.filter(i=>!['merged','declined','stopped'].includes(i.status)),out=[];
+ for(let x=0;x<its.length;x++)for(let y=x+1;y<its.length;y++){const a=its[x],b=its[y],sa=span(a),sb=span(b);
+  const ta=teamOf(a),tb=teamOf(b);
+  if(ta&&ta===tb&&sa&&sb&&sa.kind!=='done'&&sb.kind!=='done'&&sa.s<=sb.e&&sb.s<=sa.e){const t=team(ta),f=fteOf(a)+fteOf(b),ov=`${ymLabel(Math.max(sa.s,sb.s))} to ${ymLabel(Math.min(sa.e,sb.e),1)}`;
+   out.push(f>t.supply?{a:a.id,b:b.id,t:'competes',why:`Together they need ${f.toFixed(1)} FTE of ${t.n} (${t.supply} available) from ${ov}. Move one, or fund one first.`}:{a:a.id,b:b.id,t:'team',why:`Both use ${t.n} from ${ov} (${f.toFixed(1)} of ${t.supply} FTE).`})}
+  if(a.outcome.kpi&&a.outcome.kpi===b.outcome.kpi&&a.stage>=3&&b.stage>=3)out.push({a:a.id,b:b.id,t:'kpi',why:`Both promise to move "${a.outcome.kpi}". Check that the benefits aren't counted twice, and agree who reports the change.`});
+  const sc=simScore(a,b);if(sc>=.35&&a.mergedInto!==b.id&&b.mergedInto!==a.id)out.push({a:a.id,b:b.id,t:'similar',why:`${Math.round(Math.min(sc,1)*100)}% similar wording. Consider bundling them, or doing them one after the other.`})}
+ return out.map(l=>Object.assign(l,{k:relKey(item(l.a).key,item(l.b).key,l.t),src:'rule'}))}
+function links(){const conf=(S.links||[]).filter(l=>item(l.a)&&item(l.b)).map(l=>Object.assign({},l,{confirmed:true}));const ck=new Set(conf.map(l=>l.k)),dk=new Set(S.dismissed||[]);
+ const sug=[...ruleLinks(),...AI_LINKS].filter(l=>item(l.a)&&item(l.b)&&!ck.has(l.k)&&!dk.has(l.k));const seen=new Set();
+ return {conf,sug:sug.filter(l=>!seen.has(l.k)&&seen.add(l.k)).sort((p,q)=>REL[q.t].w-REL[p.t].w)}}
+const canLink=()=>!RO&&['lead','cap'].includes(S.role);
+function relRow(l,compact){const a=item(l.a),b=item(l.b),m=REL[l.t]||{l:l.t,c:'o'};
+ return `<div class="relrow ${compact?'cmp':''}"><span class="chip ${m.c}">${esc(m.l)}</span><span class="relpair"><a class="hl" href="#i-${a.id}">${esc(a.key)}</a> ${m.dir?'→':'↔'} <a class="hl" href="#i-${b.id}">${esc(b.key)}</a>${compact?'':` <span class="muted small">${esc(a.title)} ${m.dir?'→':'and'} ${esc(b.title)}</span>`}</span>
+ <span class="small relwhy">${esc(l.why)}${l.src==='claude'?' <span class="chip o">Suggested by Claude</span>':''}${l.confirmed&&l.by?' · confirmed by '+who(l.by):''}</span>
+ ${compact?'':canLink()?(l.confirmed?`<span class="relbtns"><button class="btn ghost" data-act="relRemove" data-k="${esc(l.k)}">Remove</button></span>`:`<span class="relbtns"><button class="btn sec sm" data-act="relConfirm" data-k="${esc(l.k)}">Confirm</button><button class="btn ghost" data-act="relDismiss" data-k="${esc(l.k)}">Dismiss</button></span>`):''}</div>`}
+function vCalendar(){const rows=S.items.map(i=>({i,sp:span(i),tg:qEnd(i.outcome&&i.outcome.targetDate)})).filter(r=>r.sp||(r.tg!=null&&!dead(r.i)));
+ rows.sort((p,q)=>(p.sp?p.sp.s:p.tg+100)-(q.sp?q.sp.s:q.tg+100)||(p.i.key>q.i.key?1:-1));
+ const now=new Date(),today=now.getFullYear()*12+now.getMonth();let lo=today-3,hi=today+12;
+ rows.forEach(r=>{if(r.sp){lo=Math.min(lo,r.sp.s);hi=Math.max(hi,r.sp.e)}if(r.tg!=null)hi=Math.max(hi,r.tg)});lo-=lo%3;hi=hi+(2-hi%3);const N=hi-lo+1;
+ const pc=v=>((v-lo)/N*100).toFixed(2)+'%';const {conf,sug}=links();const all=[...conf,...sug];
+ const relOf=id=>all.filter(l=>l.a===id||l.b===id);const selRel=CAL_SEL?new Set(relOf(CAL_SEL).flatMap(l=>[l.a,l.b])):null;
+ const quarters=[];for(let m=lo;m<=hi;m+=3)quarters.push(m);
+ const KIND={delivery:'In delivery',funded:'Funded, team committed',estimate:'Estimate if funded this cycle',done:'Delivered'};
+ return `<div class="hero"><h1>Pipeline</h1><p>When initiatives run, when their KPI should move, and how they affect each other.</p></div>
+ ${TABS_HTML()}
+ <div class="legend" style="margin-top:20px"><span><i style="background:var(--green)"></i>In delivery</span><span><i style="background:var(--green-l)"></i>Funded, team committed</span><span><i style="background:repeating-linear-gradient(135deg,rgba(234,113,79,.6) 0 4px,rgba(234,113,79,.2) 4px 8px)"></i>Estimate if funded</span><span><i style="background:#B4B2A9"></i>Delivered</span><span><b style="color:var(--red)">◆</b> KPI target date</span><span><b style="color:var(--ink)">|</b> Today</span></div>
+ <p class="small muted" style="margin:8px 0 0">Click a row to highlight the initiatives it's related to. Estimates start in the decision cycle (${esc(S.cycle)}) and last as long as the Lean BuCA says.</p>
+ <div class="calwrap"><div class="cal" style="--n:${N}">
+  <div class="calrow calhead"><div class="callab small muted">Initiative</div><div class="caltrack">${quarters.map(m=>`<span class="qlab" style="left:${pc(m)};width:${(3/N*100).toFixed(2)}%">${'Q'+(Math.floor((m%12)/3)+1)+' '+Math.floor(m/12)}</span>`).join('')}</div></div>
+  ${rows.map(({i,sp,tg})=>{const n=relOf(i.id).length,cls=CAL_SEL?(i.id===CAL_SEL?'sel':selRel.has(i.id)?'rel':'dim'):'';
+   return `<div class="calrow ${cls}" data-act="calSel" data-id="${i.id}"><div class="callab"><a href="#i-${i.id}" class="calkey">${keyTag(i)}</a><span class="caltitle">${esc(i.title)}</span><span class="small muted">Stage ${i.stage} · ${esc((team(teamOf(i))||{}).n||'No team yet')}${sp?' · '+fteOf(i).toFixed(1)+' FTE':''}${n?` · <b style="color:var(--ink)">${n} link${n>1?'s':''}</b>`:''}</span></div>
+   <div class="caltrack"><span class="todayl" style="left:${pc(today+now.getDate()/31)}"></span>
+   ${sp?`<span class="calbar ${sp.kind}" style="left:${pc(sp.s)};width:calc(${((sp.e-sp.s+1)/N*100).toFixed(2)}% - 2px)" title="${esc(KIND[sp.kind])}: ${ymLabel(sp.s,1)} to ${ymLabel(sp.e,1)}">${ymLabel(sp.s)}–${ymLabel(sp.e)}${sp.e-sp.s>=5?' '+Math.floor(sp.e/12):''}</span>`:''}
+   ${tg!=null?`<span class="caltg" style="left:${pc(tg+.5)}" title="KPI target: ${esc(i.outcome.targetDate)}">◆</span>`:''}</div></div>`}).join('')||'<p class="muted">Nothing planned yet. Initiatives appear here once they have an effort estimate (stage 4) or committed dates (stage 6).</p>'}
+ </div></div>
+ ${(()=>{const off=S.items.filter(i=>!dead(i)&&!rows.some(r=>r.i===i));return off.length?`<p class="small muted" style="margin:10px 0 0">Not on the calendar yet (no effort estimate or dates): ${off.map(i=>`<a class="hl" href="#i-${i.id}">${esc(i.key)}</a> stage ${i.stage}`).join(' · ')}</p>`:''})()}
+ <div class="sec-title"><h2>Suggested relationships <span class="muted" style="font-weight:400">(${sug.length})</span></h2><button class="btn sec sm" data-act="relAI" id="relAI">Suggest more with Claude</button></div>
+ <p class="small muted" style="margin:-8px 0 12px">${canLink()?'Confirm the ones that are real, so everyone sees them. Dismiss the rest.':'The portfolio lead or a capability lead confirms or dismisses these.'}</p>
+ <div class="card relcard">${sug.map(l=>relRow(l)).join('')||'<p class="muted small" style="margin:0">No open suggestions.</p>'}<div class="err" id="relerr"></div></div>
+ <div class="sec-title"><h2>Confirmed relationships <span class="muted" style="font-weight:400">(${conf.length})</span></h2></div>
+ <div class="card relcard">${conf.map(l=>relRow(l)).join('')||'<p class="muted small" style="margin:0">None confirmed yet.</p>'}</div>`}
+const TABS_HTML=()=>`<div class="seg" role="tablist" style="margin-top:24px"><a href="#board" role="tab" class="${route()==='board'?'on':''}">By stage</a><a href="#calendar" role="tab" class="${route()==='calendar'?'on':''}">Calendar</a></div>`;
+function relatedCard(i){const {conf,sug}=links();const r=[...conf,...sug].filter(l=>l.a===i.id||l.b===i.id).slice(0,5);if(!r.length)return '';
+ return `<div class="card"><h4>Related initiatives</h4><div style="margin-top:6px">${r.map(l=>relRow(l,true)).join('')}</div><a class="hl small" href="#calendar">See them on the calendar</a></div>`}
+async function relAI(btn){const err=document.getElementById('relerr');btn.disabled=true;btn.textContent='Asking Claude…';
+ try{const s=await Promise.race([sampler(),new Promise(r=>setTimeout(()=>r(null),4000))]);if(!s)throw {message:'Claude is not available on this page right now.'};
+  const its=S.items.filter(i=>!['merged','declined','stopped'].includes(i.status));
+  const list=its.map(i=>{const sp=span(i);return `${i.key} | ${i.title} | stage ${i.stage} ${STAGES[i.stage-1].name} | team: ${(team(teamOf(i))||{}).n||'-'} | ${sp?ymLabel(sp.s,1)+' to '+ymLabel(sp.e,1):'not planned'} | KPI: ${i.outcome.kpi||'-'} | OKR: ${(okr(i.demand.okr)||{}).t||'-'} | problem: ${String(i.demand.problem||'').slice(0,220)}`}).join('\n');
+  const v=await s.json(`You help a Customer Services portfolio lead at an energy company see how initiatives relate. Suggest relationships that are NOT just "same team" or "similar wording": look for real dependencies (one needs the other's output first), good sequencing (same customers or same process, avoid changing it twice at once), and synergies (shared build, shared data). Use only these initiatives:\n${list}\nReply with JSON only: {"links":[{"a":"ENG-xxx","b":"ENG-yyy","type":"depends"|"sequence"|"synergy","why":"one plain sentence, specific"}]}. For depends and sequence, "a" comes after "b": a depends on b, or do b first then a. At most 6 links. Return an empty list if nothing is convincing.`,{modelTier:'default'});
+  const byKey=Object.fromEntries(S.items.map(i=>[i.key,i]));AI_LINKS=(v&&v.links||[]).filter(l=>byKey[l.a]&&byKey[l.b]&&l.a!==l.b&&['depends','sequence','synergy'].includes(l.type)).slice(0,6).map(l=>({a:byKey[l.a].id,b:byKey[l.b].id,t:l.type,why:String(l.why||''),src:'claude',k:relKey(l.a,l.b,l.type)}));
+  render();toast(AI_LINKS.length?`Claude suggested ${AI_LINKS.length} relationship${AI_LINKS.length>1?'s':''}`:'Claude found no convincing extra relationships')}
+ catch(e){btn.disabled=false;btn.textContent='Suggest more with Claude';if(err)err.textContent=(e&&e.code==='rate_limited')?'Claude is busy. Try again in a minute.':(e&&e.message)||'Claude could not answer.'}}
+function relAct(k,key){if(!canLink())return;const {sug}=links();
+ if(k==='relConfirm'){const l=sug.find(x=>x.k===key);if(!l)return;S.links=(S.links||[]).concat({k:l.k,a:l.a,b:l.b,t:l.t,why:l.why,src:l.src,by:ME||null,at:Date.now()});const a=item(l.a),b=item(l.b);log(a,`Relationship confirmed: ${REL[l.t].l} with ${b.key}`,'rel');log(b,`Relationship confirmed: ${REL[l.t].l} with ${a.key}`,'rel');save(a,true);save(b,true);toast('Relationship confirmed')}
+ if(k==='relDismiss'){S.dismissed=(S.dismissed||[]).concat(key);toast('Suggestion dismissed')}
+ if(k==='relRemove'){S.links=(S.links||[]).filter(l=>l.k!==key);toast('Relationship removed')}
+ saveCfg(true);render()}
+function vSlate(){const sl=slate();const decided=S.items.flatMap(i=>(i.decisions||[]).filter(d=>d.cycle===S.cycle).map(d=>({i,d})));
+ const byTeam={};sl.forEach(i=>{const t=i.buca.team;byTeam[t]=(byTeam[t]||0)+calc(i).ask});
+ return `<div class="hero"><div class="meta">Heads + Martijn</div><h1>Decision agenda · ${esc(S.cycle)}</h1><p>Initiatives with an approved Lean BuCA, ranked by ${S.rules.horizon}-year net value × confidence × OKR fit.</p></div>
+ <div class="card" style="margin-top:32px;overflow-x:auto">${sl.length?`<table class="t"><thead><tr><th>#</th><th>Initiative</th><th>OKR</th><th class="r">Benefit / yr</th><th class="r">${S.rules.horizon}-yr net</th><th class="r">Effort</th><th>Confidence</th><th>Capacity</th><th></th></tr></thead><tbody>
+ ${sl.map((i,k)=>{const c=calc(i),f=capFlag(i);return `<tr class="cl" data-nav="i-${i.id}"><td>${k+1}</td><td>${keyTag(i)}<b>${esc(i.title)}</b><div class="muted">${esc(i.overview.type||'')} · ${esc((team(i.buca.team)||{}).n||'')}</div></td><td>${esc((okr(i.demand.okr)||{}).t||'')}<div class="muted">fit ${(i.ai&&i.ai.fit)||'—'}</div></td><td class="r">${eur(c.annual)}</td><td class="r"><b>${eur(c.net)}</b></td><td class="r">${(+i.buca.effort||0)} FTE-mo</td><td>${conf(i).l}</td><td><span class="chip ${f.k}" title="${esc(f.txt||'')}">${f.l}</span></td><td>${i.status==='queued'?'<span class="chip p">Queued</span>':''}</td></tr>`}).join('')}</tbody></table>`:'<p class="muted" style="margin:0">No initiatives are ready for a decision. Finance approves Lean BuCAs at stage 4.</p>'}</div>
+ ${sl.length?`<p class="small muted">If you fund everything on the agenda: ${Object.entries(byTeam).map(([t,a])=>{const c=capOf(t);return `${esc(team(t).n)} asks ${a.toFixed(1)} FTE, ${c?Math.max(c.free,0).toFixed(1):'?'} free`}).join(' · ')}.</p>`:''}
+ <div class="sec-title"><h2>Decision log · ${esc(S.cycle)}</h2></div>
+ <div class="card">${decided.length?`<table class="t"><thead><tr><th>Initiative</th><th>Decision</th><th>Why</th><th>Conditions</th><th>When</th></tr></thead><tbody>${decided.map(({i,d})=>`<tr class="cl" data-nav="i-${i.id}"><td>${esc(i.title)}</td><td><span class="chip ${['Fund','Prove first'].includes(d.verdict)?'g':d.verdict==='Queue'?'p':'r'}">${esc(d.verdict)}</span></td><td>${esc(d.reason)}</td><td>${esc(d.conditions||'—')}</td><td>${dt(d.at)}</td></tr>`).join('')}</tbody></table>`:'<p class="muted" style="margin:0">No decisions in this cycle yet.</p>'}</div>`}
+function teamBar(c,extra){const ask=extra||c.slate;const tot=Math.max(c.t.supply,c.committed+c.funded+ask,.1);const w=v=>(v/tot*100).toFixed(1)+'%';const over=c.committed+c.funded+ask>c.t.supply;
+ return `<div style="position:relative;margin-top:8px"><div class="bar" role="img" aria-label="${esc(c.t.n)}: ${c.committed.toFixed(1)} committed, ${c.funded.toFixed(1)} funded, ${ask.toFixed(1)} asked, of ${c.t.supply} FTE"><i class="c1" style="width:${w(c.committed)}"></i><i class="c2" style="width:${w(c.funded)}"></i><i class="${over?'over':'c3'}" style="width:${w(ask)}"></i></div>
+ <span aria-hidden="true" style="position:absolute;top:-4px;bottom:-4px;left:${w(c.t.supply)};border-left:2px solid var(--ink)"></span></div>
+ <div class="small muted" style="margin-top:4px">Black line = ${c.t.supply} FTE available${over?` · <b style="color:var(--dred)">over by ${(c.committed+c.funded+ask-c.t.supply).toFixed(1)} FTE</b>`:''}</div>`}
+function vCapacity(){const ed=S.role==='cap';
+ return `<div class="hero"><div class="meta">Capability leads</div><h1>Capacity view</h1><p>Demand versus available change capacity per team, before individuals are planned.</p></div>
+ <div class="legend" style="margin-top:24px"><span><i style="background:var(--green)"></i>Committed (in delivery)</span><span><i style="background:var(--green-l)"></i>Funded, waiting for commitment</span><span><i style="background:repeating-linear-gradient(135deg,rgba(234,113,79,.55) 0 4px,rgba(234,113,79,.25) 4px 8px)"></i>Waiting for decision (asked)</span><span><i style="background:repeating-linear-gradient(135deg,rgba(229,56,76,.85) 0 4px,rgba(229,56,76,.5) 4px 8px)"></i>Over capacity</span></div>
+ <div class="stack" style="margin-top:16px">${S.teams.map(t=>{const c=capOf(t.id);const its=S.items.filter(i=>!dead(i)&&((i.stage===7&&i.capacity.team===t.id)||(i.stage===6&&(i.capacity.team||i.buca.team)===t.id)||(i.stage===5&&i.buca.fin==='approved'&&i.buca.team===t.id)));
+  return `<div class="card"><div class="row" style="justify-content:space-between"><h3>${esc(t.n)}</h3>${ed?`<label class="small row" style="gap:8px">Available for change (FTE) <input class="i" style="width:96px;min-height:40px" data-team="${t.id}" inputmode="decimal" value="${t.supply}"></label>`:`<span class="small muted">${t.supply} FTE available for change</span>`}</div>
+  ${teamBar(c)}<p class="small" style="margin:8px 0 0">${c.committed.toFixed(1)} committed · ${c.funded.toFixed(1)} funded · ${c.slate.toFixed(1)} waiting for decision · <b>${(c.free-c.slate).toFixed(1)} FTE left if all are funded</b></p>
+  ${its.length?`<p class="small muted" style="margin:6px 0 0">${its.map(i=>`<a class="hl" href="#i-${i.id}">${esc(i.title)}</a> (stage ${i.stage})`).join(' · ')}</p>`:''}</div>`}).join('')}</div>
+ <p class="small muted">Available FTE is change capacity after Run work. The numbers are estimates in this prototype.</p>`}
+function vRules(){const ed=S.role==='finance',R=S.rules;const f=(k,l,suf)=>`<div><label class="f" for="r_${k}">${l}</label>${ed?`<input class="i" id="r_${k}" data-rule="${k}" inputmode="decimal" value="${R[k]}">`:`<div class="val">${suf==='€'?'€'+R[k]:R[k]+(suf||'')} ${ic.lock}</div>`}</div>`;
+ return `<div class="hero"><div class="meta">Business control</div><h1>Finance rules</h1><p>One set of parameters for every Lean BuCA. Only Finance can change them; every BuCA recalculates.</p></div>
+ <div class="card" style="margin-top:32px"><div class="fg">${f('hourly','Cost per FTE hour (€)','€')}${f('fteHours','Productive hours per FTE per year','')}${f('contactCost','Fully loaded cost per contact (€)','€')}${f('realisation','Default benefit realisation (%)','%')}${f('horizon','Value horizon (years)',' years')}${f('margin','Annual margin per kept customer (€)','€')}</div>
+ ${ed?'':`<p class="small muted" style="margin:16px 0 0">Switch to Business control to change these.</p>`}</div>
+ <div class="sec-title"><h2>OKRs used for the fit check</h2></div>
+ <div class="navlist">${S.okrs.map(o=>`<div class="navrow" style="cursor:default"><span class="t"><b>${esc(o.t)}</b><span>Signal words: ${esc(o.kw)}</span></span></div>`).join('')}</div>
+ <p class="small muted">Example OKRs. Replace them with the real Customer Services OKRs.</p>`}
+function vItem(id){const i=item(id);if(!i)return `<p>Initiative not found. <a href="#board">Back to the pipeline</a></p>`;
+ OPEN[id]=OPEN[id]||new Set([i.status==='closed'?8:i.stage]);
+ return `<a class="hl" href="#board" style="font-size:14px">‹ Pipeline</a>
+ <div class="hero" style="margin-top:12px"><div class="meta">${keyTag(i)}${esc(i.demand.source||'New demand')} · ${i.owner?esc(i.owner):i.ownerId?who(i.ownerId):''}${i.overview.type?' · '+esc(i.overview.type):''}</div><h1>${esc(i.title||'Untitled demand')}</h1></div>
+ <div class="stepper">${STAGES.map(s=>{const st=artState(s.n,i);return `<a class="st stl ${st==='done'?'done':st==='now'?'now':''}" href="#i-${id}-a${s.n}" data-art="${s.n}" title="Go to ${esc(s.art)}"><b>${s.n} ${s.name}</b><span>${s.nl}</span></a>`}).join('')}</div>
+ <div class="grid2"><div>${STAGES.map(s=>{const st=artState(s.n,i),op=OPEN[id].has(s.n)&&st!=='locked';
+  return `<section class="art ${st} ${op?'open':''}" id="art-${s.n}"><div class="arth" data-toggle="${s.n}" role="button" tabindex="0" aria-expanded="${op}"><span class="num">${st==='done'?ic.check:s.n}</span><span class="t"><b>${esc(s.art)}</b><span>${s.name} · ${s.nl} · owned by ${ROLES[s.who].n}</span></span>${st==='done'?'<span class="chip g">Signed off</span>':st==='now'?'<span class="chip a">In progress</span>':`<span class="chip o">${ic.lock} Locked</span>`}${ic.chev}</div>
+  ${op?`<div class="artb"><p class="lead">${esc(s.lead)}</p>${artBody(s.n,i)}</div>`:''}</section>`}).join('')}</div>
+ <aside class="stack" style="position:sticky;top:88px">${stepCard(i)}${relatedCard(i)}
+ ${i.buca&&(+i.buca.effort||(i.buca.levers||[]).length)?`<div class="card"><h4>Lean BuCA</h4><div id="side-calc" class="small" style="margin-top:6px">${sideCalc(i)}</div></div>`:''}
+ <div class="card"><h4>History</h4><p class="small muted" style="margin:2px 0 6px">Click an entry to go to its artifact.</p><ul class="tl hist">${i.log.slice().reverse().map(l=>{const a=artOf(l),rel=a==='rel',href=rel?'#calendar':`#i-${i.id}-a${a}`;
+  return `<li><a href="${href}" ${rel?'':`data-art="${a}"`}><time>${dt(l.at)}</time><span class="ht"><b>${esc(ROLES[l.role]?ROLES[l.role].n:l.role)}</b>${l.by?' · '+who(l.by):''}: ${esc(l.text)}</span><span class="hart">${rel?'Calendar':esc(a+' · '+STAGES[a-1].art)} ›</span></a></li>`}).join('')||'<li class="muted">Nothing yet</li>'}</ul></div></aside></div>`}
+function sideCalc(i){const c=calc(i);return `${eur(c.annual)} per year · ${eur(c.net)} over ${S.rules.horizon} years · ${conf(i).l} confidence`}
+
+/* ---------- render ---------- */
+function route(){return (location.hash||'#home').slice(1)}
+function curId(){const r=route();return r.startsWith('i-')?r.slice(2).split('-a')[0]:''}
+function curArt(){const m=route().match(/^i-.+-a([1-8])$/);return m?+m[1]:0}
+function render(){const r=route();const app=document.getElementById('app');
+ const nav=[['home','Home'],['board','Pipeline'],['triage','Triage'],['agenda','Decision agenda'],['capacity','Capacity'],['rules','Finance rules']];
+ document.getElementById('nav').innerHTML=nav.map(([h,l])=>`<a href="#${h}" class="${r===h||(h==='board'&&r==='calendar')?'on':''}">${l}</a>`).join('');
+ const rs=document.getElementById('roleSel');rs.innerHTML=Object.entries(ROLES).map(([k,v])=>`<option value="${k}" ${k===S.role?'selected':''}>${v.n}</option>`).join('');
+ const keep={};['reason','cond','find','mergeSel'].forEach(k=>{const el=document.getElementById(k);if(el)keep[k]=el.value});
+ if(!S.items||!S.rules){app.innerHTML=`<div class="hero"><h1>Loading the board…</h1><p>${esc(S.loadNote||'Connecting to the shared initiatives.')}</p></div>`;return}
+ if(S.empty&&MODE==='shared'){app.innerHTML=`<div class="hero"><h1>The shared board is empty</h1><p>${CAN_ADMIN?'Load the example initiatives to start a test round, or start with a new demand.':'Start with a new demand, or ask the page owner to load the example data.'}</p></div><div class="row" style="margin-top:24px">${RO?'':'<button class="btn" data-act="new">New demand</button>'}${CAN_ADMIN?'<button class="btn sec" data-act="reset" id="resetBtn2">Load example data</button>':''}</div>`;return}
+ app.innerHTML=r.startsWith('i-')?vItem(curId()):r==='board'?vBoard():r==='triage'?vTriage():r==='calendar'?vCalendar():r==='agenda'||r==='slate'?vSlate():r==='capacity'?vCapacity():r==='rules'?vRules():vHome();
+ Object.entries(keep).forEach(([k,v])=>{const el=document.getElementById(k);if(el&&v)el.value=v});
+ if(keep.find)document.getElementById('find')&&document.getElementById('find').dispatchEvent(new Event('input',{bubbles:true}));
+ fillNames();if(!render.did&&S.items&&curArt()){render.did=1;setTimeout(()=>focusArt(curArt()),0)}}
+function refresh(i){const g=document.getElementById('gate');if(g)g.innerHTML=gateHtml(i.stage,i);((i.buca||{}).levers||[]).forEach((l,k)=>{const e=document.getElementById('lv-'+k);if(e)e.textContent=eur(leverVal(l).eur)+'/yr'});
+ const c=document.getElementById('calc');if(c)c.innerHTML=calcPanel(i);const sc=document.getElementById('side-calc');if(sc)sc.innerHTML=sideCalc(i)}
+function focusArt(n){const id=curId();if(!id||!n)return;OPEN[id]=OPEN[id]||new Set();OPEN[id].add(n);render();const el=document.getElementById('art-'+n);if(!el)return;
+ el.scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash');const h=el.querySelector('.arth');if(h)h.focus({preventScroll:true})}
+window.addEventListener('hashchange',()=>{const n=curArt();if(n){focusArt(n)}else{render();window.scrollTo(0,0)}});
+document.getElementById('roleSel').addEventListener('change',e=>{S.role=e.target.value;render();toast('Now viewing as '+ROLES[S.role].n)});
+document.addEventListener('input',e=>{const t=e.target;
+ if(t.id==='find'){const q=t.value.trim().toLowerCase();document.querySelectorAll('.bc[data-search]').forEach(c=>c.style.display=!q||c.dataset.search.includes(q)?'':'none');return}
+ if(t.dataset.f){const id=curId(),i=item(id);if(!i)return;let v=t.value;if(t.dataset.num)v=v===''?'':(isNaN(+v.replace(',','.'))?v:+v.replace(',','.'));sp(i,t.dataset.f,v);
+  if(S.role==='cap'&&['buca.effort','buca.duration','buca.team'].includes(t.dataset.f))i.buca.effortBy='cap';save(i);refresh(i);
+  if(t.tagName==='SELECT'&&t.dataset.f==='capacity.team'){render()}}
+ if(t.dataset.rule){const v=+t.value.replace(',','.');if(!isNaN(v)&&v>0){S.rules[t.dataset.rule]=v;saveCfg()}}
+ if(t.dataset.team){const v=+t.value.replace(',','.');if(!isNaN(v)&&v>=0){team(t.dataset.team).supply=v;saveCfg()}}});
+document.addEventListener('change',e=>{if(e.target.dataset.rule){toast('Rule saved. Every Lean BuCA now uses it.');}if(e.target.dataset.team){render();toast('Team capacity saved')}});
+let DRAG=null;
+document.addEventListener('dragstart',e=>{const t=e.target.closest?e.target:e.target.parentElement;const lv=t.closest('[data-lever]'),dr=t.closest('[data-drag]');
+ if(lv)DRAG={k:'lever',t:lv.dataset.lever};else if(dr){DRAG={k:'dr',id:dr.dataset.drag};dr.classList.add('dragging');setTimeout(()=>markTargets(dr.dataset.drag),0)}else return;
+ try{e.dataTransfer.effectAllowed='copyMove';e.dataTransfer.setData('text/plain',DRAG.k+':'+(DRAG.t||DRAG.id))}catch(x){}});
+function clearDrag(){DRAG=null;document.querySelectorAll('.over,.cand,.dragging').forEach(x=>x.classList.remove('over','cand','dragging'));document.querySelectorAll('.simtag').forEach(x=>x.remove())}
+document.addEventListener('dragend',()=>{clearDrag();flushPending()});
+document.addEventListener('dragover',e=>{if(!DRAG)return;const z=DRAG.k==='lever'?e.target.closest('[data-leverdrop]'):e.target.closest('[data-drop]');if(!z||(DRAG.k==='dr'&&z.dataset.drop===DRAG.id))return;e.preventDefault();document.querySelectorAll('.over').forEach(x=>x!==z&&x.classList.remove('over'));z.classList.add('over')});
+document.addEventListener('drop',e=>{if(!DRAG)return;const d=DRAG;let z;
+ if(d.k==='lever'){z=e.target.closest('[data-leverdrop]');if(z){e.preventDefault();clearDrag();const i=item(curId());if(i)addLever(i,d.t)}}
+ else{z=e.target.closest('[data-drop]');if(z&&z.dataset.drop!==d.id){e.preventDefault();clearDrag();bundle(d.id,z.dataset.drop)}}clearDrag()});
+document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.dataset.toggle){e.preventDefault();e.target.click()}});
+document.addEventListener('click',e=>{const ar=e.target.closest('a[data-art]');if(ar){const h=ar.getAttribute('href');if(location.hash===h){e.preventDefault();focusArt(+ar.dataset.art)}return}
+ const tg=e.target.closest('[data-toggle]');if(tg){const id=curId(),n=+tg.dataset.toggle,i=item(id);if(artState(n,i)==='locked'){toast('Locked until stage '+(n-1)+' is signed off');return}const s=OPEN[id];s.has(n)?s.delete(n):s.add(n);render();return}
+ const nv=e.target.closest('[data-nav]');if(nv&&!e.target.closest('a')){location.hash=nv.dataset.nav;return}
+ const a=e.target.closest('[data-act]');if(a){e_isLink=!!e.target.closest('a');act(a.dataset.act,a)}});
+let e_isLink=false;
+
+function errOut(m){const el=document.getElementById('acterr');if(el)el.textContent=m;return false}
+function needReason(){const r=(document.getElementById('reason')||{}).value||'';if(r.trim().length<5){errOut('Write a short reason first.');document.getElementById('reason')&&document.getElementById('reason').focus();return null}return r.trim()}
+function gateOk(n,i){const m=req(n,i);if(m.length){errOut('Still missing: '+m.join(', ')+'.');return false}return true}
+async function act(k,el){
+ if(k==='reset'){resetData(el);return}
+ if(k==='new'){if(RO)return;const id='n'+Date.now().toString(36);const it=migrate({id,key:newKey(),title:'',stage:1,status:'active',owner:'',ownerId:ME||null,created:Date.now(),demand:{},ai:null,overview:{bundled:[]},outcome:{},buca:{fin:'none',duration:4,levers:[]},decisions:[],capacity:{},delivery:{},review:{},log:[]});S.items.push(it);save(it,true);location.hash='#i-'+id;return}
+ if(k==='bundleSel'){const sel=document.getElementById('bs-'+el.dataset.src);if(sel&&sel.value)bundle(el.dataset.src,sel.value);else toast('Choose an initiative first');return}
+ if(k==='unbundle'){unbundle(el.dataset.t,el.dataset.s);return}
+ if(k==='asRole'){S.role=el.dataset.r;render();toast('Now viewing as '+ROLES[S.role].n);return}
+ if(k==='calSel'){if(e_isLink)return;CAL_SEL=CAL_SEL===el.dataset.id?null:el.dataset.id;render();return}
+ if(k==='relAI'){relAI(el);return}
+ if(['relConfirm','relDismiss','relRemove'].includes(k)){relAct(k,el.dataset.k);return}
+ const id=curId(),i=item(id);if(!i)return;const R=S.role;ART_CTX=i.stage;setTimeout(()=>{ART_CTX=null},0);
+ if(k==='addLever'){addLever(i,el.dataset.lever);return}
+ if(k==='rmLever'){i.buca.levers.splice(+el.dataset.k,1);save(i);render();return}
+ const go=(stage,msg,text)=>{const from=i.stage;if(stage)i.stage=stage;log(i,text||msg,from);save(i,true);OPEN[id]=new Set([i.stage]);render();toast(msg);window.scrollTo({top:0,behavior:'smooth'})};
+ switch(k){
+ case 'aicheck':return aiCheck(i,el);
+ case 'usekpi':i.outcome.kpi=KPI_HINT[i.demand.okr];save(i);render();return;
+ case 'submit':if(!gateOk(1,i))return;i.status='active';if(!i.ai)await aiCheck(i,null,true);return go(2,'Submitted for triage','Demand record submitted');
+ case 'accept':if(!gateOk(2,i))return;return go(3,'Accepted. The owner can now fill in the outcome card.','Accepted at triage, labelled '+i.overview.type);
+ case 'sendback':{const r=needReason();if(!r)return;i.status='returned';return go(1,'Sent back to the owner','Sent back: '+r)}
+ case 'decline':{const r=needReason();if(!r)return;i.status='declined';return go(0,'Declined','Declined: '+r)}
+ case 'merge':{bundle(i.id,document.getElementById('mergeSel').value);return}
+ case 'outcomeReady':if(!gateOk(3,i))return;i.outcome.ready=true;return go(0,'Sent to the portfolio lead for a check','Outcome card ready for check');
+ case 'confirmOutcome':return go(4,'Outcome confirmed. The Lean BuCA is open.','Outcome card confirmed as measurable');
+ case 'sendbackOutcome':{const r=needReason();if(!r)return;i.outcome.ready=false;return go(0,'Sent back to the owner','Outcome card sent back: '+r)}
+ case 'confirmEffort':if(!(+i.buca.effort>0)||!i.buca.team)return errOut('Fill in effort and team in the Lean BuCA first.');i.buca.effortBy='cap';return go(0,'Effort confirmed','Effort confirmed: '+i.buca.effort+' FTE-months, '+(team(i.buca.team)||{}).n);
+ case 'toFinance':if(!gateOk(4,i))return;i.buca.fin='pending';return go(0,'Sent to Finance','Lean BuCA sent to Finance');
+ case 'approve':{const r=(document.getElementById('reason')||{}).value;if(r&&r.trim())i.buca.finNote=(i.buca.finNote?i.buca.finNote+'\n':'')+r.trim();i.buca.fin='approved';return go(5,'Approved. It is now on the decision agenda.','Lean BuCA approved'+(r&&r.trim()?': '+r.trim():''))}
+ case 'returnBuca':{const r=needReason();if(!r)return;i.buca.fin='returned';i.buca.finNote=r;return go(0,'Returned to the owner with questions','Lean BuCA returned: '+r)}
+ case 'fund':case 'prove':case 'queue':case 'stop':{const r=needReason();if(!r)return;const v={fund:'Fund',prove:'Prove first',queue:'Queue',stop:'Stop'}[k];const c=(document.getElementById('cond')||{}).value||'';
+  i.decisions.push({verdict:v,reason:r,conditions:c.trim(),role:'heads',at:Date.now(),cycle:S.cycle});
+  if(k==='queue'){i.status='queued';return go(0,'Queued for a later cycle',v+': '+r)}if(k==='stop'){i.status='stopped';return go(0,'Stopped',v+': '+r)}
+  i.status='active';i.capacity.team=i.capacity.team||i.buca.team;return go(6,v+'. Capability leads can now commit capacity.',v+': '+r+(c.trim()?' (conditions: '+c.trim()+')':''))}
+ case 'commit':if(!gateOk(6,i))return;{const c=i.capacity;return go(7,'Capacity committed','Capacity committed: '+(team(c.team)||{}).n+', '+c.fte+' FTE, '+c.startQ+' to '+c.endQ)}
+ case 'flagRed':{const r=needReason();if(!r)return;i.capacity.rag='red';return go(0,'Flagged. The Heads see it in the history.','Flagged as not deliverable now: '+r)}
+ case 'gen':{const o=i.outcome;i.delivery={generated:true,epic:i.title,ac:`${o.kpi} moves from ${o.baseline} to ${o.target} by ${o.targetDate}, measured as: ${o.method}`,features:['Measurement setup: baseline report in Power BI',`Build: ${i.title}`,'Rollout and adoption','Benefit tracking against the Lean BuCA']};log(i,'Delivery structure generated');save(i);render();return}
+ case 'push':if(!i.delivery.generated)return;i.delivery.pushed=true;i.delivery.adoId='ADO-'+(48000+Math.floor(Math.random()*999));return go(0,'Pushed to ADO (simulated)','Pushed to Aha/ADO as '+i.delivery.adoId);
+ case 'delivered':if(!gateOk(7,i))return;return go(8,'Delivered. Time to close the loop.','Marked delivered');
+ case 'submitActuals':if(!gateOk(8,i))return;i.review.submitted=true;return go(0,'Actuals submitted','Actuals submitted');
+ case 'valueOk':i.review.valueOk=true;return go(0,'Realised value confirmed','Realised value confirmed');
+ case 'kept':case 'partly':case 'notkept':{const v={kept:'Promise kept',partly:'Partly kept',notkept:'Not kept'}[k];let r='';if(k!=='kept'){r=needReason();if(!r)return}else r=((document.getElementById('reason')||{}).value||'').trim();
+  i.review.verdict=v;i.review.verdictNote=r;i.status='closed';return go(0,'Closed: '+v,'Closed: '+v+(r?' · '+r:''))}
+ case 'copyjson':try{await navigator.clipboard.writeText(document.getElementById('json').textContent);toast('Copied')}catch(e){toast('Select the text and copy it')}return;
+ }}
+
+/* ---------- AI check ---------- */
+function ruleCheck(i){const d=i.demand,txt=(i.title+' '+(d.problem||'')+' '+(d.affected||'')).toLowerCase();let q=20;
+ if((d.problem||'').length>80)q+=25;else if((d.problem||'').length>40)q+=12;if(/\d/.test(d.frequency||''))q+=20;else if(d.frequency)q+=8;if(d.affected)q+=15;if(d.whyNow)q+=10;if(/\d/.test(d.problem||''))q+=10;q=Math.min(q,100);
+ const sc=S.okrs.map(o=>({o,n:o.kw.split(' ').filter(w=>txt.includes(w)).length})).sort((a,b)=>b.n-a.n);const chosen=okr(d.okr);const cn=chosen?(sc.find(x=>x.o.id===chosen.id)||{n:0}).n:0;
+ let fit=chosen?Math.min(45+cn*15,92):20;const flags=[];if(!/\d/.test(d.frequency||''))flags.push('Add a number for how often it happens');if(chosen&&cn===0&&sc[0].n>0)flags.push(`The text fits "${sc[0].o.t}" better than the chosen OKR`);if((d.problem||'').length<80)flags.push('Say what the problem causes: contacts, cost or customer effort');
+ if(/\b[A-Z][a-z]+ [A-Z][a-z]+\b/.test(d.problem||'')&&/\d{6,}/.test(d.problem||''))flags.push('Looks like it may contain customer details. Remove them.');
+ const type=/automat|ai|agent|new|online|app|self-service/.test(txt)?'Change':/fix|repeat|error|transfer|route|reminder/.test(txt)?'CI':'CI';
+ return {quality:q,fit,okr:chosen?chosen.id:(sc[0].n?sc[0].o.id:''),type,flags:flags.slice(0,4),summary:'',by:'rules'}}
+let samplerP=null;function sampler(){if(!samplerP)samplerP=(window.claude&&window.claude.use?window.claude.use('sample').catch(()=>null):Promise.resolve(null));return samplerP}
+async function aiCheck(i,btn,silent){const errEl=document.getElementById('aierr');if(btn){btn.disabled=true;btn.textContent='Checking…'}
+ let res=null;try{const s=await Promise.race([sampler(),new Promise(r=>setTimeout(()=>r(null),4000))]);
+  if(s){const p=`You check demand records for a Customer Services investment portfolio at an energy company. Score the record and reply with JSON only, no prose.
+OKRs: ${S.okrs.map(o=>o.id+' = '+o.t).join('; ')}
+Demand record:
+Name: ${i.title}
+Source: ${i.demand.source}
+Problem: ${i.demand.problem}
+Who is affected: ${i.demand.affected}
+How often: ${i.demand.frequency}
+Chosen OKR: ${(okr(i.demand.okr)||{}).t||'none'}
+Why now: ${i.demand.whyNow||''}
+Return {"quality":0-100 (clarity and evidence of the problem, NOT its value),"fit":0-100 (how directly it serves the chosen OKR),"okr":"best OKR id","type":"Run"|"CI"|"Change","flags":[up to 4 short, specific improvement tips, plain English, mention if customer-identifying details appear],"summary":"the initiative in one plain sentence"}`;
+   const v=await s.json(p,{modelTier:'quick'});if(v&&typeof v.quality==='number'){res={quality:Math.max(0,Math.min(100,Math.round(v.quality))),fit:Math.max(0,Math.min(100,Math.round(v.fit||0))),okr:v.okr||i.demand.okr,type:['Run','CI','Change'].includes(v.type)?v.type:'CI',flags:(v.flags||[]).slice(0,4).map(String),summary:String(v.summary||''),by:'claude'}}}}
+ catch(e){if(errEl&&!silent)errEl.textContent=e&&e.code==='rate_limited'?'Claude is busy; used the rule-based check instead.':''}
+ if(!res)res=ruleCheck(i);i.ai=res;if(!i.overview.type&&res.type)i.overview.type=res.type;save(i);if(!silent){render();toast(res.by==='claude'?'Checked by Claude':'Checked with the rule-based check')}}
+init();
+</script>
+</body>
+</html>

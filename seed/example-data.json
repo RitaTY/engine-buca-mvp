@@ -1,0 +1,742 @@
+{
+  "note": "Example data for the shared board. Every figure is made up. Load with the artifact's db_write, or with 'Reset example data' as page owner.",
+  "documents": {
+    "cfg/main": {
+      "cycle": "2027 Q1",
+      "rules": {
+        "hourly": 52,
+        "fteHours": 1400,
+        "contactCost": 6.5,
+        "realisation": 80,
+        "horizon": 3,
+        "margin": 110
+      },
+      "okrs": [
+        {
+          "id": "o1",
+          "t": "Reduce failure demand",
+          "kw": "estimated bill dispute repeat error avoidable reminder meter"
+        },
+        {
+          "id": "o2",
+          "t": "Lower customer effort",
+          "kw": "wait queue transfer effort abandon route callback specialist"
+        },
+        {
+          "id": "o3",
+          "t": "Lower cost to serve",
+          "kw": "handling time aht agent manual cost hours automate search"
+        },
+        {
+          "id": "o4",
+          "t": "Grow self-service share",
+          "kw": "online self-service app flow digital portal"
+        },
+        {
+          "id": "o5",
+          "t": "Accurate first-time billing",
+          "kw": "bill correction accuracy invoice"
+        }
+      ],
+      "teams": [
+        {
+          "id": "dc",
+          "n": "Digital Care",
+          "supply": 4
+        },
+        {
+          "id": "cct",
+          "n": "Contact Center Tech",
+          "supply": 3
+        },
+        {
+          "id": "ai",
+          "n": "Data & AI",
+          "supply": 2.5
+        },
+        {
+          "id": "bp",
+          "n": "Billing Platform",
+          "supply": 3
+        },
+        {
+          "id": "wfm",
+          "n": "WFM & Planning",
+          "supply": 1.5
+        }
+      ]
+    },
+    "items/a1": {
+      "status": "active",
+      "demand": {
+        "source": "B2C value chain",
+        "problem": "Customers miss the yearly meter-reading window. They get an estimated annual bill, which leads to disputes and extra contacts in January to March.",
+        "affected": "B2C customers with a yearly reading moment",
+        "frequency": "About 2,200 avoidable contacts per month in peak season",
+        "okr": "o1",
+        "whyNow": "Peak season starts in January."
+      },
+      "ai": {
+        "quality": 84,
+        "fit": 88,
+        "okr": "o1",
+        "type": "CI",
+        "flags": [
+          "Peak-season volume should be checked against the yearly average"
+        ],
+        "summary": "Reduce estimated-bill disputes by reminding customers before their meter-reading window closes.",
+        "by": "example"
+      },
+      "overview": {
+        "type": "CI",
+        "bundled": [
+          "f1"
+        ],
+        "note": "Merged with the SMS nudge demand."
+      },
+      "outcome": {
+        "kpi": "Contacts per 1,000 customers",
+        "baseline": 41,
+        "baselineSource": "Power BI · CS contact reasons",
+        "target": 37,
+        "targetDate": "2027 Q3",
+        "method": "Monthly, contact reason \"estimated bill\"",
+        "ready": true
+      },
+      "buca": {
+        "effort": 6,
+        "duration": 4,
+        "ext": 10000,
+        "run": 8000,
+        "team": "dc",
+        "evidence": "measured",
+        "effortBy": "cap",
+        "fin": "approved",
+        "finNote": "Realisation kept at 80%. Peak-season volume is used as an annual average; acceptable for a Lean BuCA.",
+        "levers": [
+          {
+            "t": "avoided",
+            "n": 2200
+          }
+        ]
+      },
+      "decisions": [],
+      "capacity": {},
+      "delivery": {},
+      "review": {},
+      "log": [
+        {
+          "at": 1790971080864,
+          "role": "owner",
+          "text": "Demand record submitted"
+        },
+        {
+          "at": 1791316680864,
+          "role": "lead",
+          "text": "Accepted at triage, labelled CI. Merged \"Meter reading SMS nudge\"."
+        },
+        {
+          "at": 1792267080864,
+          "role": "lead",
+          "text": "Outcome card confirmed as measurable"
+        },
+        {
+          "at": 1793649480864,
+          "role": "finance",
+          "text": "Lean BuCA approved"
+        }
+      ],
+      "id": "a1",
+      "title": "Proactive meter-reading reminders",
+      "stage": 5,
+      "owner": "VC Move & Meter (B2C)",
+      "created": 1790971080864,
+      "key": "ENG-101"
+    },
+    "items/b1": {
+      "status": "active",
+      "demand": {
+        "source": "CoE / expert leads",
+        "problem": "Agents spend a long time searching across billing systems to explain bill corrections. Answers vary between agents.",
+        "affected": "Billing queue agents and customers with bill questions",
+        "frequency": "About 30,000 billing contacts per month",
+        "okr": "o3",
+        "whyNow": "Knowledge base migration is finishing this quarter."
+      },
+      "ai": {
+        "quality": 78,
+        "fit": 81,
+        "okr": "o3",
+        "type": "Change",
+        "flags": [
+          "Minutes saved per contact is an estimate, not measured",
+          "Depends on knowledge base migration"
+        ],
+        "summary": "Give billing agents an AI assistant that pulls the right explanation from billing systems during the call.",
+        "by": "example"
+      },
+      "overview": {
+        "type": "Change",
+        "bundled": []
+      },
+      "outcome": {
+        "kpi": "Average handling time (sec)",
+        "baseline": 540,
+        "baselineSource": "Verint · billing queue",
+        "target": 450,
+        "targetDate": "2027 Q4",
+        "method": "Weekly AHT on billing queue, assisted vs. not assisted",
+        "ready": true
+      },
+      "buca": {
+        "effort": 12,
+        "duration": 4,
+        "ext": 40000,
+        "run": 30000,
+        "team": "ai",
+        "evidence": "estimated",
+        "effortBy": "cap",
+        "fin": "approved",
+        "finNote": "Approved with lower confidence: minutes saved come from a 2-week pilot.",
+        "levers": [
+          {
+            "t": "aht",
+            "vol": 30000,
+            "pct": 40,
+            "min": 1.5
+          }
+        ]
+      },
+      "decisions": [],
+      "capacity": {},
+      "delivery": {},
+      "review": {},
+      "log": [
+        {
+          "at": 1790107080864,
+          "role": "owner",
+          "text": "Demand record submitted"
+        },
+        {
+          "at": 1790539080864,
+          "role": "lead",
+          "text": "Accepted at triage, labelled Change"
+        },
+        {
+          "at": 1791835080864,
+          "role": "lead",
+          "text": "Outcome card confirmed as measurable"
+        },
+        {
+          "at": 1793908680864,
+          "role": "finance",
+          "text": "Lean BuCA approved"
+        }
+      ],
+      "id": "b1",
+      "title": "Agentic assist for billing questions",
+      "stage": 5,
+      "owner": "CoE Billing expert leads",
+      "created": 1790107080864,
+      "key": "ENG-102"
+    },
+    "items/c1": {
+      "status": "active",
+      "demand": {
+        "source": "Heat",
+        "problem": "Heat-pump service calls land in the general queue and are transferred two or three times before they reach a specialist.",
+        "affected": "Heat customers with a service question",
+        "frequency": "About 4,000 calls per month",
+        "okr": "o2",
+        "whyNow": "Heat customer base is growing fast."
+      },
+      "ai": {
+        "quality": 80,
+        "fit": 76,
+        "okr": "o2",
+        "type": "CI",
+        "flags": [],
+        "summary": "Route heat-pump calls straight to specialists using IVR intent.",
+        "by": "example"
+      },
+      "overview": {
+        "type": "CI",
+        "bundled": []
+      },
+      "outcome": {
+        "kpi": "First contact resolution (%)",
+        "baseline": 62,
+        "baselineSource": "Verint · Heat queue",
+        "target": 72,
+        "targetDate": "2027 Q2",
+        "method": "Monthly FCR on Heat queue",
+        "ready": true
+      },
+      "buca": {
+        "effort": 4,
+        "duration": 3,
+        "ext": 15000,
+        "run": 5000,
+        "team": "cct",
+        "evidence": "estimated",
+        "fin": "pending",
+        "levers": [
+          {
+            "t": "avoided",
+            "n": 300
+          },
+          {
+            "t": "aht",
+            "vol": 4000,
+            "pct": 60,
+            "min": 2
+          }
+        ]
+      },
+      "decisions": [],
+      "capacity": {},
+      "delivery": {},
+      "review": {},
+      "log": [
+        {
+          "at": 1791835080864,
+          "role": "owner",
+          "text": "Demand record submitted"
+        },
+        {
+          "at": 1792180680864,
+          "role": "lead",
+          "text": "Accepted at triage, labelled CI"
+        },
+        {
+          "at": 1793217480864,
+          "role": "lead",
+          "text": "Outcome card confirmed as measurable"
+        },
+        {
+          "at": 1794254280864,
+          "role": "owner",
+          "text": "Lean BuCA sent to Finance"
+        }
+      ],
+      "id": "c1",
+      "title": "Auto-routing of heat-pump service calls",
+      "stage": 4,
+      "owner": "Heat operations",
+      "created": 1791835080864,
+      "key": "ENG-103"
+    },
+    "items/d1": {
+      "status": "active",
+      "demand": {
+        "source": "NextGen",
+        "problem": "Planners copy Verint data into a blended Erlang sheet by hand every morning to advise on staffing per interval.",
+        "affected": "WFM planners and team leads",
+        "frequency": "Daily, about 1.5 hours per planner",
+        "okr": "o3",
+        "whyNow": "Winter peak makes intraday steering critical."
+      },
+      "ai": {
+        "quality": 74,
+        "fit": 64,
+        "okr": "o3",
+        "type": "CI",
+        "flags": [
+          "The customer impact is indirect; say how service level improves"
+        ],
+        "summary": "Automate the daily intraday staffing advice from Verint data.",
+        "by": "example"
+      },
+      "overview": {
+        "type": "CI",
+        "bundled": []
+      },
+      "outcome": {
+        "kpi": "Service level (%)",
+        "baseline": "",
+        "baselineSource": "",
+        "target": "",
+        "targetDate": "",
+        "method": ""
+      },
+      "buca": {
+        "fin": "none",
+        "duration": 4,
+        "levers": []
+      },
+      "decisions": [],
+      "capacity": {},
+      "delivery": {},
+      "review": {},
+      "log": [
+        {
+          "at": 1792699080864,
+          "role": "owner",
+          "text": "Demand record submitted"
+        },
+        {
+          "at": 1793131080864,
+          "role": "lead",
+          "text": "Accepted at triage, labelled CI"
+        }
+      ],
+      "id": "d1",
+      "title": "Intraday steering automation for WFM",
+      "stage": 3,
+      "owner": "NextGen",
+      "created": 1792699080864,
+      "key": "ENG-104"
+    },
+    "items/e1": {
+      "status": "active",
+      "demand": {
+        "source": "B2C value chain",
+        "problem": "Customers who move house call to pass on their new address and meter readings because the online flow stops halfway when there is no known end date.",
+        "affected": "B2C customers who move house",
+        "frequency": "About 6,000 move-house calls per month",
+        "okr": "o4",
+        "whyNow": "Summer moving peak."
+      },
+      "ai": null,
+      "overview": {
+        "bundled": []
+      },
+      "outcome": {},
+      "buca": {
+        "fin": "none",
+        "duration": 4,
+        "levers": []
+      },
+      "decisions": [],
+      "capacity": {},
+      "delivery": {},
+      "review": {},
+      "log": [
+        {
+          "at": 1793995080864,
+          "role": "owner",
+          "text": "Demand record submitted"
+        }
+      ],
+      "id": "e1",
+      "title": "Self-service move-house flow",
+      "stage": 2,
+      "owner": "VC Move & Meter (B2C)",
+      "created": 1793995080864,
+      "key": "ENG-105"
+    },
+    "items/f1": {
+      "status": "merged",
+      "demand": {
+        "source": "PO of a value chain",
+        "problem": "Send customers an SMS before their meter reading is due so fewer bills are estimated.",
+        "affected": "B2C customers",
+        "frequency": "Yearly per customer",
+        "okr": "o1",
+        "whyNow": ""
+      },
+      "ai": null,
+      "overview": {
+        "bundled": []
+      },
+      "outcome": {},
+      "buca": {
+        "fin": "none",
+        "duration": 4,
+        "levers": []
+      },
+      "decisions": [],
+      "capacity": {},
+      "delivery": {},
+      "review": {},
+      "log": [
+        {
+          "at": 1794081480864,
+          "role": "owner",
+          "text": "Demand record submitted"
+        },
+        {
+          "at": 1794167880864,
+          "role": "lead",
+          "text": "Merged into \"Proactive meter-reading reminders\""
+        }
+      ],
+      "id": "f1",
+      "title": "Meter reading SMS nudge",
+      "stage": 2,
+      "owner": "PO Customer Contact",
+      "created": 1794081480864,
+      "mergedInto": "a1",
+      "key": "ENG-106"
+    },
+    "items/j1": {
+      "status": "active",
+      "demand": {
+        "source": "CoE / expert leads",
+        "problem": "In January to March many customers complain that their annual bill is estimated because no meter reading came in. Agents explain and correct by hand.",
+        "affected": "B2C customers with an estimated annual bill",
+        "frequency": "About 900 complaints per month in peak season",
+        "okr": "o1",
+        "whyNow": "Peak season is coming."
+      },
+      "ai": null,
+      "overview": {
+        "bundled": []
+      },
+      "outcome": {},
+      "buca": {
+        "fin": "none",
+        "duration": 4,
+        "levers": []
+      },
+      "decisions": [],
+      "capacity": {},
+      "delivery": {},
+      "review": {},
+      "log": [
+        {
+          "at": 1794167880864,
+          "role": "owner",
+          "text": "Demand record submitted"
+        }
+      ],
+      "id": "j1",
+      "title": "Estimated bill complaints after meter reading",
+      "stage": 2,
+      "owner": "CoE Billing expert leads",
+      "created": 1794167880864,
+      "key": "ENG-107"
+    },
+    "items/k1": {
+      "status": "active",
+      "demand": {
+        "source": "PO of a value chain",
+        "problem": "Customers who move house call to pass on meter readings for the old and new address because the online move flow does not ask for them.",
+        "affected": "B2C customers who move house",
+        "frequency": "About 2,500 calls per month",
+        "okr": "o4",
+        "whyNow": ""
+      },
+      "ai": null,
+      "overview": {
+        "bundled": []
+      },
+      "outcome": {},
+      "buca": {
+        "fin": "none",
+        "duration": 4,
+        "levers": []
+      },
+      "decisions": [],
+      "capacity": {},
+      "delivery": {},
+      "review": {},
+      "log": [
+        {
+          "at": 1794254280864,
+          "role": "owner",
+          "text": "Demand record submitted"
+        }
+      ],
+      "id": "k1",
+      "title": "Meter readings for movers by phone",
+      "stage": 2,
+      "owner": "PO Customer Contact",
+      "created": 1794254280864,
+      "key": "ENG-108"
+    },
+    "items/g1": {
+      "status": "active",
+      "demand": {
+        "source": "B2B value chain",
+        "problem": "Small business customers call to set up a payment arrangement, which agents set up by hand.",
+        "affected": "SME customers with payment problems",
+        "frequency": "About 1,800 calls per month",
+        "okr": "o4",
+        "whyNow": ""
+      },
+      "ai": {
+        "quality": 82,
+        "fit": 79,
+        "okr": "o4",
+        "type": "Change",
+        "flags": [],
+        "summary": "Let SME customers set up a payment arrangement online.",
+        "by": "example"
+      },
+      "overview": {
+        "type": "Change",
+        "bundled": []
+      },
+      "outcome": {
+        "kpi": "Self-service share (%)",
+        "baseline": 12,
+        "baselineSource": "Power BI · B2B channels",
+        "target": 30,
+        "targetDate": "2027 Q2",
+        "method": "Monthly share of arrangements made online",
+        "ready": true
+      },
+      "buca": {
+        "effort": 8,
+        "duration": 4,
+        "ext": 20000,
+        "run": 12000,
+        "team": "dc",
+        "evidence": "measured",
+        "effortBy": "cap",
+        "fin": "approved",
+        "finNote": "OK.",
+        "levers": [
+          {
+            "t": "avoided",
+            "n": 900
+          }
+        ]
+      },
+      "decisions": [
+        {
+          "verdict": "Fund",
+          "reason": "Clear self-service win, measured volumes.",
+          "conditions": "Report adoption after 3 months.",
+          "role": "heads",
+          "at": 1790107080864,
+          "cycle": "2026 Q4"
+        }
+      ],
+      "capacity": {
+        "team": "dc",
+        "fte": 2,
+        "startQ": "2027 Q1",
+        "endQ": "2027 Q2",
+        "rag": "green"
+      },
+      "delivery": {},
+      "review": {},
+      "log": [
+        {
+          "at": 1790107080864,
+          "role": "heads",
+          "text": "Fund: Clear self-service win, measured volumes."
+        },
+        {
+          "at": 1790971080864,
+          "role": "cap",
+          "text": "Capacity committed: Digital Care, 2 FTE, 2027 Q1 to 2027 Q2"
+        }
+      ],
+      "id": "g1",
+      "title": "Payment arrangement self-service",
+      "stage": 7,
+      "owner": "B2B value chain",
+      "created": 1786651080864,
+      "key": "ENG-109"
+    },
+    "items/h1": {
+      "status": "active",
+      "demand": {
+        "source": "B2C value chain",
+        "problem": "Customers wait in the queue at peak hours and abandon.",
+        "affected": "B2C customers calling at peak hours",
+        "frequency": "Daily peaks",
+        "okr": "o2",
+        "whyNow": ""
+      },
+      "ai": {
+        "quality": 80,
+        "fit": 83,
+        "okr": "o2",
+        "type": "CI",
+        "flags": [],
+        "summary": "Offer an in-app callback slot instead of waiting.",
+        "by": "example"
+      },
+      "overview": {
+        "type": "CI",
+        "bundled": []
+      },
+      "outcome": {
+        "kpi": "Service level (%)",
+        "baseline": 68,
+        "baselineSource": "Verint",
+        "target": 78,
+        "targetDate": "2026 Q3",
+        "method": "Weekly SL",
+        "ready": true
+      },
+      "buca": {
+        "effort": 5,
+        "duration": 3,
+        "ext": 5000,
+        "run": 6000,
+        "team": "dc",
+        "evidence": "estimated",
+        "effortBy": "cap",
+        "fin": "approved",
+        "levers": [
+          {
+            "t": "aht",
+            "vol": 20000,
+            "pct": 15,
+            "min": 1
+          }
+        ]
+      },
+      "decisions": [
+        {
+          "verdict": "Fund",
+          "reason": "Peak relief",
+          "conditions": "",
+          "role": "heads",
+          "at": 1779739080864,
+          "cycle": "2026 Q2"
+        }
+      ],
+      "capacity": {
+        "team": "dc",
+        "fte": 1.5,
+        "startQ": "2026 Q2",
+        "endQ": "2026 Q3",
+        "rag": "green"
+      },
+      "delivery": {
+        "generated": true,
+        "adoId": "ADO-48211",
+        "pushed": true,
+        "epic": "Callback scheduling in the app",
+        "features": [
+          "Measurement setup",
+          "Build callback slot picker",
+          "Rollout and adoption",
+          "Benefit tracking"
+        ],
+        "ac": "Service level (%) moves from 68 to 78 by 2026 Q3"
+      },
+      "review": {
+        "actualKpi": 75,
+        "actualValue": 38000,
+        "actualEffort": 6.5,
+        "learnings": "Adoption grew slower than expected; in-app placement mattered more than the feature itself.",
+        "submitted": true
+      },
+      "log": [
+        {
+          "at": 1792699080864,
+          "role": "po",
+          "text": "Marked delivered"
+        },
+        {
+          "at": 1794167880864,
+          "role": "owner",
+          "text": "Actuals submitted"
+        }
+      ],
+      "id": "h1",
+      "title": "Callback scheduling in the app",
+      "stage": 8,
+      "owner": "VC Service (B2C)",
+      "created": 1777147080864,
+      "key": "ENG-110"
+    }
+  }
+}
