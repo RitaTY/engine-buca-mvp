@@ -26,7 +26,12 @@ Automation prepares the work (quality and OKR-fit check, assumption check, deliv
 - **Role switcher** for the six roles, with "Waiting for you" per role and a highlighted *Next step* on every initiative.
 - **Pipeline** by stage, and a **Calendar** with start/end, KPI target dates and suggested relationships (competing for capacity, same KPI, similar scope; Claude can suggest dependencies, sequencing and synergies).
 - **Triage board**: drag demand records onto an initiative to bundle them (dropdown fallback for touch).
-- **Lean BuCA** with a lever library (avoided contacts, shorter handling time, fewer repeat contacts, less manual work, lower external cost, fewer customers lost), calculated with central Finance rules. "Show the sum" lists every step.
+- **Lean BuCA** with a lever library (avoided contacts, shorter handling time, fewer repeat contacts, lower contact ratio, less manual work, lower external cost, fewer customers lost), typed **cost lines** (FTE, licence, advisory, hardware, other; one-off or recurring; start year; CAPEX/OPEX) and a short / standard / long investment horizon. Results per year, CAPEX/OPEX split, and "Show the sum".
+- **Parameter library** (Business Control): price per FTE (customer service and delivery), cost per contact, paid hours, shrinkage, occupancy, contact ratio, AHT per queue, realisation, horizon, margin, CAPEX threshold. Every change has a valid-from date, a reason and who made it.
+- **Photo moment**: approving a Lean BuCA freezes the parameters it used. Later parameter changes don't touch it; Business Control can recalculate with today's parameters (reason required), which takes a new photo moment.
+- **Versions**: a new BuCA version on every send, return, approval and recalculation, with a side-by-side comparison of assumptions, parameters and results.
+- **Logged overrides**: Business Control can override any parameter or assumption for one case. A reason is required; who, when, old value and new value are logged.
+- **CAPEX/OPEX check**: flags recurring CAPEX, licence or advisory CAPEX, one-offs below the CAPEX threshold, and capitalised effort on Run/CI work (example rules, for Business Control to confirm).
 - **Decision agenda** for the Heads, ranked by 3-year net value × confidence × OKR fit, with a capacity signal per initiative.
 - **Capacity view** per team: committed, funded, waiting for decision, over capacity.
 - **Traceable history**: every entry links to its artifact (`#i-<id>-a<stage>`).
@@ -59,24 +64,24 @@ pip install playwright && playwright install chromium
 python3 tests/test_shared_board.py   # two testers, live sync, drag-to-bundle, levers
 python3 tests/test_calendar.py       # calendar rows, relationship suggestions, confirm/dismiss
 python3 tests/test_history.py        # history deep links, role switch, artifact logging
+python3 tests/test_finance.py        # parameter library, photo moment, versions, overrides, CAPEX/OPEX
 ```
 
 Screenshots are written to `tests/screenshots/` (ignored by git).
 
 ## Known limitations
 
-- **Finance rules are live, not frozen**: changing a rule recalculates every BuCA, including approved ones. A photo moment (freeze at approval) and BuCA versions are next on the roadmap.
-- Field-level changes and Finance rule changes are not logged yet; the history records actions.
-- The parameter library has only price per FTE, cost per contact, realisation, horizon and margin. No Contact Ratio, AHT baseline, Occupancy, cost categories or CAPEX/OPEX yet.
+- Parameter values, AHT baselines and CAPEX/OPEX rules are **examples**. Business Control should replace and confirm them.
+- Owners' own edits between versions are captured in the version comparison, not one by one. Business Control overrides and parameter changes are logged individually.
+- Benefits start in year 1 at full size (no ramp-up), and the net value is not discounted (no NPV).
 - OKRs are placeholders; the similarity score is plain word overlap.
 - Last write wins when two people edit the same initiative at the same moment.
 - Not connected to ADO, Aha, Power BI or Teams (the ADO push is simulated).
 
 ## Roadmap
 
-1. Photo moment + BuCA versions with before/after comparison
-2. Business Control overrides with mandatory reason; full change log
-3. Expanded parameter library with valid-from dates
-4. Cost lines with type, term and CAPEX/OPEX validation
-5. Claude-based similarity and a warning before unlikely bundles
-6. Dutch (EN | NL)
+1. Claude-based similarity and a warning before unlikely bundles
+2. Benefit ramp-up per year and an optional NPV with a Finance discount rate
+3. Server-side checks so only the right role can take each step
+4. Dutch (EN | NL)
+5. Connections to ADO/Aha, Power BI (baselines, AHT) and Teams notifications

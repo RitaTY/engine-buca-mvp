@@ -192,6 +192,17 @@ footer{border-top:1px solid var(--line);padding:24px 0;color:var(--ink2);font-si
 @keyframes flash{0%,40%{box-shadow:0 0 0 3px var(--orange),var(--sh)}100%{box-shadow:var(--sh)}}
 .art.flash{animation:flash 2.2s ease-out}
 @media (prefers-reduced-motion:reduce){.art.flash{animation:none;box-shadow:0 0 0 3px var(--orange),var(--sh)}}
+.photobar{display:flex;gap:10px;align-items:flex-start;background:#EEE9F4;color:var(--purple);border-radius:12px;padding:12px 16px;margin-bottom:12px;font-size:14px;line-height:20px}
+.photobar svg{flex:none;margin-top:3px}.recalc{margin-top:10px;color:var(--ink)}
+.costrow{display:grid;grid-template-columns:28px 1.1fr 1.4fr 1.1fr .9fr .8fr .8fr 32px;gap:10px;align-items:end;background:var(--bg2);border-radius:12px;padding:12px}
+.costrow .cr-num{font-weight:700;color:var(--ink2);padding-bottom:12px}.costrow .xbtn{margin-bottom:8px}
+.costrow input.i,.costrow select.i{min-height:40px;padding:6px 10px;font-size:14px}
+@media (max-width:1100px){.costrow{grid-template-columns:1fr 1fr}.costrow .cr-num{grid-column:1/-1;padding:0}}
+.ovrform{background:var(--bg2);border-radius:12px;padding:16px;margin:12px 0}
+.chglog{list-style:none;padding:0;margin:8px 0}.chglog li{padding:8px 0;border-top:1px solid var(--bg3);font-size:14px;line-height:20px}.chglog li:first-child{border-top:0}
+table.yrs td,table.yrs th{padding:8px}
+table.cmp tr.grp td{background:var(--bg2);font-weight:700;font-size:12px;line-height:16px;color:var(--ink2)}
+.ai.warn{background:#FDEFE6}
 .hl{font-weight:700;color:var(--green);text-decoration:none;box-shadow:inset 0 -6px 0 var(--green-l)}
 pre.code{background:var(--bg2);border-radius:8px;padding:12px;font-size:12px;line-height:16px;overflow:auto;max-height:220px}
 @media (max-width:900px){.grid2{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}.fg{grid-template-columns:1fr}.stepper{grid-template-columns:repeat(4,1fr)}h1{font-size:32px;line-height:36px}.artb{padding-left:20px}.topin{flex-wrap:wrap;height:auto;padding:10px 24px;gap:8px}nav.main{order:3;flex-basis:100%}}
@@ -220,18 +231,19 @@ const STAGES=[
  {n:7,name:'Deliver',nl:'Doorzetten',art:'Delivery structure',who:'po',lead:'Turns approved initiatives into the Aha/ADO structure needed for execution.'},
  {n:8,name:'Review',nl:'Leren',art:'Closed-loop overview',who:'lead',lead:'Compares what was promised with what was delivered: KPI, value and capacity.'}];
 const SOURCES=['B2C value chain','B2B value chain','Heat','NextGen','CoE / expert leads','PO of a value chain','Other'];
-const KPIS=['Contacts per 1,000 customers','Average handling time (sec)','First contact resolution (%)','Self-service share (%)','Cost per contact (€)','tNPS','Service level (%)','Bill accuracy (%)'];
+const KPIS=['Contacts per 1,000 customers','Average handling time (sec)','First contact resolution (%)','Self-service share (%)','Cost per contact (€)','tNPS','Service level (%)','Bill accuracy (%)','Customer satisfaction, KTV (%)','First time right, FTR (%)'];
 const QS=['2027 Q1','2027 Q2','2027 Q3','2027 Q4'];
 const OPEN={};
 const nf=n=>Math.round(+n||0).toLocaleString('en-GB');
 const LEVERS={
  avoided:{n:'Avoided contacts',d:'Contacts that no longer happen',f:[['n','Contacts avoided per month']],v:(l,R)=>({eur:(+l.n||0)*12*R.contactCost,hrs:0}),sum:(l,R)=>`${nf(l.n)} contacts × 12 × €${R.contactCost}`},
- aht:{n:'Shorter handling time',d:'Same contacts, handled faster',f:[['vol','Contacts in scope per month'],['pct','Share affected (%)'],['min','Minutes saved per contact']],v:(l,R)=>{const h=(+l.vol||0)*12*(+l.pct||0)/100*(+l.min||0)/60;return {eur:h*R.hourly,hrs:h}},sum:(l,R)=>`${nf(l.vol)} × 12 × ${+l.pct||0}% × ${+l.min||0} min ÷ 60 = ${nf((+l.vol||0)*12*(+l.pct||0)/100*(+l.min||0)/60)} h × €${R.hourly}`},
+ aht:{n:'Shorter handling time',d:'Same contacts, handled faster',f:[['queue','Queue (sets the AHT baseline)'],['vol','Contacts in scope per month'],['pct','Share affected (%)'],['min','Minutes saved per contact']],v:(l,R)=>{const h=(+l.vol||0)*12*(+l.pct||0)/100*(+l.min||0)/60;return {eur:h*R.hourly,hrs:h}},sum:(l,R)=>`${nf(l.vol)} × 12 × ${+l.pct||0}% × ${+l.min||0} min ÷ 60 = ${nf((+l.vol||0)*12*(+l.pct||0)/100*(+l.min||0)/60)} h × €${R.hourly}`},
  repeat:{n:'Fewer repeat contacts',d:'Customers who no longer call back',f:[['vol','Contacts in scope per month'],['rep','Repeat rate today (%)'],['red','Repeats removed (%)']],v:(l,R)=>({eur:(+l.vol||0)*12*(+l.rep||0)/100*(+l.red||0)/100*R.contactCost,hrs:0}),sum:(l,R)=>`${nf(l.vol)} × 12 × ${+l.rep||0}% repeats × ${+l.red||0}% removed = ${nf((+l.vol||0)*12*(+l.rep||0)/100*(+l.red||0)/100)} contacts × €${R.contactCost}`},
- manual:{n:'Less manual work',d:'Back-office or planning hours freed',f:[['hpw','Hours saved per week']],v:(l,R)=>{const h=(+l.hpw||0)*46;return {eur:h*R.hourly,hrs:h}},sum:(l,R)=>`${+l.hpw||0} h × 46 working weeks = ${nf((+l.hpw||0)*46)} h × €${R.hourly}`},
+ manual:{n:'Less manual work',d:'Back-office or planning hours freed',f:[['hpw','Hours saved per week']],v:(l,R)=>{const h=(+l.hpw||0)*R.workWeeks;return {eur:h*R.hourly,hrs:h}},sum:(l,R)=>`${+l.hpw||0} h × ${R.workWeeks} working weeks = ${nf((+l.hpw||0)*R.workWeeks)} h × €${R.hourly}`},
+ ratio:{n:'Lower contact ratio',d:'Fewer contacts per customer',f:[['cust','Customers in scope'],['red','Contact ratio reduction (%)']],v:(l,R)=>({eur:(+l.cust||0)*R.contactRatio*(+l.red||0)/100*R.contactCost,hrs:0}),sum:(l,R)=>`${nf(l.cust)} customers × ${R.contactRatio} contacts × ${+l.red||0}% fewer = ${nf((+l.cust||0)*R.contactRatio*(+l.red||0)/100)} contacts × €${R.contactCost}`},
  extcost:{n:'Lower external cost',d:'Vendor, postage or licence savings',f:[['eur','Saved per year (€)']],v:l=>({eur:+l.eur||0,hrs:0}),sum:l=>`€${nf(l.eur)} per year`},
  retention:{n:'Fewer customers lost',d:'Churn avoided through better service',f:[['cust','Customers kept per year']],v:(l,R)=>({eur:(+l.cust||0)*R.margin,hrs:0}),sum:(l,R)=>`${nf(l.cust)} customers × €${R.margin} margin`}};
-const LV_ICON={avoided:'M4 12h16M12 4v16',aht:'M12 7v5l3 2M12 3a9 9 0 100 18 9 9 0 000-18z',repeat:'M4 12a8 8 0 0114-5l2 2M20 12a8 8 0 01-14 5l-2-2M18 4v5h-5M6 20v-5h5',manual:'M5 20V10l7-6 7 6v10zM9 20v-6h6v6',extcost:'M15 8a4 4 0 10 0 8M7 11h6M7 13h6',retention:'M12 20s-7-4.5-7-10a4 4 0 017-2.6A4 4 0 0119 10c0 5.5-7 10-7 10z'};
+const LV_ICON={ratio:'M4 18h16M7 14l3-3 3 2 5-6',avoided:'M4 12h16M12 4v16',aht:'M12 7v5l3 2M12 3a9 9 0 100 18 9 9 0 000-18z',repeat:'M4 12a8 8 0 0114-5l2 2M20 12a8 8 0 01-14 5l-2-2M18 4v5h-5M6 20v-5h5',manual:'M5 20V10l7-6 7 6v10zM9 20v-6h6v6',extcost:'M15 8a4 4 0 10 0 8M7 11h6M7 13h6',retention:'M12 20s-7-4.5-7-10a4 4 0 017-2.6A4 4 0 0119 10c0 5.5-7 10-7 10z'};
 const lvIcon=t=>`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${LV_ICON[t]||LV_ICON.avoided}"/></svg>`;
 const ic={chev:'<svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>',
 check:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>',
@@ -304,23 +316,67 @@ function seed(){
   review:{actualKpi:75,actualValue:38000,actualEffort:6.5,learnings:'Adoption grew slower than expected; in-app placement mattered more than the feature itself.',submitted:true},
   log:[{at:d(20),role:'po',text:'Marked delivered'},{at:d(3),role:'owner',text:'Actuals submitted'}]})];
  items.forEach((it,k)=>{it.key='ENG-'+(101+k);migrate(it)});
+ const prevP=S.params;S.params=demoParams();
+ items.forEach(it=>{const b=it.buca;const ap=(it.log||[]).find(l=>/lean buca approved/i.test(l.text));const sent=(it.log||[]).find(l=>/sent to finance/i.test(l.text));
+  if(it.id==='b1'){b.costs=[{type:'advisory',desc:'Implementation partner',term:'oneoff',amount:40000,year:1,cls:'opex'},{type:'licence',desc:'AI assistant licences',term:'recurring',amount:30000,year:1,cls:'opex'}]}
+  if(it.id==='c1'){b.costs=[{type:'hardware',desc:'IVR intent routing build',term:'oneoff',amount:15000,year:1,cls:'capex'},{type:'licence',desc:'Intent model licence',term:'recurring',amount:5000,year:1,cls:'capex'}];b.levers.forEach(l=>{if(l.t==='aht')l.queue='heat'})}
+  if(it.id==='h1')b.levers.forEach(l=>{if(l.t==='aht')l.queue='general'});
+  if(it.id==='b1')b.levers.forEach(l=>{if(l.t==='aht')l.queue='billing'});
+  if(ap){b.photo={at:ap.at,by:null,rules:paramsAt(ap.at)};const fn=b.finNote;b.fin='pending';snapVersion(it,'Sent to Business Control','',{at:ap.at-2*864e5,role:'owner'});b.fin='approved';snapVersion(it,'Approved by Business Control · photo moment',fn||'',{at:ap.at,role:'finance'})}
+  else if(sent){snapVersion(it,'Sent to Business Control','',{at:sent.at,role:'owner'})}});
+ S.params=prevP;
  return Object.assign(defaultCfg(),{v:2,items});
 }
-function defaultCfg(){return {cycle:'2027 Q1',links:[],dismissed:[],
-  rules:{hourly:52,fteHours:1400,contactCost:6.5,realisation:80,horizon:3,margin:110},
+const PARAM_DEFS=[
+ {k:'fteCostAgent',l:'Price per FTE, customer service',g:'Cost rates',u:'€/year',def:62000},
+ {k:'fteCostDelivery',l:'Price per FTE, delivery team',g:'Cost rates',u:'€/year',def:95000},
+ {k:'contactCost',l:'Cost per contact (fully loaded)',g:'Cost rates',u:'€',def:6.5},
+ {k:'paidHours',l:'Paid hours per FTE',g:'Workforce',u:'hours/year',def:1800},
+ {k:'shrinkage',l:'Shrinkage (leave, training, sickness)',g:'Workforce',u:'%',def:30},
+ {k:'occupancy',l:'Occupancy',g:'Workforce',u:'%',def:85},
+ {k:'workWeeks',l:'Working weeks per year',g:'Workforce',u:'weeks',def:46},
+ {k:'contactRatio',l:'Contact ratio',g:'Contact',u:'contacts per customer per year',def:1.2},
+ {k:'aht_general',l:'AHT · general queue',g:'AHT baseline per queue',u:'sec',def:420},
+ {k:'aht_billing',l:'AHT · billing queue',g:'AHT baseline per queue',u:'sec',def:540},
+ {k:'aht_heat',l:'AHT · Heat queue',g:'AHT baseline per queue',u:'sec',def:600},
+ {k:'aht_moving',l:'AHT · moving queue',g:'AHT baseline per queue',u:'sec',def:450},
+ {k:'aht_b2b',l:'AHT · B2B queue',g:'AHT baseline per queue',u:'sec',def:480},
+ {k:'realisation',l:'Default benefit realisation',g:'Value',u:'%',def:80},
+ {k:'horizon',l:'Standard value horizon',g:'Value',u:'years',def:3},
+ {k:'margin',l:'Annual margin per kept customer',g:'Value',u:'€',def:110},
+ {k:'capexThreshold',l:'CAPEX threshold (smallest one-off amount)',g:'Value',u:'€',def:10000}];
+const PDEF=Object.fromEntries(PARAM_DEFS.map(d=>[d.k,d]));
+const AHTQ=[['general','General'],['billing','Billing'],['heat','Heat'],['moving','Moving'],['b2b','B2B']];
+const dayStr=t=>new Date(t).toISOString().slice(0,10);
+const START_DAY='2026-01-01';
+function baseParams(){const o={};PARAM_DEFS.forEach(d=>o[d.k]=[{v:d.def,from:START_DAY,at:Date.parse(START_DAY),by:null,why:'Example starting value'}]);return o}
+function demoParams(){const o=baseParams();const t=Date.now();o.contactCost.push({v:6.9,from:dayStr(t),at:t,by:null,why:'Example: updated cost per contact after the Q3 cost review'});return o}
+function fmtP(k,v){const d=PDEF[k];if(!d)return String(v);const u=d.u;if(u.startsWith('€'))return '€'+(+v).toLocaleString('en-GB',{maximumFractionDigits:2})+(u.length>1?u.slice(1).replace('/',' per '):'');if(u==='%')return v+'%';return (+v).toLocaleString('en-GB')+' '+u}
+function paramsAt(t,P){P=P||S.params||baseParams();const day=dayStr(t||Date.now()),R={};
+ PARAM_DEFS.forEach(d=>{const h=(P[d.k]||[]).slice().sort((a,b)=>a.from<b.from?-1:a.from>b.from?1:a.at-b.at);let e=null;h.forEach(x=>{if(x.from<=day)e=x});if(!e)e=h[0];R[d.k]=e?+e.v:d.def});return R}
+function derive(R){R.prodHours=R.paidHours*(1-R.shrinkage/100)*(R.occupancy/100);R.hourly=Math.round(R.fteCostAgent/R.prodHours*100)/100;return R}
+function paramEntry(k,t,P){P=P||S.params;const day=dayStr(t||Date.now());const h=(P[k]||[]).slice().sort((a,b)=>a.from<b.from?-1:a.from>b.from?1:a.at-b.at);let e=null;h.forEach(x=>{if(x.from<=day)e=x});return e||h[0]}
+function defaultCfg(){return {cycle:'2027 Q1',links:[],dismissed:[],params:demoParams(),
   okrs:[{id:'o1',t:'Reduce failure demand',kw:'estimated bill dispute repeat error avoidable reminder meter'},{id:'o2',t:'Lower customer effort',kw:'wait queue transfer effort abandon route callback specialist'},{id:'o3',t:'Lower cost to serve',kw:'handling time aht agent manual cost hours automate search'},{id:'o4',t:'Grow self-service share',kw:'online self-service app flow digital portal'},{id:'o5',t:'Accurate first-time billing',kw:'bill correction accuracy invoice'}],
   teams:[{id:'dc',n:'Digital Care',supply:4},{id:'cct',n:'Contact Center Tech',supply:3},{id:'ai',n:'Data & AI',supply:2.5},{id:'bp',n:'Billing Platform',supply:3},{id:'wfm',n:'WFM & Planning',supply:1.5}]}}
 function migrate(i){i.buca=i.buca||{fin:'none',duration:4};const b=i.buca;
  if(!Array.isArray(b.levers)){b.levers=[];if(+b.avoided>0)b.levers.push({t:'avoided',n:+b.avoided});if(+b.volume>0)b.levers.push({t:'aht',vol:+b.volume,pct:+b.pct||0,min:+b.minutes||0});delete b.avoided;delete b.volume;delete b.pct;delete b.minutes}
+ if(!Array.isArray(b.costs)){b.costs=[];if(+b.ext>0)b.costs.push({type:'other',desc:'External one-off cost',term:'oneoff',amount:+b.ext,year:1,cls:'opex'});if(+b.run>0)b.costs.push({type:'licence',desc:'Running cost',term:'recurring',amount:+b.run,year:1,cls:'opex'});delete b.ext;delete b.run}
+ if(isNum(b.realOverride)){b.ovr=Object.assign({},b.ovr,{realisation:+b.realOverride})}delete b.realOverride;
+ b.ovr=b.ovr||{};if(b.horizonY==null)b.horizonY='';b.versions=b.versions||[];b.changes=b.changes||[];b.effortCls=b.effortCls||'opex';
+ if(b.fin==='approved'&&!b.photo){const e=(i.log||[]).find(l=>/lean buca approved/i.test(l.text));b.photo={at:e?e.at:(i.created||Date.now()),rules:null,legacy:true}}
  i.overview=i.overview||{bundled:[]};i.overview.bundled=i.overview.bundled||[];i.log=i.log||[];i.decisions=i.decisions||[];['demand','outcome','capacity','delivery','review'].forEach(k=>i[k]=i[k]||{});return i}
-const CFG_KEYS=['cycle','rules','okrs','teams','links','dismissed'];
+const CFG_KEYS=['cycle','params','okrs','teams','links','dismissed'];
 const cfgBody=()=>{const o={};CFG_KEYS.forEach(k=>o[k]=S[k]);return o};
-function applyCfg(c){const d=defaultCfg();CFG_KEYS.forEach(k=>S[k]=c&&c[k]!=null?c[k]:d[k]);S.rules=Object.assign({},d.rules,S.rules)}
+function applyCfg(c){const d=defaultCfg();CFG_KEYS.forEach(k=>S[k]=c&&c[k]!=null?c[k]:d[k]);
+ if(c&&!c.params){const P=baseParams();const old=c.rules||{};['contactCost','realisation','horizon','margin'].forEach(k=>{if(isNum(old[k])&&+old[k]!==P[k][0].v)P[k][0].v=+old[k]});S.params=P}
+ PARAM_DEFS.forEach(df=>{if(!S.params[df.k])S.params[df.k]=baseParams()[df.k]})}
 
 /* ---------- persistence: shared db, or this browser ---------- */
 const LS='engine-buca-v2';
 let S={items:null},MODE='loading',DB=null,USER=null,ME=null,RO=false,CAN_ADMIN=false;
 let ROLE='owner';try{ROLE=localStorage.getItem('engine-role')||'owner'}catch(e){}
+Object.defineProperty(S,'rules',{get:()=>derive(paramsAt(Date.now())),enumerable:false});
 Object.defineProperty(S,'role',{get:()=>ROLE,set:v=>{ROLE=v;try{localStorage.setItem('engine-role',v)}catch(e){}},enumerable:false});
 const lastW={},chain={},dirty=new Set();let cfgDirty=false,flushT=null;
 function saveLocal(){try{const o=cfgBody();o.v=2;o.items=S.items;localStorage.setItem(LS,JSON.stringify(o))}catch(e){}}
@@ -354,12 +410,12 @@ async function init(){let tries=0;while(!(window.claude&&window.claude.use)&&tri
  const timer=setTimeout(()=>{if(!(gotCfg&&gotItems)){S.loadNote='The shared board can\'t be reached yet. It will appear as soon as it answers.';softRender()}},10000);
  const settle=()=>{if(gotCfg&&gotItems){clearTimeout(timer);S.loadNote='';S.empty=!cfgExists&&!(S.items||[]).length}softRender()};
  DB.doc('cfg/main').onSnapshot(sn=>{const d=sn.exists?sn.data():null;cfgExists=!!d;
-   let ch=!gotCfg;if(!d){if(!S.rules){applyCfg(null);ch=true}}else if(lastW['cfg/main']!==JSON.stringify(d)&&!cfgDirty){applyCfg(JSON.parse(JSON.stringify(d)));ch=true}
-   if(!sn.metadata.fromCache)gotCfg=true;if(ch)settle()},()=>{gotCfg=true;if(!S.rules)applyCfg(null);settle()});
+   let ch=!gotCfg;if(!d){if(!S.params){applyCfg(null);ch=true}}else if(lastW['cfg/main']!==JSON.stringify(d)&&!cfgDirty){applyCfg(JSON.parse(JSON.stringify(d)));ch=true}
+   if(!sn.metadata.fromCache)gotCfg=true;if(ch)settle()},()=>{gotCfg=true;if(!S.params)applyCfg(null);settle()});
  DB.collection('items').onSnapshot(q=>{const old=new Map((S.items||[]).map(i=>[i.id,i]));
    const next=q.docs.map(d=>{const id=d.id,data=d.data(),loc=old.get(id);if(loc&&(dirty.has(id)||lastW['items/'+id]===JSON.stringify(data)))return loc;return migrate(Object.assign(JSON.parse(JSON.stringify(data)),{id}))});
    dirty.forEach(id=>{if(!next.find(x=>x.id===id)&&old.get(id))next.push(old.get(id))});
-   next.sort((x,y)=>(x.created||0)-(y.created||0));if(!S.rules)applyCfg(null);
+   next.sort((x,y)=>(x.created||0)-(y.created||0));if(!S.params)applyCfg(null);
    const same=S.items&&gotItems&&next.length===S.items.length&&next.every((x,k)=>x===S.items[k]);S.items=next;
    if(!q.metadata.fromCache)gotItems=true;if(same)return;settle()},()=>{gotItems=true;S.items=S.items||[];settle()});
 }
@@ -393,12 +449,34 @@ function artOf(l){if(l.art!=null)return l.art;const t=l.text.toLowerCase();
  if(/lean buca|effort confirmed/.test(t))return 4;if(/^(fund|prove first|queue|stop)\b/.test(t))return 5;if(/capacity|not deliverable/.test(t))return 6;if(/delivered|delivery structure|pushed/.test(t))return 7;if(/actuals|realised value|closed/.test(t))return 8;
  return {owner:1,lead:2,finance:4,heads:5,cap:6,po:7}[l.role]||1}
 
-function leverVal(l){const d=LEVERS[l.t];return d?d.v(l,S.rules):{eur:0,hrs:0}}
-function calc(i){const R=S.rules,b=i.buca||{};const real=(isNum(b.realOverride)?+b.realOverride:R.realisation)/100;
- const lv=(b.levers||[]).map(l=>Object.assign({l},leverVal(l)));const gross=lv.reduce((a,x)=>a+x.eur,0),hours=lv.reduce((a,x)=>a+x.hrs,0),annual=gross*real;
- const build=(+b.effort||0)/12*R.fteHours*R.hourly+(+b.ext||0),run=+b.run||0;
- const net=annual*R.horizon-build-run*R.horizon,monthly=(annual-run)/12,payback=monthly>0?build/monthly:Infinity;
- return {lv,gross,hours,annual,build,run,net,payback,fte:hours/R.fteHours,ask:(+b.effort||0)/(+b.duration||4),real}}
+const COST_TYPES=[{v:'fte',l:'FTE'},{v:'licence',l:'Licence / subscription'},{v:'advisory',l:'Advisory / consultancy'},{v:'hardware',l:'Hardware / build'},{v:'other',l:'Other'}];
+const CLS=[{v:'opex',l:'OPEX'},{v:'capex',l:'CAPEX'}];
+function photoRules(i){const p=i.buca&&i.buca.photo;if(!p)return null;return p.rules?Object.assign({},p.rules):paramsAt(p.at)}
+function rulesFor(i,opts){const b=(i&&i.buca)||{};const live=opts&&opts.live;const base=(!live&&photoRules(i))||paramsAt((opts&&opts.at)||Date.now());
+ const R=Object.assign({},base,b.ovr||{});if(isNum(b.horizonY))R.horizon=+b.horizonY;return derive(R)}
+function leverVal(l,R){const d=LEVERS[l.t];return d?d.v(l,R||S.rules):{eur:0,hrs:0}}
+const lineAmt=(l,R)=>l.type==='fte'?(+l.fte||0)*R.fteCostDelivery:(+l.amount||0);
+function calc(i,opts){const R=rulesFor(i,opts),b=i.buca||{},H=Math.max(1,Math.round(+R.horizon||3)),real=R.realisation/100;
+ const lv=(b.levers||[]).map(l=>Object.assign({l},leverVal(l,R)));const gross=lv.reduce((a,x)=>a+x.eur,0),hours=lv.reduce((a,x)=>a+x.hrs,0),annual=gross*real;
+ const internal=(+b.effort||0)/12*R.fteCostDelivery;const lines=b.costs||[];const yrs=[];let cum=0,payback=Infinity,capex=0,opex=0;
+ const add=(cls,v)=>{if(cls==='capex')capex+=v;else opex+=v};add(b.effortCls,internal);
+ for(let y=1;y<=H;y++){let one=y===1?internal:0,rec=0;
+  lines.forEach(l=>{const a=lineAmt(l,R),yr=Math.max(1,+l.year||1);if(l.term==='recurring'){if(yr<=y){rec+=a;add(l.cls,a)}}else if(yr===y){one+=a;add(l.cls,a)}});
+  const net=annual-one-rec;const startCum=cum-one,monthly=(annual-rec)/12;
+  if(!isFinite(payback)){if(startCum>=0&&one>0)payback=(y-1)*12;else if(monthly>0&&startCum<0&&-startCum<=monthly*12)payback=(y-1)*12+(-startCum)/monthly}
+  cum+=net;yrs.push({y,one,rec,net,cum})}
+ const build=yrs.reduce((a,x)=>a+x.one,0),run=lines.filter(l=>l.term==='recurring').reduce((a,l)=>a+lineAmt(l,R),0),net=yrs.reduce((a,x)=>a+x.net,0);
+ return {R,H,lv,gross,hours,annual,internal,build,run,net,payback,yrs,capex,opex,fte:hours/R.prodHours,ask:(+b.effort||0)/(+b.duration||4),real}}
+function costFlags(i,R){const b=i.buca||{},fl=[];R=R||rulesFor(i);
+ (b.costs||[]).forEach((l,k)=>{const n=`Cost line ${k+1}${l.desc?' ("'+l.desc+'")':''}`,a=lineAmt(l,R);
+  if(l.cls==='capex'&&l.term==='recurring')fl.push(`${n}: recurring costs are normally OPEX.`);
+  if(l.cls==='capex'&&l.type==='licence')fl.push(`${n}: licences and subscriptions are normally OPEX. Only a perpetual licence can be CAPEX.`);
+  if(l.cls==='capex'&&l.type==='advisory')fl.push(`${n}: advisory is normally OPEX, unless it directly builds an asset.`);
+  if(l.cls==='capex'&&l.term!=='recurring'&&a<R.capexThreshold)fl.push(`${n}: ${eur(a)} is below the CAPEX threshold of ${eur(R.capexThreshold)}.`);
+  if(l.type==='fte'&&l.cls==='capex'&&(i.overview||{}).type==='Run')fl.push(`${n}: FTE cost on a Run initiative can't be capitalised.`);
+  if(+l.year>R.horizon)fl.push(`${n}: starts in year ${l.year}, after the ${R.horizon}-year horizon, so it isn't counted.`)});
+ if(b.effortCls==='capex'&&(i.overview||{}).type!=='Change')fl.push('Internal delivery effort is marked CAPEX, but only Change initiatives that build an asset can be capitalised.');
+ return fl}
 function conf(i){const b=i.buca||{},o=i.outcome||{};let s=({measured:45,estimated:28,guess:10})[b.evidence]||0;
  if(o.baselineSource)s+=20;if(isNum(o.baseline)&&isNum(o.target))s+=15;if(b.effortBy==='cap')s+=20;
  return {s,l:s>=70?'High':s>=45?'Medium':'Low'}}
@@ -419,7 +497,7 @@ function req(n,i){const m=[],d=i.demand,o=i.outcome,b=i.buca,c=i.capacity,r=i.re
  if(n===1){if(!i.title||i.title.length<5)m.push('A short name');if(!d.source)m.push('Where the demand comes from');if(!d.problem||d.problem.length<40)m.push('The problem, in at least two sentences');if(!d.affected)m.push('Who is affected');if(!d.frequency)m.push('How often it happens');if(!d.okr)m.push('The OKR it serves')}
  if(n===2){if(!i.overview.type)m.push('Label: Run, CI or Change')}
  if(n===3){if(!o.kpi)m.push('KPI');if(!isNum(o.baseline))m.push('Baseline as a number');if(!o.baselineSource)m.push('Where the baseline comes from');if(!isNum(o.target))m.push('Target as a number');if(!o.targetDate)m.push('Target date');if(!o.method)m.push('How it is measured')}
- if(n===4){if(!(b.levers||[]).some(l=>leverVal(l).eur>0))m.push('At least one benefit lever with numbers');if(!(+b.effort>0))m.push('Effort in FTE-months');if(!b.team)m.push('Expected delivery team');if(!b.evidence)m.push('How the assumptions are backed')}
+ if(n===4){if(!(b.levers||[]).some(l=>leverVal(l,rulesFor(i)).eur>0))m.push('At least one benefit lever with numbers');(b.costs||[]).forEach((l,k)=>{if(!l.type||!l.term||!l.cls||!(lineAmt(l,rulesFor(i))>0))m.push(`Cost line ${k+1}: type, one-off or recurring, amount and CAPEX/OPEX`)});if(!(+b.effort>0))m.push('Effort in FTE-months');if(!b.team)m.push('Expected delivery team');if(!b.evidence)m.push('How the assumptions are backed')}
  if(n===6){if(!c.team)m.push('Delivery team');if(!(+c.fte>0))m.push('FTE committed');if(!c.startQ)m.push('Start quarter');if(!c.endQ)m.push('End quarter');if(!['green','amber'].includes(c.rag))m.push('Status green or amber')}
  if(n===7){if(!i.delivery.generated)m.push('Generate the delivery structure');if(!i.delivery.pushed)m.push('Push to Aha/ADO')}
  if(n===8){if(!isNum(r.actualKpi))m.push('Actual KPI');if(!isNum(r.actualValue))m.push('Actual value per year');if(!isNum(r.actualEffort))m.push('Actual effort');if(!r.learnings)m.push('What we learned')}
@@ -479,38 +557,117 @@ function A3(i,ed){const sug=KPI_HINT[i.demand.okr];
  ${fld('outcome.targetDate','Target date',i,ed,{options:['2026 Q4'].concat(QS)})}
  ${fld('outcome.method','How it is measured',i,ed,{w:1,area:1,ph:'Report, frequency and filter'})}</div>
  ${ed&&sug&&i.outcome.kpi!==sug?`<button class="btn ghost" data-act="usekpi" style="margin-top:8px">Use the suggested KPI</button>`:''}`}
+const val=id=>{const e=document.getElementById(id);return e?String(e.value):''};
+function formErr(id,m){const e=document.getElementById(id);if(e)e.textContent=m;return false}
+const BL={effort:'Effort to deliver (FTE-months)',duration:'Delivery time (months)',team:'Expected delivery team',evidence:'How the assumptions are backed',horizonY:'Investment horizon (years)',effortCls:'Internal effort: CAPEX or OPEX'};
+const CF={type:'type',desc:'description',term:'one-off or recurring',amount:'amount (€)',fte:'FTE',year:'start year',cls:'CAPEX/OPEX'};
+function fieldLabel(i,path){const m=path.split('.');
+ if(m[0]==='levers'){const l=((i.buca||{}).levers||[])[+m[1]];const d=l&&LEVERS[l.t];const f=d&&d.f.find(x=>x[0]===m[2]);return `${d?d.n:'Lever '+(+m[1]+1)}: ${f?f[1]:m[2]}`}
+ if(m[0]==='costs'){const c=((i.buca||{}).costs||[])[+m[1]]||{};return `Cost line ${+m[1]+1}${c.desc?' ('+c.desc+')':''}: ${CF[m[2]]||m[2]}`}
+ if(m[0]==='ovr')return 'Override · '+((PDEF[m[1]]||{}).l||m[1]);
+ return BL[m[0]]||m.join('.')}
+function paramChip(k,R,b){const o=b&&b.ovr&&b.ovr[k]!=null;return `<span class="chip ${o?'a':'o'}" title="${esc(PDEF[k]?PDEF[k].l:k)}">${esc(PDEF[k]?PDEF[k].l:k)}: ${esc(fmtP(k,R[k]))}${o?' · overridden':''}</span>`}
+function driftOf(i){const ph=photoRules(i);if(!ph)return [];const now=paramsAt(Date.now());return PARAM_DEFS.filter(d=>+ph[d.k]!==+now[d.k]).map(d=>({k:d.k,l:d.l,old:ph[d.k],new:now[d.k]}))}
 function A4(i){const r=S.role,b=i.buca,live=!dead(i)&&i.stage===4,draft=live&&['none','returned'].includes(b.fin);
- const edO=draft&&r==='owner'&&!RO,edC=draft&&(r==='owner'||r==='cap'),edF=live&&b.fin==='pending'&&r==='finance';const R=S.rules;
- return `<div class="small muted">Finance rules, set centrally ${ic.lock}</div>
- <div class="rules"><span class="chip o">€${R.hourly} per FTE hour</span><span class="chip o">${R.fteHours} productive hours per FTE</span><span class="chip o">€${R.contactCost} per contact</span><span class="chip o">${R.realisation}% realisation</span><span class="chip o">${R.horizon}-year horizon</span><span class="chip o">€${R.margin} margin per kept customer</span></div>
+ const edO=draft&&r==='owner'&&!RO,edC=draft&&(r==='owner'||r==='cap')&&!RO,isF=r==='finance'&&!RO,edF=live&&b.fin==='pending'&&isF;const R=rulesFor(i),ph=b.photo;
+ const drift=driftOf(i);const yr=t=>new Date(t).getFullYear();
+ const head=ph?`<div class="photobar">${ic.lock}<div><b>Parameters frozen at the photo moment: ${dt(ph.at)} ${yr(ph.at)}.</b> Later changes to the central parameters don't change this BuCA.
+   ${drift.length?`<div class="small" style="margin-top:6px">Changed since then: ${drift.map(d=>`${esc(d.l)} ${esc(fmtP(d.k,d.old))} → ${esc(fmtP(d.k,d.new))}`).join(' · ')}</div>
+   ${isF&&!dead(i)?`<div class="recalc"><label class="f" for="recalcWhy">Recalculate with today's parameters <span>reason required, logged</span></label><textarea class="i" id="recalcWhy" style="min-height:56px"></textarea><button class="btn sec sm" data-act="recalc" style="margin-top:8px">Recalculate and take a new photo moment</button><div class="err" id="recalcerr"></div></div>`:'<div class="small muted" style="margin-top:4px">Business Control can recalculate with today\'s parameters.</div>'}`:''}</div></div>`
+  :`<div class="small muted">Central parameters as of today ${ic.lock} They freeze when Business Control approves (photo moment).</div>`;
+ const pk=['fteCostAgent','hourly','contactCost','contactRatio','fteCostDelivery','realisation','horizon','margin'];
+ const chips=`<div class="rules">${pk.map(k=>k==='hourly'?`<span class="chip o" title="Price per FTE ÷ productive hours">€${R.hourly} per productive hour (${nf(R.prodHours)} h per FTE)</span>`:paramChip(k,R,b)).join('')}<a class="hl small" href="#rules" style="align-self:center">All parameters</a></div>`;
+ const lev=(b.levers||[]).map((l,k)=>{const d=LEVERS[l.t];if(!d)return '';return `<div class="lever"><div class="lvh"><span class="ico sm">${lvIcon(l.t)}</span><span class="t"><b>${esc(d.n)}</b><span>${esc(d.d)}</span></span><span class="lvv" id="lv-${k}">${eur(leverVal(l,R).eur)}/yr</span>${edO?`<button class="xbtn" data-act="rmLever" data-k="${k}" aria-label="Remove ${esc(d.n)}">×</button>`:''}</div><div class="fg">${d.f.map(([key,label])=>key==='queue'?fld(`buca.levers.${k}.${key}`,label,i,edO,{options:AHTQ.map(([q,n])=>({v:q,l:`${n} · AHT ${R['aht_'+q]} sec`}))}):fld(`buca.levers.${k}.${key}`,label,i,edO,{num:1})).join('')}</div></div>`}).join('');
+ const costRow=(c,k)=>edO?`<div class="costrow"><div class="cr-num">${k+1}</div>
+   ${fld(`buca.costs.${k}.type`,'Type',i,edO,{options:COST_TYPES})}${fld(`buca.costs.${k}.desc`,'Description',i,edO,{ph:'For example: Genesys licences'})}
+   ${fld(`buca.costs.${k}.term`,'One-off or recurring',i,edO,{options:[{v:'oneoff',l:'One-off'},{v:'recurring',l:'Recurring, per year'}]})}
+   ${c.type==='fte'?fld(`buca.costs.${k}.fte`,c.term==='recurring'?'FTE per year':'FTE-years',i,edO,{num:1}):fld(`buca.costs.${k}.amount`,c.term==='recurring'?'Amount per year (€)':'Amount (€)',i,edO,{num:1})}
+   ${fld(`buca.costs.${k}.year`,c.term==='recurring'?'From year':'In year',i,edO,{options:[1,2,3,4,5].map(y=>({v:y,l:'Year '+y}))})}
+   ${fld(`buca.costs.${k}.cls`,'CAPEX or OPEX',i,edO,{options:CLS})}
+   <button class="xbtn" data-act="rmCost" data-k="${k}" aria-label="Remove cost line ${k+1}">×</button></div>`
+  :`<tr><td>${k+1}</td><td>${esc((COST_TYPES.find(t=>t.v===c.type)||{}).l||'—')}</td><td>${esc(c.desc||'')}</td><td>${c.term==='recurring'?'Recurring':'One-off'}</td><td class="r">${c.type==='fte'?esc(c.fte||0)+' FTE · ':''}${eur(lineAmt(c,R))}</td><td>Year ${esc(c.year||1)}</td><td><span class="chip ${c.cls==='capex'?'p':'o'}">${c.cls==='capex'?'CAPEX':'OPEX'}</span></td></tr>`;
+ const costs=b.costs||[];
+ const chg=(b.changes||[]).slice().reverse();
+ return `${head}${chips}
  <h4>Benefit levers</h4><p class="small muted" style="margin:2px 0 10px">${edO?'Drag a lever onto the business case, or click it. Then fill in its numbers. Use as many as apply.':'The levers this business case counts on.'}</p>
  ${edO?`<div class="lib" role="list" aria-label="Lever library">${Object.entries(LEVERS).map(([t,d])=>`<button class="lchip" role="listitem" draggable="true" data-lever="${t}" data-act="addLever" title="${esc(d.d)}">${lvIcon(t)}<span>${esc(d.n)}</span></button>`).join('')}</div>`:''}
- <div class="levers ${edO?'dropz':''}" ${edO?'data-leverdrop="1"':''}>${(b.levers||[]).map((l,k)=>{const d=LEVERS[l.t];if(!d)return '';return `<div class="lever"><div class="lvh"><span class="ico sm">${lvIcon(l.t)}</span><span class="t"><b>${esc(d.n)}</b><span>${esc(d.d)}</span></span><span class="lvv" id="lv-${k}">${eur(leverVal(l).eur)}/yr</span>${edO?`<button class="xbtn" data-act="rmLever" data-k="${k}" aria-label="Remove ${esc(d.n)}">×</button>`:''}</div><div class="fg">${d.f.map(([key,label])=>fld(`buca.levers.${k}.${key}`,label,i,edO,{num:1})).join('')}</div></div>`}).join('')||`<p class="small muted" style="margin:0;padding:16px;text-align:center">${edO?'Drop a lever here':'No levers yet'}</p>`}</div>
+ <div class="levers ${edO?'dropz':''}" ${edO?'data-leverdrop="1"':''}>${lev||`<p class="small muted" style="margin:0;padding:16px;text-align:center">${edO?'Drop a lever here':'No levers yet'}</p>`}</div>
  <div style="margin-bottom:20px"></div>
  ${fld('buca.evidence','How the assumptions are backed',i,edO,{options:[{v:'measured',l:'Measured in a report'},{v:'estimated',l:'Estimated from a pilot or sample'},{v:'guess',l:'Educated guess'}]})}
- <div style="margin-bottom:20px"></div>
- <h4>Cost and effort</h4><div class="fg" style="margin:8px 0 20px">
+ <h4 style="margin-top:24px">Delivery effort</h4><div class="fg" style="margin:8px 0 20px">
  ${fld('buca.effort','Effort to deliver (FTE-months)',i,edC,{num:1,hint:b.effortBy==='cap'?'confirmed by capability lead':'capability lead confirms'})}
  ${fld('buca.duration','Delivery time (months)',i,edC,{num:1})}
  ${fld('buca.team','Expected delivery team',i,edC,{options:S.teams.map(t=>({v:t.id,l:t.n}))})}
- ${fld('buca.ext','External one-off cost (€)',i,edO,{num:1,ph:'0'})}
- ${fld('buca.run','Running cost per year (€)',i,edO,{num:1,ph:'0'})}</div>
- ${edF||b.fin==='approved'||isNum(b.realOverride)||b.finNote?`<h4>Finance review</h4><div class="fg" style="margin:8px 0 20px">${fld('buca.realOverride','Realisation for this case (%)',i,edF,{num:1,hint:'leave empty to use '+R.realisation+'%'})}${fld('buca.finNote','Finance note',i,edF,{w:1,area:1})}</div>`:''}
- <div id="calc">${calcPanel(i)}</div>`}
-function calcPanel(i){const c=calc(i),k=conf(i),R=S.rules,b=i.buca;const fl=[];
- (b.levers||[]).forEach(l=>{if(l.t==='aht'){if(+l.pct>60)fl.push('Shorter handling time: more than 60% of contacts affected is unusual. Check it against WFM data.');if(+l.min>5)fl.push('Shorter handling time: more than 5 minutes saved per contact is above typical gains.')}
+ ${fld('buca.effortCls','Internal effort is',i,edO,{options:CLS,hint:'CAPEX only when it builds an asset'})}
+ ${fld('buca.horizonY','Investment horizon',i,edO,{options:[{v:'',l:`Standard (${paramsAt(Date.now()).horizon} years)`},{v:1,l:'Short term: 1 year'},{v:3,l:'3 years'},{v:5,l:'Long term: 5 years'}]})}</div>
+ <h4>Cost lines</h4><p class="small muted" style="margin:2px 0 10px">Everything beyond internal delivery effort: licences, advisory, hardware, extra FTE. Internal effort is added automatically at ${eur(R.fteCostDelivery)} per FTE-year.</p>
+ ${edO?`<div class="stack">${costs.map(costRow).join('')}</div><button class="btn sec sm" data-act="addCost" style="margin-top:12px">Add cost line</button>`
+  :costs.length?`<div style="overflow-x:auto"><table class="t"><thead><tr><th>#</th><th>Type</th><th>Description</th><th>Term</th><th class="r">Amount</th><th>Start</th><th>Class</th></tr></thead><tbody>${costs.map(costRow).join('')}</tbody></table></div>`:'<p class="small muted">No extra cost lines.</p>'}
+ ${edF||chg.length||b.finNote?`<h4 style="margin-top:24px">Business Control review</h4>
+  ${chg.length?`<ul class="chglog">${chg.map(c=>`<li><span class="chip ${c.kind==='recalc'?'p':'a'}">${c.kind==='recalc'?'Recalculated':c.kind==='withdrawn'?'Override withdrawn':'Override'}</span> <b>${esc(c.label)}</b>: ${esc(fmtVal(c.field,c.old))} → ${esc(fmtVal(c.field,c.new))}<div class="small muted">${dt(c.at)} · ${esc((ROLES[c.role]||{}).n||'')}${c.by?' · '+who(c.by):''} · why: ${esc(c.why)}</div></li>`).join('')}</ul>`:''}
+  ${edF?`<div class="ovrform"><div class="fg"><div class="w"><label class="f" for="ovrSel">Override for this case</label><select class="i" id="ovrSel"><option value="">Choose a parameter or assumption…</option>${ovrOptions(i).map(o=>`<option value="${esc(o.v)}">${esc(o.l)}</option>`).join('')}</select></div>
+   <div><label class="f" for="ovrVal">New value</label><input class="i" id="ovrVal" inputmode="decimal"></div><div><label class="f" for="ovrWhy">Reason <span>required, logged</span></label><input class="i" id="ovrWhy"></div></div>
+   <div class="row" style="margin-top:12px"><button class="btn sec sm" data-act="override">Apply override</button>${Object.keys(b.ovr||{}).map(k=>`<button class="btn ghost" data-act="undoOvr" data-k="${k}">Withdraw ${esc((PDEF[k]||{}).l||k)} override</button>`).join('')}</div><div class="err" id="ovrerr"></div></div>`:''}
+  ${fld('buca.finNote','Business Control note',i,edF,{w:1,area:1})}`:''}
+ <div id="calc" style="margin-top:20px">${calcPanel(i)}</div>
+ ${versionsPanel(i)}`}
+function fmtVal(field,v){if(v==null||v==='')return '—';if(String(field).startsWith('p:'))return fmtP(field.slice(2),v);if(/amount|ext|run/.test(field))return eur(+v);return String(v)}
+function ovrOptions(i){const R=rulesFor(i),b=i.buca,o=[];
+ PARAM_DEFS.forEach(d=>o.push({v:'p:'+d.k,l:`Parameter · ${d.l} (now ${fmtP(d.k,R[d.k])})`}));
+ (b.levers||[]).forEach((l,k)=>{const d=LEVERS[l.t];if(!d)return;d.f.forEach(([key,label])=>{if(key!=='queue')o.push({v:`a:levers.${k}.${key}`,l:`Assumption · ${d.n}: ${label} (now ${l[key]!=null&&l[key]!==''?l[key]:'—'})`})})});
+ [['effort','Effort to deliver (FTE-months)'],['duration','Delivery time (months)']].forEach(([k,l])=>o.push({v:'a:'+k,l:`Assumption · ${l} (now ${b[k]!=null&&b[k]!==''?b[k]:'—'})`}));
+ (b.costs||[]).forEach((c,k)=>o.push({v:`a:costs.${k}.${c.type==='fte'?'fte':'amount'}`,l:`Cost line ${k+1} · ${c.desc||c.type} (now ${c.type==='fte'?(c.fte||0)+' FTE':eur(+c.amount||0)})`}));return o}
+function calcPanel(i){const c=calc(i),k=conf(i),R=c.R,b=i.buca;const fl=[];
+ (b.levers||[]).forEach(l=>{if(l.t==='aht'){if(+l.pct>60)fl.push('Shorter handling time: more than 60% of contacts affected is unusual. Check it against WFM data.');
+   if(l.queue&&R['aht_'+l.queue]){const a=R['aht_'+l.queue];if(+l.min*60>.3*a)fl.push(`Shorter handling time: ${+l.min} min saved is more than 30% of the ${l.queue} queue's AHT (${a} sec).`)}
+   else{if(+l.min>5)fl.push('Shorter handling time: more than 5 minutes saved per contact is above typical gains.');fl.push('Shorter handling time: pick a queue, so the saving can be checked against its AHT baseline.')}}
   if(l.t==='repeat'&&+l.red>50)fl.push('Fewer repeat contacts: removing more than half of repeats is ambitious.');
+  if(l.t==='ratio'&&+l.red>20)fl.push('Lower contact ratio: more than 20% fewer contacts per customer is ambitious.');
   if(l.t==='manual'&&+l.hpw>36)fl.push('Less manual work: more than a full working week per week saved. Is this more than one person?');
-  if(l.t==='retention'&&+l.cust>0)fl.push('Fewer customers lost: retention is hard to attribute. Finance may lower the realisation.')});
- const types=(b.levers||[]).map(l=>l.t);if(types.includes('avoided')&&types.includes('repeat'))fl.push('Avoided contacts and fewer repeat contacts may count the same contacts twice.');
+  if(l.t==='retention'&&+l.cust>0)fl.push('Fewer customers lost: retention is hard to attribute. Business Control may lower the realisation.')});
+ const types=(b.levers||[]).map(l=>l.t);if(types.includes('avoided')&&(types.includes('repeat')||types.includes('ratio')))fl.push('Avoided contacts, repeat contacts and contact ratio may count the same contacts twice.');
  if(b.evidence==='guess')fl.push('Guess-level evidence lowers the confidence.');
  if(!i.outcome.baselineSource)fl.push('The outcome card has no baseline source.');
- if(c.annual>0&&c.payback>R.horizon*12)fl.push(`Doesn't pay back within the ${R.horizon}-year horizon.`);
+ if(c.annual>0&&!isFinite(c.payback))fl.push(`Doesn't pay back within the ${c.H}-year horizon.`);
  if(b.effortBy!=='cap')fl.push('Effort hasn\'t been confirmed by a capability lead yet.');
- return `<div class="kpis"><div class="kpi"><b>${eur(c.annual)}</b><span>Benefit per year</span></div><div class="kpi"><b>${eur(c.net)}</b><span>${R.horizon}-year net value</span></div>
- <div class="kpi"><b>${isFinite(c.payback)?Math.ceil(c.payback)+' mo':'—'}</b><span>Payback</span></div><div class="kpi"><b>${k.l}</b><span>Confidence (${k.s}/100)</span></div></div>
- <details class="small" style="margin-top:12px"><summary style="cursor:pointer;color:var(--green);font-weight:700">Show the sum</summary><p style="margin:8px 0 0">${c.lv.map(x=>{const d=LEVERS[x.l.t];return d?`${esc(d.n)}: ${d.sum(x.l,R)} = ${eur(x.eur)}`:''}).join('<br>')||'No levers yet'}<br>Total ${eur(c.gross)} × ${Math.round(c.real*100)}% realisation = <b>${eur(c.annual)} per year</b>${c.hours?` (${c.fte.toFixed(1)} FTE freed)`:''}<br>Delivery cost: ${+b.effort||0} FTE-months ÷ 12 × ${R.fteHours} h × €${R.hourly} + ${eur(+b.ext||0)} external = ${eur(c.build)}<br>Net: ${eur(c.annual)} × ${R.horizon} − ${eur(c.build)} − ${eur(c.run)} × ${R.horizon} = ${eur(c.net)}</p></details>
+ const cf=costFlags(i,R);
+ return `<div class="kpis"><div class="kpi"><b>${eur(c.annual)}</b><span>Benefit per year</span></div><div class="kpi"><b>${eur(c.net)}</b><span>${c.H}-year net value</span></div>
+ <div class="kpi"><b>${isFinite(c.payback)?Math.max(1,Math.ceil(c.payback))+' mo':'—'}</b><span>Payback</span></div><div class="kpi"><b>${k.l}</b><span>Confidence (${k.s}/100)</span></div></div>
+ <div style="overflow-x:auto;margin-top:12px"><table class="t yrs"><thead><tr><th></th>${c.yrs.map(y=>`<th class="r">Year ${y.y}</th>`).join('')}<th class="r">Total</th></tr></thead><tbody>
+ <tr><td>Benefit</td>${c.yrs.map(()=>`<td class="r">${eur(c.annual)}</td>`).join('')}<td class="r">${eur(c.annual*c.H)}</td></tr>
+ <tr><td>One-off cost</td>${c.yrs.map(y=>`<td class="r">${y.one?'−'+eur(y.one):'—'}</td>`).join('')}<td class="r">${c.build?'−'+eur(c.build):'—'}</td></tr>
+ <tr><td>Recurring cost</td>${c.yrs.map(y=>`<td class="r">${y.rec?'−'+eur(y.rec):'—'}</td>`).join('')}<td class="r">${c.yrs.some(y=>y.rec)?'−'+eur(c.yrs.reduce((a,y)=>a+y.rec,0)):'—'}</td></tr>
+ <tr><td><b>Net</b></td>${c.yrs.map(y=>`<td class="r"><b>${eur(y.net)}</b></td>`).join('')}<td class="r"><b>${eur(c.net)}</b></td></tr>
+ <tr><td class="muted">Cumulative</td>${c.yrs.map(y=>`<td class="r muted">${eur(y.cum)}</td>`).join('')}<td></td></tr></tbody></table></div>
+ <p class="small" style="margin:8px 0 0"><span class="chip p">CAPEX ${eur(c.capex)}</span> <span class="chip o">OPEX ${eur(c.opex)}</span> <span class="muted">over ${c.H} years, including internal effort</span></p>
+ <details class="small" style="margin-top:12px"><summary style="cursor:pointer;color:var(--green);font-weight:700">Show the sum</summary><p style="margin:8px 0 0">${c.lv.map(x=>{const d=LEVERS[x.l.t];return d?`${esc(d.n)}: ${d.sum(x.l,R)} = ${eur(x.eur)}`:''}).join('<br>')||'No levers yet'}<br>Total ${eur(c.gross)} × ${Math.round(c.real*100)}% realisation = <b>${eur(c.annual)} per year</b>${c.hours?` (${c.fte.toFixed(1)} FTE freed at ${nf(R.prodHours)} productive hours per FTE)`:''}<br>Cost per productive hour: €${nf(R.fteCostAgent)} ÷ (${nf(R.paidHours)} h × ${100-R.shrinkage}% after shrinkage × ${R.occupancy}% occupancy = ${nf(R.prodHours)} h) = €${R.hourly}<br>Internal delivery effort: ${+b.effort||0} FTE-months ÷ 12 × €${nf(R.fteCostDelivery)} = ${eur(c.internal)} in year 1</p></details>
+ ${cf.length?`<div class="ai warn"><h4>${ic.spark}CAPEX/OPEX check</h4><ul class="small">${cf.map(f=>`<li>${esc(f)}</li>`).join('')}</ul><p class="small muted" style="margin:6px 0 0">Example rules. Business Control should confirm them.</p></div>`:''}
  ${fl.length?`<div class="ai"><h4>${ic.spark}Assumption check</h4><ul class="small">${fl.map(f=>`<li>${esc(f)}</li>`).join('')}</ul></div>`:''}`}
+
+/* ---------- versions ---------- */
+function snapVersion(i,event,note,o){o=o||{};const b=i.buca,c=calc(i,o.at?{at:o.at}:null),R=c.R;const body=JSON.parse(JSON.stringify(b));['versions','changes','photo','finNote','fin','effortBy'].forEach(k=>delete body[k]);
+ const rules={};PARAM_DEFS.forEach(d=>rules[d.k]=R[d.k]);
+ b.versions.push({v:b.versions.length+1,at:o.at||Date.now(),by:o.at?null:(ME||null),role:o.role||S.role,event,note:note||'',buca:body,rules,out:{annual:Math.round(c.annual),net:Math.round(c.net),payback:isFinite(c.payback)?Math.max(1,Math.ceil(c.payback)):null,conf:conf(i).l,capex:Math.round(c.capex),opex:Math.round(c.opex)}})}
+function flat(o,pre,out){out=out||{};if(o==null)return out;Object.keys(o).forEach(k=>{const v=o[k],p=pre?pre+'.'+k:k;if(v&&typeof v==='object')flat(v,p,out);else out[p]=v});return out}
+const CMP={};
+function versionsPanel(i){const vs=(i.buca.versions||[]);
+ if(!vs.length)return `<h4 style="margin-top:24px">Versions</h4><p class="small muted">No versions yet. Version 1 is saved when the owner sends the Lean BuCA to Business Control.</p>`;
+ const st=CMP[i.id]||{};const B=vs.find(v=>v.v===+st.b)||vs[vs.length-1],A=vs.find(v=>v.v===+st.a)||vs[Math.max(0,vs.indexOf(B)-1)];
+ let diff='';
+ if(vs.length>1){const fa=flat(A.buca),fb=flat(B.buca);const keys=[...new Set([...Object.keys(fa),...Object.keys(fb)])].filter(k=>String(fa[k]??'')!==String(fb[k]??''));
+  const pr=PARAM_DEFS.filter(d=>+A.rules[d.k]!==+B.rules[d.k]);
+  const outs=[['annual','Benefit per year',eur],['net','Net value',eur],['payback','Payback (months)',v=>v==null?'—':v],['conf','Confidence',v=>v],['capex','CAPEX',eur],['opex','OPEX',eur]].filter(([k])=>String(A.out[k])!==String(B.out[k]));
+  const tr=(l,x,y)=>`<tr><td>${esc(l)}</td><td>${esc(x)}</td><td>${esc(y)}</td></tr>`;
+  diff=`<div style="overflow-x:auto"><table class="t cmp"><thead><tr><th>What changed</th><th>v${A.v}</th><th>v${B.v}</th></tr></thead><tbody>
+  ${keys.length||pr.length||outs.length?'':'<tr><td colspan="3" class="muted">No differences.</td></tr>'}
+  ${keys.length?`<tr class="grp"><td colspan="3">Assumptions</td></tr>`+keys.map(k=>tr(fieldLabel(i,k),fa[k]??'—',fb[k]??'—')).join(''):''}
+  ${pr.length?`<tr class="grp"><td colspan="3">Parameters</td></tr>`+pr.map(d=>tr(d.l,fmtP(d.k,A.rules[d.k]),fmtP(d.k,B.rules[d.k]))).join(''):''}
+  ${outs.length?`<tr class="grp"><td colspan="3">Result</td></tr>`+outs.map(([k,l,f])=>tr(l,f(A.out[k]),f(B.out[k]))).join(''):''}</tbody></table></div>`}
+ const opt=sel=>vs.map(v=>`<option value="${v.v}" ${v.v===sel.v?'selected':''}>v${v.v} · ${esc(v.event)}</option>`).join('');
+ return `<h4 style="margin-top:24px">Versions</h4>
+ <div style="overflow-x:auto"><table class="t"><thead><tr><th>Version</th><th>What happened</th><th>Who</th><th>When</th><th class="r">Benefit / yr</th><th class="r">Net</th><th>Confidence</th></tr></thead><tbody>
+ ${vs.slice().reverse().map(v=>`<tr><td><b>v${v.v}</b></td><td>${esc(v.event)}${v.note?`<div class="small muted">${esc(v.note)}</div>`:''}</td><td>${esc((ROLES[v.role]||{}).n||'')}${v.by?'<br>'+who(v.by):''}</td><td>${dt(v.at)}</td><td class="r">${eur(v.out.annual)}</td><td class="r">${eur(v.out.net)}</td><td>${esc(v.out.conf)}</td></tr>`).join('')}</tbody></table></div>
+ ${vs.length>1?`<div class="row" style="margin:16px 0 8px;gap:12px"><label class="small" for="cmpA"><b>Compare</b></label><select class="i" style="width:auto;min-height:40px" id="cmpA" data-cmp="a">${opt(A)}</select><span class="small">with</span><select class="i" style="width:auto;min-height:40px" id="cmpB" data-cmp="b">${opt(B)}</select></div>${diff}`:''}`}
 function A5(i){const ds=i.decisions||[];const sl=slate();const pos=sl.findIndex(x=>x.id===i.id);
  return `${i.stage===5&&!dead(i)?`<p class="small">On the decision agenda for <b>${esc(S.cycle)}</b>${pos>=0?`, ranked <b>${pos+1} of ${sl.length}</b>`:''}. Capacity signal: <span class="chip ${capFlag(i).k}">${capFlag(i).l}</span> ${esc(capFlag(i).txt||'')}</p>`:''}
  ${ds.length?`<table class="t"><thead><tr><th>Cycle</th><th>Decision</th><th>Why</th><th>Conditions</th><th>When</th></tr></thead><tbody>${ds.map(d=>`<tr><td>${esc(d.cycle)}</td><td><span class="chip ${d.verdict==='Fund'||d.verdict==='Prove first'?'g':d.verdict==='Queue'?'p':'r'}">${esc(d.verdict)}</span></td><td>${esc(d.reason)}</td><td>${esc(d.conditions||'—')}</td><td>${dt(d.at)}</td></tr>`).join('')}</tbody></table>`:'<p class="small muted">No decision yet.</p>'}`}
@@ -548,7 +705,7 @@ function stepCard(i){const r=S.role,who=turn(i),mine=who.includes(r)&&!RO;
   <p class="small" style="margin:12px 0 0">Stage ${i.stage} · ${esc(sa.name)} · <a class="hl" href="#i-${i.id}-a${i.stage}" data-art="${i.stage}">${esc(sa.art)}</a></p>
   <p class="small muted" style="margin:4px 0 0">Waiting ${days===0?'since today':days===1?'1 day':days+' days'}${days>=14?' · <b style="color:var(--dred)">longer than 2 weeks</b>':''}</p>
   ${RO?'':`<div class="row" style="gap:8px;margin-top:16px">${who.map(w=>`<button class="btn sec sm" data-act="asRole" data-r="${w}">Switch to ${esc(ROLES[w].n)}</button>`).join('')}</div>`}</div>`}
- let title='Your step',body='',gateN=0,btns='',reason=false,cond=false;
+ let title='Your step',body='',gateN=0,btns='',reason=false,cond=false,reasonLbl='';
  const s=i.stage;
  if(s===1){gateN=1;body=i.status==='returned'?'The portfolio lead sent this back. Update the demand record, then submit again.':'Fill in the demand record. When everything below is ticked, submit it for triage.';btns=`<button class="btn full" data-act="submit">Submit for triage</button>`}
  if(s===2){gateN=2;body='Label the initiative, check for similar demand, then accept it or send it back.';reason=true;
@@ -556,9 +713,9 @@ function stepCard(i){const r=S.role,who=turn(i),mine=who.includes(r)&&!RO;
   ${sim.length?`<label class="f" for="mergeSel" style="margin-top:12px">Merge into</label><div class="row" style="flex-wrap:nowrap"><select class="i" id="mergeSel">${sim.map(o=>`<option value="${o.x.id}">${esc(o.x.key)} · ${esc(o.x.title)}</option>`).join('')}</select><button class="btn sec sm" data-act="merge">Merge</button></div>`:''}`}
  if(s===3&&r==='owner'){gateN=3;body='Make the outcome measurable. The portfolio lead checks it before it goes to Finance.';btns=`<button class="btn full" data-act="outcomeReady">Send outcome card for check</button>`}
  if(s===3&&r==='lead'){body='Is the outcome measurable with a real report? Confirm it, or send it back with a question.';reason=true;btns=`<button class="btn full" data-act="confirmOutcome">Confirm as measurable</button><button class="btn ghost" data-act="sendbackOutcome">Send back with a question</button>`}
- if(s===4&&r==='owner'){gateN=4;body=i.buca.fin==='returned'?'Finance has questions (see the Finance note). Update the assumptions and send it again.':'Fill in the volumes and assumptions. The value is calculated with the central Finance rules; you can\'t change those.';btns=`<button class="btn full" data-act="toFinance">Send Lean BuCA to Finance</button>`}
+ if(s===4&&r==='owner'){gateN=4;body=i.buca.fin==='returned'?'Business Control has questions (see their note). Update the Lean BuCA, say what you changed, and send it again.':'Fill in the levers, effort and cost lines. The value is calculated with the central parameters; you can\'t change those.';if(i.buca.fin==='returned'){reason=true;reasonLbl='What did you change? <span>required, saved with the new version</span>'}btns=`<button class="btn full" data-act="toFinance">Send Lean BuCA to Business Control</button>`}
  if(s===4&&r==='cap'){title='Your input';body='Confirm the effort, delivery time and expected team in the Lean BuCA, so Finance and the Heads see a realistic estimate.';btns=`<button class="btn full" data-act="confirmEffort">Confirm effort estimate</button>`}
- if(s===4&&r==='finance'){body='Check the assumptions against the rules. Adjust realisation if needed, then approve or return with questions.';reason=true;btns=`<button class="btn full" data-act="approve">Approve Lean BuCA</button><button class="btn ghost" data-act="returnBuca">Return with questions</button>`}
+ if(s===4&&r==='finance'){body='Check the levers and cost lines. Override any value in the Lean BuCA (with a reason), then approve or return it. Approving freezes the parameters: the photo moment.';reason=true;reasonLbl='Reason <span>required to return; optional note when approving</span>';btns=`<button class="btn full" data-act="approve">Approve Lean BuCA</button><button class="btn ghost" data-act="returnBuca">Return with questions</button>`}
  if(s===5){body=`Decide for cycle ${esc(S.cycle)}. A reason is always required.`;reason=true;cond=true;const f=capFlag(i);
   btns=`<p class="small" style="margin:0 0 12px">Capacity signal: <span class="chip ${f.k}">${f.l}</span> ${esc(f.txt||'')}</p><button class="btn full" data-act="fund">Fund</button><div class="row" style="margin-top:8px"><button class="btn ghost" data-act="prove">Prove first</button><button class="btn ghost" data-act="queue">Queue</button><button class="btn ghost" data-act="stop">Stop</button></div>`}
  if(s===6){gateN=6;body='Commit a team, FTE and quarters. If it can\'t be done now, flag it with a reason.';reason=true;btns=`<button class="btn full" data-act="commit">Commit capacity</button><button class="btn ghost" data-act="flagRed">Flag as not deliverable now</button>`}
@@ -569,7 +726,7 @@ function stepCard(i){const r=S.role,who=turn(i),mine=who.includes(r)&&!RO;
  if(s===8&&r==='lead'){body='Close the loop with a verdict. A reason is required unless the promise was kept.';reason=true;btns=`<button class="btn full" data-act="kept">Promise kept</button><div class="row" style="margin-top:8px"><button class="btn ghost" data-act="partly">Partly kept</button><button class="btn ghost" data-act="notkept">Not kept</button></div>`}
  return `<div class="card" style="border-top:4px solid var(--orange);border-radius:0 0 16px 16px"><h3>${title}</h3><p class="small" style="margin:8px 0 0">${body}</p>
  ${gateN?`<div id="gate">${gateHtml(gateN,i)}</div>`:''}
- ${reason?`<label class="f" for="reason" style="margin-top:12px">Reason <span>${s===5?'required':'required to send back, decline or flag'}</span></label><textarea class="i" id="reason" style="min-height:72px"></textarea>`:''}
+ ${reason?`<label class="f" for="reason" style="margin-top:12px">${reasonLbl||`Reason <span>${s===5?'required':'required to send back, decline or flag'}</span>`}</label><textarea class="i" id="reason" style="min-height:72px"></textarea>`:''}
  ${cond?`<label class="f" for="cond" style="margin-top:12px">Conditions <span>optional</span></label><input class="i" id="cond" placeholder="For example: report adoption after 3 months">`:''}
  <div style="margin-top:16px">${btns}</div><div class="err" id="acterr"></div></div>`}
 function gateHtml(n,i){const m=req(n,i);return m.length?`<ul class="gate">${m.map(x=>`<li class="no">${esc(x)}</li>`).join('')}</ul>`:`<ul class="gate"><li class="ok">${ic.check} Everything needed is filled in</li></ul>`}
@@ -578,7 +735,7 @@ function gateHtml(n,i){const m=req(n,i);return m.length?`<ul class="gate">${m.ma
 function slate(){return S.items.filter(i=>i.stage===5&&i.buca.fin==='approved'&&['active','queued'].includes(i.status)).sort((a,b)=>rankScore(b)-rankScore(a))}
 function waiting(){return S.items.filter(i=>turn(i).includes(S.role))}
 function vHome(){const w=waiting(),r=S.role;
- const primary=r==='owner'?`<button class="btn" data-act="new">New demand</button>`:r==='heads'?`<a class="btn" href="#agenda">Open decision agenda</a>`:r==='finance'?`<a class="btn" href="#rules">Finance rules</a>`:r==='cap'?`<a class="btn" href="#capacity">Capacity view</a>`:r==='lead'?`<a class="btn" href="#triage">Open the triage board</a>`:`<a class="btn" href="#board">Open the pipeline</a>`;
+ const primary=r==='owner'?`<button class="btn" data-act="new">New demand</button>`:r==='heads'?`<a class="btn" href="#agenda">Open decision agenda</a>`:r==='finance'?`<a class="btn" href="#rules">Parameter library</a>`:r==='cap'?`<a class="btn" href="#capacity">Capacity view</a>`:r==='lead'?`<a class="btn" href="#triage">Open the triage board</a>`:`<a class="btn" href="#board">Open the pipeline</a>`;
  const counts=STAGES.map(s=>S.items.filter(i=>i.stage===s.n&&!dead(i)).length);
  return `<div class="hero"><div class="meta">Viewing as ${esc(ROLES[r].n)} · ${esc(ROLES[r].s)}</div><h1>From demand to decision</h1><p>One flow, eight artifacts. Automation prepares the work; people decide.</p></div>
  <div class="row" style="margin-top:24px">${primary}</div>
@@ -716,10 +873,22 @@ function vCapacity(){const ed=S.role==='cap';
   ${teamBar(c)}<p class="small" style="margin:8px 0 0">${c.committed.toFixed(1)} committed · ${c.funded.toFixed(1)} funded · ${c.slate.toFixed(1)} waiting for decision · <b>${(c.free-c.slate).toFixed(1)} FTE left if all are funded</b></p>
   ${its.length?`<p class="small muted" style="margin:6px 0 0">${its.map(i=>`<a class="hl" href="#i-${i.id}">${esc(i.title)}</a> (stage ${i.stage})`).join(' · ')}</p>`:''}</div>`}).join('')}</div>
  <p class="small muted">Available FTE is change capacity after Run work. The numbers are estimates in this prototype.</p>`}
-function vRules(){const ed=S.role==='finance',R=S.rules;const f=(k,l,suf)=>`<div><label class="f" for="r_${k}">${l}</label>${ed?`<input class="i" id="r_${k}" data-rule="${k}" inputmode="decimal" value="${R[k]}">`:`<div class="val">${suf==='€'?'€'+R[k]:R[k]+(suf||'')} ${ic.lock}</div>`}</div>`;
- return `<div class="hero"><div class="meta">Business control</div><h1>Finance rules</h1><p>One set of parameters for every Lean BuCA. Only Finance can change them; every BuCA recalculates.</p></div>
- <div class="card" style="margin-top:32px"><div class="fg">${f('hourly','Cost per FTE hour (€)','€')}${f('fteHours','Productive hours per FTE per year','')}${f('contactCost','Fully loaded cost per contact (€)','€')}${f('realisation','Default benefit realisation (%)','%')}${f('horizon','Value horizon (years)',' years')}${f('margin','Annual margin per kept customer (€)','€')}</div>
- ${ed?'':`<p class="small muted" style="margin:16px 0 0">Switch to Business control to change these.</p>`}</div>
+function vRules(){const ed=S.role==='finance'&&!RO,R=S.rules,today=dayStr(Date.now());const groups=[...new Set(PARAM_DEFS.map(d=>d.g))];
+ const frozen=S.items.filter(i=>i.buca&&i.buca.photo&&!dead(i)).length,open=S.items.filter(i=>!dead(i)&&i.stage>=3&&!(i.buca&&i.buca.photo)).length;
+ const row=d=>{const e=paramEntry(d.k,Date.now());const h=(S.params[d.k]||[]).slice().sort((a,b)=>a.from<b.from?1:a.from>b.from?-1:b.at-a.at);const fut=h.filter(x=>x.from>today);
+  return `<tr><td><b>${esc(d.l)}</b>${fut.length?`<div class="small"><span class="chip a">Scheduled: ${esc(fmtP(d.k,fut[fut.length-1].v))} from ${esc(fut[fut.length-1].from)}</span></div>`:''}</td><td class="r"><b>${esc(fmtP(d.k,R[d.k]))}</b></td><td>${esc(e?e.from:'')}</td>
+  <td class="small">${e&&e.by?who(e.by)+' · ':''}${esc(e?e.why:'')}${h.length>1?`<details><summary>History (${h.length})</summary><ul class="chglog">${h.map(x=>`<li>${esc(x.from)} · <b>${esc(fmtP(d.k,x.v))}</b>${x.from>today?' · scheduled':''}<div class="muted">${x.by?who(x.by)+' · ':''}changed ${dt(x.at)} · ${esc(x.why)}</div></li>`).join('')}</ul></details>`:''}</td></tr>`};
+ return `<div class="hero"><div class="meta">Business Control</div><h1>Parameter library</h1><p>One set of parameters for every Lean BuCA. Each change has a valid-from date and a reason. Approved BuCAs keep the values from their photo moment.</p></div>
+ ${ed?`<div class="card" style="margin-top:32px"><h3>Change a parameter</h3><div class="fg" style="margin-top:12px">
+  <div class="w"><label class="f" for="pSel">Parameter</label><select class="i" id="pSel"><option value="">Choose…</option>${PARAM_DEFS.map(d=>`<option value="${d.k}">${esc(d.g)} · ${esc(d.l)} (now ${esc(fmtP(d.k,R[d.k]))})</option>`).join('')}</select></div>
+  <div><label class="f" for="pVal">New value</label><input class="i" id="pVal" inputmode="decimal"></div><div><label class="f" for="pFrom">Valid from</label><input class="i" type="date" id="pFrom" value="${today}"></div>
+  <div class="w"><label class="f" for="pWhy">Reason <span>required, logged with your name</span></label><input class="i" id="pWhy" placeholder="For example: new CAO rates from 1 January"></div></div>
+  <div class="row" style="margin-top:16px"><button class="btn" data-act="paramChange">Save change</button></div><div class="err" id="perr"></div>
+  <p class="small muted" style="margin:4px 0 0">${frozen} approved BuCA${frozen===1?' keeps its':'s keep their'} photo-moment values. ${open} open BuCA${open===1?' uses':'s use'} the new value from its valid-from date.</p></div>`
+ :`<p class="small muted" style="margin-top:24px">Only Business Control can change parameters. ${RO?'':'Switch to Business control at the top right to try it.'}</p>`}
+ <div class="card" style="margin-top:24px"><h3>Derived</h3><p class="small" style="margin:8px 0 0">Productive hours per FTE: ${nf(R.paidHours)} paid hours × ${100-R.shrinkage}% after shrinkage × ${R.occupancy}% occupancy = <b>${nf(R.prodHours)} hours</b><br>Cost per productive hour: €${nf(R.fteCostAgent)} ÷ ${nf(R.prodHours)} = <b>€${R.hourly}</b></p></div>
+ ${groups.map(g=>`<div class="sec-title"><h2>${esc(g)}</h2></div><div class="card" style="overflow-x:auto"><table class="t"><thead><tr><th>Parameter</th><th class="r">Current value</th><th>Valid from</th><th>Last change</th></tr></thead><tbody>${PARAM_DEFS.filter(d=>d.g===g).map(row).join('')}</tbody></table></div>`).join('')}
+ <p class="small muted">Example values. Business Control should replace them. NPS, KTV and FTR are outcome measures, not cost parameters: choose them as the KPI on the outcome card.</p>
  <div class="sec-title"><h2>OKRs used for the fit check</h2></div>
  <div class="navlist">${S.okrs.map(o=>`<div class="navrow" style="cursor:default"><span class="t"><b>${esc(o.t)}</b><span>Signal words: ${esc(o.kw)}</span></span></div>`).join('')}</div>
  <p class="small muted">Example OKRs. Replace them with the real Customer Services OKRs.</p>`}
@@ -735,24 +904,24 @@ function vItem(id){const i=item(id);if(!i)return `<p>Initiative not found. <a hr
  ${i.buca&&(+i.buca.effort||(i.buca.levers||[]).length)?`<div class="card"><h4>Lean BuCA</h4><div id="side-calc" class="small" style="margin-top:6px">${sideCalc(i)}</div></div>`:''}
  <div class="card"><h4>History</h4><p class="small muted" style="margin:2px 0 6px">Click an entry to go to its artifact.</p><ul class="tl hist">${i.log.slice().reverse().map(l=>{const a=artOf(l),rel=a==='rel',href=rel?'#calendar':`#i-${i.id}-a${a}`;
   return `<li><a href="${href}" ${rel?'':`data-art="${a}"`}><time>${dt(l.at)}</time><span class="ht"><b>${esc(ROLES[l.role]?ROLES[l.role].n:l.role)}</b>${l.by?' · '+who(l.by):''}: ${esc(l.text)}</span><span class="hart">${rel?'Calendar':esc(a+' · '+STAGES[a-1].art)} ›</span></a></li>`}).join('')||'<li class="muted">Nothing yet</li>'}</ul></div></aside></div>`}
-function sideCalc(i){const c=calc(i);return `${eur(c.annual)} per year · ${eur(c.net)} over ${S.rules.horizon} years · ${conf(i).l} confidence`}
+function sideCalc(i){const c=calc(i);return `${eur(c.annual)} per year · ${eur(c.net)} over ${c.H} years · ${conf(i).l} confidence${i.buca.photo?' · frozen '+dt(i.buca.photo.at):''}`}
 
 /* ---------- render ---------- */
 function route(){return (location.hash||'#home').slice(1)}
 function curId(){const r=route();return r.startsWith('i-')?r.slice(2).split('-a')[0]:''}
 function curArt(){const m=route().match(/^i-.+-a([1-8])$/);return m?+m[1]:0}
 function render(){const r=route();const app=document.getElementById('app');
- const nav=[['home','Home'],['board','Pipeline'],['triage','Triage'],['agenda','Decision agenda'],['capacity','Capacity'],['rules','Finance rules']];
+ const nav=[['home','Home'],['board','Pipeline'],['triage','Triage'],['agenda','Decision agenda'],['capacity','Capacity'],['rules','Parameters']];
  document.getElementById('nav').innerHTML=nav.map(([h,l])=>`<a href="#${h}" class="${r===h||(h==='board'&&r==='calendar')?'on':''}">${l}</a>`).join('');
  const rs=document.getElementById('roleSel');rs.innerHTML=Object.entries(ROLES).map(([k,v])=>`<option value="${k}" ${k===S.role?'selected':''}>${v.n}</option>`).join('');
- const keep={};['reason','cond','find','mergeSel'].forEach(k=>{const el=document.getElementById(k);if(el)keep[k]=el.value});
- if(!S.items||!S.rules){app.innerHTML=`<div class="hero"><h1>Loading the board…</h1><p>${esc(S.loadNote||'Connecting to the shared initiatives.')}</p></div>`;return}
+ const keep={};['reason','cond','find','mergeSel','ovrSel','ovrVal','ovrWhy','recalcWhy','pSel','pVal','pFrom','pWhy'].forEach(k=>{const el=document.getElementById(k);if(el)keep[k]=el.value});
+ if(!S.items||!S.params){app.innerHTML=`<div class="hero"><h1>Loading the board…</h1><p>${esc(S.loadNote||'Connecting to the shared initiatives.')}</p></div>`;return}
  if(S.empty&&MODE==='shared'){app.innerHTML=`<div class="hero"><h1>The shared board is empty</h1><p>${CAN_ADMIN?'Load the example initiatives to start a test round, or start with a new demand.':'Start with a new demand, or ask the page owner to load the example data.'}</p></div><div class="row" style="margin-top:24px">${RO?'':'<button class="btn" data-act="new">New demand</button>'}${CAN_ADMIN?'<button class="btn sec" data-act="reset" id="resetBtn2">Load example data</button>':''}</div>`;return}
  app.innerHTML=r.startsWith('i-')?vItem(curId()):r==='board'?vBoard():r==='triage'?vTriage():r==='calendar'?vCalendar():r==='agenda'||r==='slate'?vSlate():r==='capacity'?vCapacity():r==='rules'?vRules():vHome();
  Object.entries(keep).forEach(([k,v])=>{const el=document.getElementById(k);if(el&&v)el.value=v});
  if(keep.find)document.getElementById('find')&&document.getElementById('find').dispatchEvent(new Event('input',{bubbles:true}));
  fillNames();if(!render.did&&S.items&&curArt()){render.did=1;setTimeout(()=>focusArt(curArt()),0)}}
-function refresh(i){const g=document.getElementById('gate');if(g)g.innerHTML=gateHtml(i.stage,i);((i.buca||{}).levers||[]).forEach((l,k)=>{const e=document.getElementById('lv-'+k);if(e)e.textContent=eur(leverVal(l).eur)+'/yr'});
+function refresh(i){const g=document.getElementById('gate');if(g)g.innerHTML=gateHtml(i.stage,i);{const RR=rulesFor(i);((i.buca||{}).levers||[]).forEach((l,k)=>{const e=document.getElementById('lv-'+k);if(e)e.textContent=eur(leverVal(l,RR).eur)+'/yr'})}
  const c=document.getElementById('calc');if(c)c.innerHTML=calcPanel(i);const sc=document.getElementById('side-calc');if(sc)sc.innerHTML=sideCalc(i)}
 function focusArt(n){const id=curId();if(!id||!n)return;OPEN[id]=OPEN[id]||new Set();OPEN[id].add(n);render();const el=document.getElementById('art-'+n);if(!el)return;
  el.scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash');const h=el.querySelector('.arth');if(h)h.focus({preventScroll:true})}
@@ -762,10 +931,9 @@ document.addEventListener('input',e=>{const t=e.target;
  if(t.id==='find'){const q=t.value.trim().toLowerCase();document.querySelectorAll('.bc[data-search]').forEach(c=>c.style.display=!q||c.dataset.search.includes(q)?'':'none');return}
  if(t.dataset.f){const id=curId(),i=item(id);if(!i)return;let v=t.value;if(t.dataset.num)v=v===''?'':(isNaN(+v.replace(',','.'))?v:+v.replace(',','.'));sp(i,t.dataset.f,v);
   if(S.role==='cap'&&['buca.effort','buca.duration','buca.team'].includes(t.dataset.f))i.buca.effortBy='cap';save(i);refresh(i);
-  if(t.tagName==='SELECT'&&t.dataset.f==='capacity.team'){render()}}
- if(t.dataset.rule){const v=+t.value.replace(',','.');if(!isNaN(v)&&v>0){S.rules[t.dataset.rule]=v;saveCfg()}}
+  if(t.tagName==='SELECT'&&(t.dataset.f==='capacity.team'||/^buca\.costs\.\d+\.(type|term)$/.test(t.dataset.f))){render()}}
  if(t.dataset.team){const v=+t.value.replace(',','.');if(!isNaN(v)&&v>=0){team(t.dataset.team).supply=v;saveCfg()}}});
-document.addEventListener('change',e=>{if(e.target.dataset.rule){toast('Rule saved. Every Lean BuCA now uses it.');}if(e.target.dataset.team){render();toast('Team capacity saved')}});
+document.addEventListener('change',e=>{if(e.target.dataset.cmp){const id=curId();CMP[id]=CMP[id]||{};const o=CMP[id];o.a=val('cmpA');o.b=val('cmpB');render();return}if(e.target.dataset.team){render();toast('Team capacity saved')}});
 let DRAG=null;
 document.addEventListener('dragstart',e=>{const t=e.target.closest?e.target:e.target.parentElement;const lv=t.closest('[data-lever]'),dr=t.closest('[data-drag]');
  if(lv)DRAG={k:'lever',t:lv.dataset.lever};else if(dr){DRAG={k:'dr',id:dr.dataset.drag};dr.classList.add('dragging');setTimeout(()=>markTargets(dr.dataset.drag),0)}else return;
@@ -791,6 +959,10 @@ async function act(k,el){
  if(k==='new'){if(RO)return;const id='n'+Date.now().toString(36);const it=migrate({id,key:newKey(),title:'',stage:1,status:'active',owner:'',ownerId:ME||null,created:Date.now(),demand:{},ai:null,overview:{bundled:[]},outcome:{},buca:{fin:'none',duration:4,levers:[]},decisions:[],capacity:{},delivery:{},review:{},log:[]});S.items.push(it);save(it,true);location.hash='#i-'+id;return}
  if(k==='bundleSel'){const sel=document.getElementById('bs-'+el.dataset.src);if(sel&&sel.value)bundle(el.dataset.src,sel.value);else toast('Choose an initiative first');return}
  if(k==='unbundle'){unbundle(el.dataset.t,el.dataset.s);return}
+ if(k==='paramChange'){if(S.role!=='finance'||RO)return;const pk=val('pSel'),v=val('pVal').replace(',','.'),from=val('pFrom'),why=val('pWhy').trim();
+  if(!PDEF[pk])return formErr('perr','Choose a parameter.');if(!isNum(v)||+v<0)return formErr('perr','Enter the new value as a number.');if(PDEF[pk].u==='%'&&+v>100)return formErr('perr','A percentage can\'t be above 100.');
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(from))return formErr('perr','Choose the date it is valid from.');if(why.length<5)return formErr('perr','Give a reason. It is logged with your name.');
+  S.params[pk].push({v:+v,from,at:Date.now(),by:ME||null,why});saveCfg(true);render();toast(PDEF[pk].l+' updated, valid from '+from);return}
  if(k==='asRole'){S.role=el.dataset.r;render();toast('Now viewing as '+ROLES[S.role].n);return}
  if(k==='calSel'){if(e_isLink)return;CAL_SEL=CAL_SEL===el.dataset.id?null:el.dataset.id;render();return}
  if(k==='relAI'){relAI(el);return}
@@ -798,6 +970,18 @@ async function act(k,el){
  const id=curId(),i=item(id);if(!i)return;const R=S.role;ART_CTX=i.stage;setTimeout(()=>{ART_CTX=null},0);
  if(k==='addLever'){addLever(i,el.dataset.lever);return}
  if(k==='rmLever'){i.buca.levers.splice(+el.dataset.k,1);save(i);render();return}
+ if(k==='addCost'){i.buca.costs=i.buca.costs||[];i.buca.costs.push({type:'licence',desc:'',term:'recurring',year:1,cls:'opex'});save(i);render();const e2=document.getElementById('f_buca_costs_'+(i.buca.costs.length-1)+'_desc');if(e2)e2.focus();return}
+ if(k==='rmCost'){i.buca.costs.splice(+el.dataset.k,1);save(i);render();return}
+ if(k==='override'){if(S.role!=='finance'||RO)return;const sel=val('ovrSel'),v=val('ovrVal').replace(',','.'),why=val('ovrWhy').trim();
+  if(!sel)return formErr('ovrerr','Choose what to override.');if(!isNum(v))return formErr('ovrerr','Enter the new value as a number.');if(why.length<5)return formErr('ovrerr','Give a reason. It is logged with your name.');
+  const nv=+v;let old,label;if(sel.startsWith('p:')){const pk=sel.slice(2);old=rulesFor(i)[pk];label='Parameter · '+PDEF[pk].l;i.buca.ovr[pk]=nv}else{const path=sel.slice(2);old=gp(i.buca,path);label=fieldLabel(i,path);sp(i.buca,path,nv)}
+  i.buca.changes.push({at:Date.now(),by:ME||null,role:S.role,kind:'override',field:sel,label,old:old==null?'':old,new:nv,why});log(i,`Override: ${label} ${fmtVal(sel,old)} → ${fmtVal(sel,nv)} (${why})`,4);save(i,true);render();toast('Override applied and logged');return}
+ if(k==='undoOvr'){if(S.role!=='finance'||RO)return;const pk=el.dataset.k;const old=i.buca.ovr[pk];delete i.buca.ovr[pk];const why=val('ovrWhy').trim()||'Override withdrawn';
+  i.buca.changes.push({at:Date.now(),by:ME||null,role:S.role,kind:'withdrawn',field:'p:'+pk,label:'Parameter · '+PDEF[pk].l,old,new:rulesFor(i)[pk],why});log(i,`Override withdrawn: ${PDEF[pk].l} (${why})`,4);save(i,true);render();toast('Override withdrawn and logged');return}
+ if(k==='recalc'){if(S.role!=='finance'||RO)return;const why=val('recalcWhy').trim();if(why.length<5)return formErr('recalcerr','Give a reason. It is logged with your name.');
+  const before=calc(i),drift=driftOf(i),now=Date.now();i.buca.photo={at:now,by:ME||null,rules:paramsAt(now),prev:i.buca.photo&&i.buca.photo.at};const after=calc(i);
+  i.buca.changes.push({at:now,by:ME||null,role:S.role,kind:'recalc',field:'net',label:'Net value after recalculating with '+drift.map(d=>d.l).join(', '),old:Math.round(before.net),new:Math.round(after.net),why});
+  snapVersion(i,'Recalculated with today\'s parameters · new photo moment',why);log(i,`Recalculated with today's parameters as v${i.buca.versions.length}: net ${eur(before.net)} → ${eur(after.net)} (${why})`,4);save(i,true);render();toast('Recalculated. New photo moment saved.');return}
  const go=(stage,msg,text)=>{const from=i.stage;if(stage)i.stage=stage;log(i,text||msg,from);save(i,true);OPEN[id]=new Set([i.stage]);render();toast(msg);window.scrollTo({top:0,behavior:'smooth'})};
  switch(k){
  case 'aicheck':return aiCheck(i,el);
@@ -811,9 +995,9 @@ async function act(k,el){
  case 'confirmOutcome':return go(4,'Outcome confirmed. The Lean BuCA is open.','Outcome card confirmed as measurable');
  case 'sendbackOutcome':{const r=needReason();if(!r)return;i.outcome.ready=false;return go(0,'Sent back to the owner','Outcome card sent back: '+r)}
  case 'confirmEffort':if(!(+i.buca.effort>0)||!i.buca.team)return errOut('Fill in effort and team in the Lean BuCA first.');i.buca.effortBy='cap';return go(0,'Effort confirmed','Effort confirmed: '+i.buca.effort+' FTE-months, '+(team(i.buca.team)||{}).n);
- case 'toFinance':if(!gateOk(4,i))return;i.buca.fin='pending';return go(0,'Sent to Finance','Lean BuCA sent to Finance');
- case 'approve':{const r=(document.getElementById('reason')||{}).value;if(r&&r.trim())i.buca.finNote=(i.buca.finNote?i.buca.finNote+'\n':'')+r.trim();i.buca.fin='approved';return go(5,'Approved. It is now on the decision agenda.','Lean BuCA approved'+(r&&r.trim()?': '+r.trim():''))}
- case 'returnBuca':{const r=needReason();if(!r)return;i.buca.fin='returned';i.buca.finNote=r;return go(0,'Returned to the owner with questions','Lean BuCA returned: '+r)}
+ case 'toFinance':{if(!gateOk(4,i))return;let note='';if(i.buca.fin==='returned'){note=needReason();if(!note)return}i.buca.fin='pending';snapVersion(i,'Sent to Business Control',note);return go(0,'Sent to Business Control as v'+i.buca.versions.length,'Lean BuCA v'+i.buca.versions.length+' sent to Business Control'+(note?': '+note:''))}
+ case 'approve':{const r=((document.getElementById('reason')||{}).value||'').trim();if(r)i.buca.finNote=(i.buca.finNote?i.buca.finNote+'\n':'')+r;i.buca.fin='approved';const now=Date.now();i.buca.photo={at:now,by:ME||null,rules:paramsAt(now)};snapVersion(i,'Approved by Business Control · photo moment',r);return go(5,'Approved and frozen. It is now on the decision agenda.','Lean BuCA approved as v'+i.buca.versions.length+', parameters frozen (photo moment)'+(r?': '+r:''))}
+ case 'returnBuca':{const r=needReason();if(!r)return;i.buca.fin='returned';i.buca.finNote=r;snapVersion(i,'Returned by Business Control',r);return go(0,'Returned to the owner with questions','Lean BuCA v'+i.buca.versions.length+' returned: '+r)}
  case 'fund':case 'prove':case 'queue':case 'stop':{const r=needReason();if(!r)return;const v={fund:'Fund',prove:'Prove first',queue:'Queue',stop:'Stop'}[k];const c=(document.getElementById('cond')||{}).value||'';
   i.decisions.push({verdict:v,reason:r,conditions:c.trim(),role:'heads',at:Date.now(),cycle:S.cycle});
   if(k==='queue'){i.status='queued';return go(0,'Queued for a later cycle',v+': '+r)}if(k==='stop'){i.status='stopped';return go(0,'Stopped',v+': '+r)}

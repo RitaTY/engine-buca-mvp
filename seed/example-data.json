@@ -3,13 +3,169 @@
   "documents": {
     "cfg/main": {
       "cycle": "2027 Q1",
-      "rules": {
-        "hourly": 52,
-        "fteHours": 1400,
-        "contactCost": 6.5,
-        "realisation": 80,
-        "horizon": 3,
-        "margin": 110
+      "links": [],
+      "dismissed": [],
+      "params": {
+        "fteCostAgent": [
+          {
+            "v": 62000,
+            "from": "2026-01-01",
+            "at": 1767225600000,
+            "by": null,
+            "why": "Example starting value"
+          }
+        ],
+        "fteCostDelivery": [
+          {
+            "v": 95000,
+            "from": "2026-01-01",
+            "at": 1767225600000,
+            "by": null,
+            "why": "Example starting value"
+          }
+        ],
+        "contactCost": [
+          {
+            "v": 6.5,
+            "from": "2026-01-01",
+            "at": 1767225600000,
+            "by": null,
+            "why": "Example starting value"
+          },
+          {
+            "v": 6.9,
+            "from": "2026-11-11",
+            "at": 1794434274586,
+            "by": null,
+            "why": "Example: updated cost per contact after the Q3 cost review"
+          }
+        ],
+        "paidHours": [
+          {
+            "v": 1800,
+            "from": "2026-01-01",
+            "at": 1767225600000,
+            "by": null,
+            "why": "Example starting value"
+          }
+        ],
+        "shrinkage": [
+          {
+            "v": 30,
+            "from": "2026-01-01",
+            "at": 1767225600000,
+            "by": null,
+            "why": "Example starting value"
+          }
+        ],
+        "occupancy": [
+          {
+            "v": 85,
+            "from": "2026-01-01",
+            "at": 1767225600000,
+            "by": null,
+            "why": "Example starting value"
+          }
+        ],
+        "workWeeks": [
+          {
+            "v": 46,
+            "from": "2026-01-01",
+            "at": 1767225600000,
+            "by": null,
+            "why": "Example starting value"
+          }
+        ],
+        "contactRatio": [
+          {
+            "v": 1.2,
+            "from": "2026-01-01",
+            "at": 1767225600000,
+            "by": null,
+            "why": "Example starting value"
+          }
+        ],
+        "aht_general": [
+          {
+            "v": 420,
+            "from": "2026-01-01",
+            "at": 1767225600000,
+            "by": null,
+            "why": "Example starting value"
+          }
+        ],
+        "aht_billing": [
+          {
+            "v": 540,
+            "from": "2026-01-01",
+            "at": 1767225600000,
+            "by": null,
+            "why": "Example starting value"
+          }
+        ],
+        "aht_heat": [
+          {
+            "v": 600,
+            "from": "2026-01-01",
+            "at": 1767225600000,
+            "by": null,
+            "why": "Example starting value"
+          }
+        ],
+        "aht_moving": [
+          {
+            "v": 450,
+            "from": "2026-01-01",
+            "at": 1767225600000,
+            "by": null,
+            "why": "Example starting value"
+          }
+        ],
+        "aht_b2b": [
+          {
+            "v": 480,
+            "from": "2026-01-01",
+            "at": 1767225600000,
+            "by": null,
+            "why": "Example starting value"
+          }
+        ],
+        "realisation": [
+          {
+            "v": 80,
+            "from": "2026-01-01",
+            "at": 1767225600000,
+            "by": null,
+            "why": "Example starting value"
+          }
+        ],
+        "horizon": [
+          {
+            "v": 3,
+            "from": "2026-01-01",
+            "at": 1767225600000,
+            "by": null,
+            "why": "Example starting value"
+          }
+        ],
+        "margin": [
+          {
+            "v": 110,
+            "from": "2026-01-01",
+            "at": 1767225600000,
+            "by": null,
+            "why": "Example starting value"
+          }
+        ],
+        "capexThreshold": [
+          {
+            "v": 10000,
+            "from": "2026-01-01",
+            "at": 1767225600000,
+            "by": null,
+            "why": "Example starting value"
+          }
+        ]
       },
       "okrs": [
         {
@@ -106,8 +262,6 @@
       "buca": {
         "effort": 6,
         "duration": 4,
-        "ext": 10000,
-        "run": 8000,
         "team": "dc",
         "evidence": "measured",
         "effortBy": "cap",
@@ -118,7 +272,190 @@
             "t": "avoided",
             "n": 2200
           }
-        ]
+        ],
+        "costs": [
+          {
+            "type": "other",
+            "desc": "External one-off cost",
+            "term": "oneoff",
+            "amount": 10000,
+            "year": 1,
+            "cls": "opex"
+          },
+          {
+            "type": "licence",
+            "desc": "Running cost",
+            "term": "recurring",
+            "amount": 8000,
+            "year": 1,
+            "cls": "opex"
+          }
+        ],
+        "ovr": {},
+        "horizonY": "",
+        "versions": [
+          {
+            "v": 1,
+            "at": 1793483874585,
+            "by": null,
+            "role": "owner",
+            "event": "Sent to Business Control",
+            "note": "",
+            "buca": {
+              "effort": 6,
+              "duration": 4,
+              "team": "dc",
+              "evidence": "measured",
+              "levers": [
+                {
+                  "t": "avoided",
+                  "n": 2200
+                }
+              ],
+              "costs": [
+                {
+                  "type": "other",
+                  "desc": "External one-off cost",
+                  "term": "oneoff",
+                  "amount": 10000,
+                  "year": 1,
+                  "cls": "opex"
+                },
+                {
+                  "type": "licence",
+                  "desc": "Running cost",
+                  "term": "recurring",
+                  "amount": 8000,
+                  "year": 1,
+                  "cls": "opex"
+                }
+              ],
+              "ovr": {},
+              "horizonY": "",
+              "effortCls": "opex"
+            },
+            "rules": {
+              "fteCostAgent": 62000,
+              "fteCostDelivery": 95000,
+              "contactCost": 6.5,
+              "paidHours": 1800,
+              "shrinkage": 30,
+              "occupancy": 85,
+              "workWeeks": 46,
+              "contactRatio": 1.2,
+              "aht_general": 420,
+              "aht_billing": 540,
+              "aht_heat": 600,
+              "aht_moving": 450,
+              "aht_b2b": 480,
+              "realisation": 80,
+              "horizon": 3,
+              "margin": 110,
+              "capexThreshold": 10000
+            },
+            "out": {
+              "annual": 137280,
+              "net": 330340,
+              "payback": 6,
+              "conf": "High",
+              "capex": 0,
+              "opex": 81500
+            }
+          },
+          {
+            "v": 2,
+            "at": 1793656674585,
+            "by": null,
+            "role": "finance",
+            "event": "Approved by Business Control · photo moment",
+            "note": "Realisation kept at 80%. Peak-season volume is used as an annual average; acceptable for a Lean BuCA.",
+            "buca": {
+              "effort": 6,
+              "duration": 4,
+              "team": "dc",
+              "evidence": "measured",
+              "levers": [
+                {
+                  "t": "avoided",
+                  "n": 2200
+                }
+              ],
+              "costs": [
+                {
+                  "type": "other",
+                  "desc": "External one-off cost",
+                  "term": "oneoff",
+                  "amount": 10000,
+                  "year": 1,
+                  "cls": "opex"
+                },
+                {
+                  "type": "licence",
+                  "desc": "Running cost",
+                  "term": "recurring",
+                  "amount": 8000,
+                  "year": 1,
+                  "cls": "opex"
+                }
+              ],
+              "ovr": {},
+              "horizonY": "",
+              "effortCls": "opex"
+            },
+            "rules": {
+              "fteCostAgent": 62000,
+              "fteCostDelivery": 95000,
+              "contactCost": 6.5,
+              "paidHours": 1800,
+              "shrinkage": 30,
+              "occupancy": 85,
+              "workWeeks": 46,
+              "contactRatio": 1.2,
+              "aht_general": 420,
+              "aht_billing": 540,
+              "aht_heat": 600,
+              "aht_moving": 450,
+              "aht_b2b": 480,
+              "realisation": 80,
+              "horizon": 3,
+              "margin": 110,
+              "capexThreshold": 10000
+            },
+            "out": {
+              "annual": 137280,
+              "net": 330340,
+              "payback": 6,
+              "conf": "High",
+              "capex": 0,
+              "opex": 81500
+            }
+          }
+        ],
+        "changes": [],
+        "effortCls": "opex",
+        "photo": {
+          "at": 1793656674585,
+          "by": null,
+          "rules": {
+            "fteCostAgent": 62000,
+            "fteCostDelivery": 95000,
+            "contactCost": 6.5,
+            "paidHours": 1800,
+            "shrinkage": 30,
+            "occupancy": 85,
+            "workWeeks": 46,
+            "contactRatio": 1.2,
+            "aht_general": 420,
+            "aht_billing": 540,
+            "aht_heat": 600,
+            "aht_moving": 450,
+            "aht_b2b": 480,
+            "realisation": 80,
+            "horizon": 3,
+            "margin": 110,
+            "capexThreshold": 10000
+          }
+        }
       },
       "decisions": [],
       "capacity": {},
@@ -126,22 +463,22 @@
       "review": {},
       "log": [
         {
-          "at": 1790971080864,
+          "at": 1790978274585,
           "role": "owner",
           "text": "Demand record submitted"
         },
         {
-          "at": 1791316680864,
+          "at": 1791323874585,
           "role": "lead",
           "text": "Accepted at triage, labelled CI. Merged \"Meter reading SMS nudge\"."
         },
         {
-          "at": 1792267080864,
+          "at": 1792274274585,
           "role": "lead",
           "text": "Outcome card confirmed as measurable"
         },
         {
-          "at": 1793649480864,
+          "at": 1793656674585,
           "role": "finance",
           "text": "Lean BuCA approved"
         }
@@ -150,7 +487,7 @@
       "title": "Proactive meter-reading reminders",
       "stage": 5,
       "owner": "VC Move & Meter (B2C)",
-      "created": 1790971080864,
+      "created": 1790978274585,
       "key": "ENG-101"
     },
     "items/b1": {
@@ -191,8 +528,6 @@
       "buca": {
         "effort": 12,
         "duration": 4,
-        "ext": 40000,
-        "run": 30000,
         "team": "ai",
         "evidence": "estimated",
         "effortBy": "cap",
@@ -203,9 +538,199 @@
             "t": "aht",
             "vol": 30000,
             "pct": 40,
-            "min": 1.5
+            "min": 1.5,
+            "queue": "billing"
           }
-        ]
+        ],
+        "costs": [
+          {
+            "type": "advisory",
+            "desc": "Implementation partner",
+            "term": "oneoff",
+            "amount": 40000,
+            "year": 1,
+            "cls": "opex"
+          },
+          {
+            "type": "licence",
+            "desc": "AI assistant licences",
+            "term": "recurring",
+            "amount": 30000,
+            "year": 1,
+            "cls": "opex"
+          }
+        ],
+        "ovr": {},
+        "horizonY": "",
+        "versions": [
+          {
+            "v": 1,
+            "at": 1793743074585,
+            "by": null,
+            "role": "owner",
+            "event": "Sent to Business Control",
+            "note": "",
+            "buca": {
+              "effort": 12,
+              "duration": 4,
+              "team": "ai",
+              "evidence": "estimated",
+              "levers": [
+                {
+                  "t": "aht",
+                  "vol": 30000,
+                  "pct": 40,
+                  "min": 1.5,
+                  "queue": "billing"
+                }
+              ],
+              "costs": [
+                {
+                  "type": "advisory",
+                  "desc": "Implementation partner",
+                  "term": "oneoff",
+                  "amount": 40000,
+                  "year": 1,
+                  "cls": "opex"
+                },
+                {
+                  "type": "licence",
+                  "desc": "AI assistant licences",
+                  "term": "recurring",
+                  "amount": 30000,
+                  "year": 1,
+                  "cls": "opex"
+                }
+              ],
+              "ovr": {},
+              "horizonY": "",
+              "effortCls": "opex"
+            },
+            "rules": {
+              "fteCostAgent": 62000,
+              "fteCostDelivery": 95000,
+              "contactCost": 6.5,
+              "paidHours": 1800,
+              "shrinkage": 30,
+              "occupancy": 85,
+              "workWeeks": 46,
+              "contactRatio": 1.2,
+              "aht_general": 420,
+              "aht_billing": 540,
+              "aht_heat": 600,
+              "aht_moving": 450,
+              "aht_b2b": 480,
+              "realisation": 80,
+              "horizon": 3,
+              "margin": 110,
+              "capexThreshold": 10000
+            },
+            "out": {
+              "annual": 166723,
+              "net": 275170,
+              "payback": 12,
+              "conf": "High",
+              "capex": 0,
+              "opex": 225000
+            }
+          },
+          {
+            "v": 2,
+            "at": 1793915874585,
+            "by": null,
+            "role": "finance",
+            "event": "Approved by Business Control · photo moment",
+            "note": "Approved with lower confidence: minutes saved come from a 2-week pilot.",
+            "buca": {
+              "effort": 12,
+              "duration": 4,
+              "team": "ai",
+              "evidence": "estimated",
+              "levers": [
+                {
+                  "t": "aht",
+                  "vol": 30000,
+                  "pct": 40,
+                  "min": 1.5,
+                  "queue": "billing"
+                }
+              ],
+              "costs": [
+                {
+                  "type": "advisory",
+                  "desc": "Implementation partner",
+                  "term": "oneoff",
+                  "amount": 40000,
+                  "year": 1,
+                  "cls": "opex"
+                },
+                {
+                  "type": "licence",
+                  "desc": "AI assistant licences",
+                  "term": "recurring",
+                  "amount": 30000,
+                  "year": 1,
+                  "cls": "opex"
+                }
+              ],
+              "ovr": {},
+              "horizonY": "",
+              "effortCls": "opex"
+            },
+            "rules": {
+              "fteCostAgent": 62000,
+              "fteCostDelivery": 95000,
+              "contactCost": 6.5,
+              "paidHours": 1800,
+              "shrinkage": 30,
+              "occupancy": 85,
+              "workWeeks": 46,
+              "contactRatio": 1.2,
+              "aht_general": 420,
+              "aht_billing": 540,
+              "aht_heat": 600,
+              "aht_moving": 450,
+              "aht_b2b": 480,
+              "realisation": 80,
+              "horizon": 3,
+              "margin": 110,
+              "capexThreshold": 10000
+            },
+            "out": {
+              "annual": 166723,
+              "net": 275170,
+              "payback": 12,
+              "conf": "High",
+              "capex": 0,
+              "opex": 225000
+            }
+          }
+        ],
+        "changes": [],
+        "effortCls": "opex",
+        "photo": {
+          "at": 1793915874585,
+          "by": null,
+          "rules": {
+            "fteCostAgent": 62000,
+            "fteCostDelivery": 95000,
+            "contactCost": 6.5,
+            "paidHours": 1800,
+            "shrinkage": 30,
+            "occupancy": 85,
+            "workWeeks": 46,
+            "contactRatio": 1.2,
+            "aht_general": 420,
+            "aht_billing": 540,
+            "aht_heat": 600,
+            "aht_moving": 450,
+            "aht_b2b": 480,
+            "realisation": 80,
+            "horizon": 3,
+            "margin": 110,
+            "capexThreshold": 10000
+          }
+        }
       },
       "decisions": [],
       "capacity": {},
@@ -213,22 +738,22 @@
       "review": {},
       "log": [
         {
-          "at": 1790107080864,
+          "at": 1790114274585,
           "role": "owner",
           "text": "Demand record submitted"
         },
         {
-          "at": 1790539080864,
+          "at": 1790546274585,
           "role": "lead",
           "text": "Accepted at triage, labelled Change"
         },
         {
-          "at": 1791835080864,
+          "at": 1791842274585,
           "role": "lead",
           "text": "Outcome card confirmed as measurable"
         },
         {
-          "at": 1793908680864,
+          "at": 1793915874585,
           "role": "finance",
           "text": "Lean BuCA approved"
         }
@@ -237,7 +762,7 @@
       "title": "Agentic assist for billing questions",
       "stage": 5,
       "owner": "CoE Billing expert leads",
-      "created": 1790107080864,
+      "created": 1790114274585,
       "key": "ENG-102"
     },
     "items/c1": {
@@ -275,8 +800,6 @@
       "buca": {
         "effort": 4,
         "duration": 3,
-        "ext": 15000,
-        "run": 5000,
         "team": "cct",
         "evidence": "estimated",
         "fin": "pending",
@@ -289,9 +812,109 @@
             "t": "aht",
             "vol": 4000,
             "pct": 60,
-            "min": 2
+            "min": 2,
+            "queue": "heat"
           }
-        ]
+        ],
+        "costs": [
+          {
+            "type": "hardware",
+            "desc": "IVR intent routing build",
+            "term": "oneoff",
+            "amount": 15000,
+            "year": 1,
+            "cls": "capex"
+          },
+          {
+            "type": "licence",
+            "desc": "Intent model licence",
+            "term": "recurring",
+            "amount": 5000,
+            "year": 1,
+            "cls": "capex"
+          }
+        ],
+        "ovr": {},
+        "horizonY": "",
+        "versions": [
+          {
+            "v": 1,
+            "at": 1794261474585,
+            "by": null,
+            "role": "owner",
+            "event": "Sent to Business Control",
+            "note": "",
+            "buca": {
+              "effort": 4,
+              "duration": 3,
+              "team": "cct",
+              "evidence": "estimated",
+              "levers": [
+                {
+                  "t": "avoided",
+                  "n": 300
+                },
+                {
+                  "t": "aht",
+                  "vol": 4000,
+                  "pct": 60,
+                  "min": 2,
+                  "queue": "heat"
+                }
+              ],
+              "costs": [
+                {
+                  "type": "hardware",
+                  "desc": "IVR intent routing build",
+                  "term": "oneoff",
+                  "amount": 15000,
+                  "year": 1,
+                  "cls": "capex"
+                },
+                {
+                  "type": "licence",
+                  "desc": "Intent model licence",
+                  "term": "recurring",
+                  "amount": 5000,
+                  "year": 1,
+                  "cls": "capex"
+                }
+              ],
+              "ovr": {},
+              "horizonY": "",
+              "effortCls": "opex"
+            },
+            "rules": {
+              "fteCostAgent": 62000,
+              "fteCostDelivery": 95000,
+              "contactCost": 6.5,
+              "paidHours": 1800,
+              "shrinkage": 30,
+              "occupancy": 85,
+              "workWeeks": 46,
+              "contactRatio": 1.2,
+              "aht_general": 420,
+              "aht_billing": 540,
+              "aht_heat": 600,
+              "aht_moving": 450,
+              "aht_b2b": 480,
+              "realisation": 80,
+              "horizon": 3,
+              "margin": 110,
+              "capexThreshold": 10000
+            },
+            "out": {
+              "annual": 63180,
+              "net": 127872,
+              "payback": 10,
+              "conf": "Medium",
+              "capex": 30000,
+              "opex": 31667
+            }
+          }
+        ],
+        "changes": [],
+        "effortCls": "opex"
       },
       "decisions": [],
       "capacity": {},
@@ -299,22 +922,22 @@
       "review": {},
       "log": [
         {
-          "at": 1791835080864,
+          "at": 1791842274585,
           "role": "owner",
           "text": "Demand record submitted"
         },
         {
-          "at": 1792180680864,
+          "at": 1792187874585,
           "role": "lead",
           "text": "Accepted at triage, labelled CI"
         },
         {
-          "at": 1793217480864,
+          "at": 1793224674585,
           "role": "lead",
           "text": "Outcome card confirmed as measurable"
         },
         {
-          "at": 1794254280864,
+          "at": 1794261474585,
           "role": "owner",
           "text": "Lean BuCA sent to Finance"
         }
@@ -323,7 +946,7 @@
       "title": "Auto-routing of heat-pump service calls",
       "stage": 4,
       "owner": "Heat operations",
-      "created": 1791835080864,
+      "created": 1791842274585,
       "key": "ENG-103"
     },
     "items/d1": {
@@ -362,7 +985,13 @@
       "buca": {
         "fin": "none",
         "duration": 4,
-        "levers": []
+        "levers": [],
+        "costs": [],
+        "ovr": {},
+        "horizonY": "",
+        "versions": [],
+        "changes": [],
+        "effortCls": "opex"
       },
       "decisions": [],
       "capacity": {},
@@ -370,12 +999,12 @@
       "review": {},
       "log": [
         {
-          "at": 1792699080864,
+          "at": 1792706274585,
           "role": "owner",
           "text": "Demand record submitted"
         },
         {
-          "at": 1793131080864,
+          "at": 1793138274585,
           "role": "lead",
           "text": "Accepted at triage, labelled CI"
         }
@@ -384,7 +1013,7 @@
       "title": "Intraday steering automation for WFM",
       "stage": 3,
       "owner": "NextGen",
-      "created": 1792699080864,
+      "created": 1792706274585,
       "key": "ENG-104"
     },
     "items/e1": {
@@ -405,7 +1034,13 @@
       "buca": {
         "fin": "none",
         "duration": 4,
-        "levers": []
+        "levers": [],
+        "costs": [],
+        "ovr": {},
+        "horizonY": "",
+        "versions": [],
+        "changes": [],
+        "effortCls": "opex"
       },
       "decisions": [],
       "capacity": {},
@@ -413,7 +1048,7 @@
       "review": {},
       "log": [
         {
-          "at": 1793995080864,
+          "at": 1794002274585,
           "role": "owner",
           "text": "Demand record submitted"
         }
@@ -422,7 +1057,7 @@
       "title": "Self-service move-house flow",
       "stage": 2,
       "owner": "VC Move & Meter (B2C)",
-      "created": 1793995080864,
+      "created": 1794002274585,
       "key": "ENG-105"
     },
     "items/f1": {
@@ -443,7 +1078,13 @@
       "buca": {
         "fin": "none",
         "duration": 4,
-        "levers": []
+        "levers": [],
+        "costs": [],
+        "ovr": {},
+        "horizonY": "",
+        "versions": [],
+        "changes": [],
+        "effortCls": "opex"
       },
       "decisions": [],
       "capacity": {},
@@ -451,12 +1092,12 @@
       "review": {},
       "log": [
         {
-          "at": 1794081480864,
+          "at": 1794088674585,
           "role": "owner",
           "text": "Demand record submitted"
         },
         {
-          "at": 1794167880864,
+          "at": 1794175074585,
           "role": "lead",
           "text": "Merged into \"Proactive meter-reading reminders\""
         }
@@ -465,7 +1106,7 @@
       "title": "Meter reading SMS nudge",
       "stage": 2,
       "owner": "PO Customer Contact",
-      "created": 1794081480864,
+      "created": 1794088674585,
       "mergedInto": "a1",
       "key": "ENG-106"
     },
@@ -487,7 +1128,13 @@
       "buca": {
         "fin": "none",
         "duration": 4,
-        "levers": []
+        "levers": [],
+        "costs": [],
+        "ovr": {},
+        "horizonY": "",
+        "versions": [],
+        "changes": [],
+        "effortCls": "opex"
       },
       "decisions": [],
       "capacity": {},
@@ -495,7 +1142,7 @@
       "review": {},
       "log": [
         {
-          "at": 1794167880864,
+          "at": 1794175074585,
           "role": "owner",
           "text": "Demand record submitted"
         }
@@ -504,7 +1151,7 @@
       "title": "Estimated bill complaints after meter reading",
       "stage": 2,
       "owner": "CoE Billing expert leads",
-      "created": 1794167880864,
+      "created": 1794175074585,
       "key": "ENG-107"
     },
     "items/k1": {
@@ -525,7 +1172,13 @@
       "buca": {
         "fin": "none",
         "duration": 4,
-        "levers": []
+        "levers": [],
+        "costs": [],
+        "ovr": {},
+        "horizonY": "",
+        "versions": [],
+        "changes": [],
+        "effortCls": "opex"
       },
       "decisions": [],
       "capacity": {},
@@ -533,7 +1186,7 @@
       "review": {},
       "log": [
         {
-          "at": 1794254280864,
+          "at": 1794261474585,
           "role": "owner",
           "text": "Demand record submitted"
         }
@@ -542,7 +1195,7 @@
       "title": "Meter readings for movers by phone",
       "stage": 2,
       "owner": "PO Customer Contact",
-      "created": 1794254280864,
+      "created": 1794261474585,
       "key": "ENG-108"
     },
     "items/g1": {
@@ -580,8 +1233,6 @@
       "buca": {
         "effort": 8,
         "duration": 4,
-        "ext": 20000,
-        "run": 12000,
         "team": "dc",
         "evidence": "measured",
         "effortBy": "cap",
@@ -592,7 +1243,35 @@
             "t": "avoided",
             "n": 900
           }
-        ]
+        ],
+        "costs": [
+          {
+            "type": "other",
+            "desc": "External one-off cost",
+            "term": "oneoff",
+            "amount": 20000,
+            "year": 1,
+            "cls": "opex"
+          },
+          {
+            "type": "licence",
+            "desc": "Running cost",
+            "term": "recurring",
+            "amount": 12000,
+            "year": 1,
+            "cls": "opex"
+          }
+        ],
+        "ovr": {},
+        "horizonY": "",
+        "versions": [],
+        "changes": [],
+        "effortCls": "opex",
+        "photo": {
+          "at": 1786658274585,
+          "rules": null,
+          "legacy": true
+        }
       },
       "decisions": [
         {
@@ -600,7 +1279,7 @@
           "reason": "Clear self-service win, measured volumes.",
           "conditions": "Report adoption after 3 months.",
           "role": "heads",
-          "at": 1790107080864,
+          "at": 1790114274585,
           "cycle": "2026 Q4"
         }
       ],
@@ -615,12 +1294,12 @@
       "review": {},
       "log": [
         {
-          "at": 1790107080864,
+          "at": 1790114274585,
           "role": "heads",
           "text": "Fund: Clear self-service win, measured volumes."
         },
         {
-          "at": 1790971080864,
+          "at": 1790978274585,
           "role": "cap",
           "text": "Capacity committed: Digital Care, 2 FTE, 2027 Q1 to 2027 Q2"
         }
@@ -629,7 +1308,7 @@
       "title": "Payment arrangement self-service",
       "stage": 7,
       "owner": "B2B value chain",
-      "created": 1786651080864,
+      "created": 1786658274585,
       "key": "ENG-109"
     },
     "items/h1": {
@@ -667,8 +1346,6 @@
       "buca": {
         "effort": 5,
         "duration": 3,
-        "ext": 5000,
-        "run": 6000,
         "team": "dc",
         "evidence": "estimated",
         "effortBy": "cap",
@@ -678,9 +1355,38 @@
             "t": "aht",
             "vol": 20000,
             "pct": 15,
-            "min": 1
+            "min": 1,
+            "queue": "general"
           }
-        ]
+        ],
+        "costs": [
+          {
+            "type": "other",
+            "desc": "External one-off cost",
+            "term": "oneoff",
+            "amount": 5000,
+            "year": 1,
+            "cls": "opex"
+          },
+          {
+            "type": "licence",
+            "desc": "Running cost",
+            "term": "recurring",
+            "amount": 6000,
+            "year": 1,
+            "cls": "opex"
+          }
+        ],
+        "ovr": {},
+        "horizonY": "",
+        "versions": [],
+        "changes": [],
+        "effortCls": "opex",
+        "photo": {
+          "at": 1777154274585,
+          "rules": null,
+          "legacy": true
+        }
       },
       "decisions": [
         {
@@ -688,7 +1394,7 @@
           "reason": "Peak relief",
           "conditions": "",
           "role": "heads",
-          "at": 1779739080864,
+          "at": 1779746274585,
           "cycle": "2026 Q2"
         }
       ],
@@ -721,12 +1427,12 @@
       },
       "log": [
         {
-          "at": 1792699080864,
+          "at": 1792706274585,
           "role": "po",
           "text": "Marked delivered"
         },
         {
-          "at": 1794167880864,
+          "at": 1794175074585,
           "role": "owner",
           "text": "Actuals submitted"
         }
@@ -735,7 +1441,7 @@
       "title": "Callback scheduling in the app",
       "stage": 8,
       "owner": "VC Service (B2C)",
-      "created": 1777147080864,
+      "created": 1777154274585,
       "key": "ENG-110"
     }
   }
