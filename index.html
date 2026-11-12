@@ -203,6 +203,19 @@ footer{border-top:1px solid var(--line);padding:24px 0;color:var(--ink2);font-si
 table.yrs td,table.yrs th{padding:8px}
 table.cmp tr.grp td{background:var(--bg2);font-weight:700;font-size:12px;line-height:16px;color:var(--ink2)}
 .ai.warn{background:#FDEFE6}
+.rolehelp{font-size:14px;color:var(--green);font-weight:700;white-space:nowrap}
+@keyframes pulse{0%,60%{box-shadow:0 0 0 4px var(--green-l)}100%{box-shadow:0 0 0 0 transparent}}
+.rolebox select.pulse{animation:pulse 2.4s ease-out}
+.roles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.rolecard{display:flex;flex-direction:column;gap:14px;text-align:left;background:#fff;border:2px solid transparent;border-radius:16px;box-shadow:var(--sh);padding:20px 22px;cursor:pointer;font:inherit;color:var(--ink);transition:border-color .15s,background .15s}
+.rolecard:hover,.rolecard:focus-visible{border-color:var(--green);outline:none}.rolecard:focus-visible{box-shadow:0 0 0 4px var(--green-l),var(--sh)}
+.rolecard.cur{background:var(--green-t)}
+.rc-top{display:flex;align-items:center;gap:14px}.rc-name{flex:1;display:flex;flex-direction:column}.rc-name b{font-size:20px;line-height:24px}.rc-name span{font-size:14px;line-height:20px;color:var(--ink2)}
+.rc-does{display:flex;flex-direction:column;gap:6px;font-size:15px;line-height:22px}.rc-does>span{display:flex;gap:8px}.rc-dot{color:var(--green);flex:none;padding-top:2px}
+.rc-foot{margin-top:auto;display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--bg3);padding-top:12px}
+.rc-go{display:inline-flex;align-items:center;gap:4px;color:var(--green);font-weight:700}
+@media (max-width:900px){.roles{grid-template-columns:1fr}.rolehelp{display:none}}
+@media (prefers-reduced-motion:reduce){.rolebox select.pulse{animation:none}}
 .hl{font-weight:700;color:var(--green);text-decoration:none;box-shadow:inset 0 -6px 0 var(--green-l)}
 pre.code{background:var(--bg2);border-radius:8px;padding:12px;font-size:12px;line-height:16px;overflow:auto;max-height:220px}
 @media (max-width:900px){.grid2{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}.fg{grid-template-columns:1fr}.stepper{grid-template-columns:repeat(4,1fr)}h1{font-size:32px;line-height:36px}.artb{padding-left:20px}.topin{flex-wrap:wrap;height:auto;padding:10px 24px;gap:8px}nav.main{order:3;flex-basis:100%}}
@@ -214,7 +227,7 @@ pre.code{background:var(--bg2);border-radius:8px;padding:12px;font-size:12px;lin
 <header class="top"><div class="wrap topin">
   <a class="brand" href="#home"><i></i>Engine <small>CS portfolio</small></a>
   <nav class="main" id="nav"></nav>
-  <div class="rolebox"><span>Viewing as</span><select id="roleSel" aria-label="Viewing as role"></select></div>
+  <div class="rolebox"><span>Viewing as</span><select id="roleSel" aria-label="Viewing as role"></select><a href="#welcome" class="rolehelp">All roles</a></div>
 </div></header>
 <main><div class="wrap" id="app"></div></main>
 <footer><div class="wrap row" style="justify-content:space-between"><span>Engine MVP · Initiative prioritization and Lean BuCA · prototype, not connected to ADO, Aha or Power BI</span><button class="btn ghost" data-act="reset" id="resetBtn" style="display:none">Reset example data</button></div></footer>
@@ -375,9 +388,9 @@ function applyCfg(c){const d=defaultCfg();CFG_KEYS.forEach(k=>S[k]=c&&c[k]!=null
 /* ---------- persistence: shared db, or this browser ---------- */
 const LS='engine-buca-v2';
 let S={items:null},MODE='loading',DB=null,USER=null,ME=null,RO=false,CAN_ADMIN=false;
-let ROLE='owner';try{ROLE=localStorage.getItem('engine-role')||'owner'}catch(e){}
+let ROLE='owner',ROLE_CHOSEN=false;try{const r0=localStorage.getItem('engine-role');if(r0){ROLE=r0;ROLE_CHOSEN=true}}catch(e){}
 Object.defineProperty(S,'rules',{get:()=>derive(paramsAt(Date.now())),enumerable:false});
-Object.defineProperty(S,'role',{get:()=>ROLE,set:v=>{ROLE=v;try{localStorage.setItem('engine-role',v)}catch(e){}},enumerable:false});
+Object.defineProperty(S,'role',{get:()=>ROLE,set:v=>{ROLE=v;ROLE_CHOSEN=true;try{localStorage.setItem('engine-role',v)}catch(e){}},enumerable:false});
 const lastW={},chain={},dirty=new Set();let cfgDirty=false,flushT=null;
 function saveLocal(){try{const o=cfgBody();o.v=2;o.items=S.items;localStorage.setItem(LS,JSON.stringify(o))}catch(e){}}
 function save(i,now){if(MODE!=='shared'){saveLocal();return}if(RO)return;if(i)dirty.add(i.id);clearTimeout(flushT);flushT=setTimeout(flush,now?0:600)}
@@ -734,6 +747,24 @@ function gateHtml(n,i){const m=req(n,i);return m.length?`<ul class="gate">${m.ma
 /* ---------- views ---------- */
 function slate(){return S.items.filter(i=>i.stage===5&&i.buca.fin==='approved'&&['active','queued'].includes(i.status)).sort((a,b)=>rankScore(b)-rankScore(a))}
 function waiting(){return S.items.filter(i=>turn(i).includes(S.role))}
+const ROLE_INFO={
+ owner:{start:'Home › New demand',does:['Describe the problem, outcome and OKR','Make it measurable: KPI, baseline, target','Build the Lean BuCA with levers and cost lines'],signs:'Demand record · Outcome card',ico:'M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9V16h7v-2.1A6 6 0 0 0 12 3z'},
+ lead:{start:'Triage board',does:['Bundle similar demand into one initiative','Check that outcomes are measurable','Confirm relationships and close the loop'],signs:'Initiative overview · Closed-loop overview',ico:'M4 6h16M7 12h10M10 18h4'},
+ finance:{start:'Parameter library',does:['Keep the central parameters, with reasons','Review and override Lean BuCAs, logged','Approve: parameters freeze at the photo moment'],signs:'Lean BuCA',ico:'M5 11h14v10H5zM8 11V8a4 4 0 0 1 8 0v3'},
+ heads:{start:'Decision agenda',does:['See approved initiatives, ranked','Check the capacity signal per initiative','Decide Fund, Prove first, Queue or Stop'],signs:'Decision log',ico:'M12 3v18M5 7h14M5 7l-3 7h6zM19 7l-3 7h6z'},
+ cap:{start:'Capacity view',does:['Confirm effort and delivery team','Watch demand against team capacity','Commit team, FTE and dates'],signs:'Capacity view',ico:'M4 20V10M10 20V4M16 20v-7M22 20H2'},
+ po:{start:'Home › Waiting for you',does:['Generate the epic, features and acceptance criteria','Push to Aha/ADO (simulated)','Mark delivered so the loop can close'],signs:'Delivery structure',ico:'M5 12l5 5L20 7'}};
+function vWelcome(){const first=!ROLE_CHOSEN;
+ return `<div class="hero"><div class="meta">Engine · CS portfolio prototype</div><h1>${first?'Welcome. Which role do you want to try?':'Choose a role'}</h1><p>Every initiative passes through six roles and eight artifacts. Pick one to start; you can switch at any time with <b>Viewing as</b> at the top right.</p></div>
+ <div class="roles" role="list" style="margin-top:32px">${Object.entries(ROLES).map(([k,v])=>{const inf=ROLE_INFO[k],n=(S.items||[]).filter(i=>turn(i).includes(k)).length,cur=!first&&k===S.role;
+  return `<button class="rolecard ${cur?'cur':''}" role="listitem" data-act="pickRole" data-r="${k}" aria-label="Start as ${esc(v.n)}">
+  <span class="rc-top"><span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${inf.ico}"/></svg></span><span class="rc-name"><b>${esc(v.n)}</b><span>${esc(v.s)}</span></span>${cur?'<span class="chip g">Current role</span>':n?`<span class="chip a">${n} waiting</span>`:''}</span>
+  <span class="rc-does">${inf.does.map(d=>`<span><span class="rc-dot" aria-hidden="true">${ic.check}</span>${esc(d)}</span>`).join('')}</span>
+  <span class="rc-foot"><span class="small muted">Starts at ${esc(inf.start)} · signs off ${esc(inf.signs)}</span><span class="rc-go">Start as ${esc(v.n)} ${ic.chev}</span></span></button>`}).join('')}</div>
+ <p class="small muted" style="margin-top:16px">Not sure? Start as <b>Initiative owner</b>: that's where every initiative begins. Then switch role to follow it through triage, the Lean BuCA and the decision.</p>
+ <div class="sec-title"><h2>The flow</h2></div>
+ <div class="stepper" style="margin-top:0">${STAGES.map(s=>`<div class="st done"><b>${s.n} ${s.name}</b><span>${esc(s.art)} · ${esc(ROLES[s.who].n)}</span></div>`).join('')}</div>
+ <div class="card"><ul class="check">${['Follow <b>Waiting for you</b> on Home: it lists what your role has to do now.','The orange <b>Next step</b> card on each initiative says who acts next.','Click a <b>history</b> entry to jump to its artifact; compare Lean BuCA versions.','All initiatives, parameters and OKRs are example data.'].map(t=>`<li><span style="color:var(--green)">${ic.check}</span><span>${t}</span></li>`).join('')}</ul></div>`}
 function vHome(){const w=waiting(),r=S.role;
  const primary=r==='owner'?`<button class="btn" data-act="new">New demand</button>`:r==='heads'?`<a class="btn" href="#agenda">Open decision agenda</a>`:r==='finance'?`<a class="btn" href="#rules">Parameter library</a>`:r==='cap'?`<a class="btn" href="#capacity">Capacity view</a>`:r==='lead'?`<a class="btn" href="#triage">Open the triage board</a>`:`<a class="btn" href="#board">Open the pipeline</a>`;
  const counts=STAGES.map(s=>S.items.filter(i=>i.stage===s.n&&!dead(i)).length);
@@ -917,6 +948,7 @@ function render(){const r=route();const app=document.getElementById('app');
  const keep={};['reason','cond','find','mergeSel','ovrSel','ovrVal','ovrWhy','recalcWhy','pSel','pVal','pFrom','pWhy'].forEach(k=>{const el=document.getElementById(k);if(el)keep[k]=el.value});
  if(!S.items||!S.params){app.innerHTML=`<div class="hero"><h1>Loading the board…</h1><p>${esc(S.loadNote||'Connecting to the shared initiatives.')}</p></div>`;return}
  if(S.empty&&MODE==='shared'){app.innerHTML=`<div class="hero"><h1>The shared board is empty</h1><p>${CAN_ADMIN?'Load the example initiatives to start a test round, or start with a new demand.':'Start with a new demand, or ask the page owner to load the example data.'}</p></div><div class="row" style="margin-top:24px">${RO?'':'<button class="btn" data-act="new">New demand</button>'}${CAN_ADMIN?'<button class="btn sec" data-act="reset" id="resetBtn2">Load example data</button>':''}</div>`;return}
+ if(r==='welcome'||(!ROLE_CHOSEN&&(r==='home'||r===''))){app.innerHTML=vWelcome();fillNames();return}
  app.innerHTML=r.startsWith('i-')?vItem(curId()):r==='board'?vBoard():r==='triage'?vTriage():r==='calendar'?vCalendar():r==='agenda'||r==='slate'?vSlate():r==='capacity'?vCapacity():r==='rules'?vRules():vHome();
  Object.entries(keep).forEach(([k,v])=>{const el=document.getElementById(k);if(el&&v)el.value=v});
  if(keep.find)document.getElementById('find')&&document.getElementById('find').dispatchEvent(new Event('input',{bubbles:true}));
@@ -963,6 +995,7 @@ async function act(k,el){
   if(!PDEF[pk])return formErr('perr','Choose a parameter.');if(!isNum(v)||+v<0)return formErr('perr','Enter the new value as a number.');if(PDEF[pk].u==='%'&&+v>100)return formErr('perr','A percentage can\'t be above 100.');
   if(!/^\d{4}-\d{2}-\d{2}$/.test(from))return formErr('perr','Choose the date it is valid from.');if(why.length<5)return formErr('perr','Give a reason. It is logged with your name.');
   S.params[pk].push({v:+v,from,at:Date.now(),by:ME||null,why});saveCfg(true);render();toast(PDEF[pk].l+' updated, valid from '+from);return}
+ if(k==='pickRole'){S.role=el.dataset.r;location.hash==='#home'?render():(location.hash='#home');window.scrollTo(0,0);toast('You\'re now '+ROLES[S.role].n+'. Switch any time at the top right.');const rb=document.querySelector('.rolebox select');if(rb){rb.classList.remove('pulse');void rb.offsetWidth;rb.classList.add('pulse')}return}
  if(k==='asRole'){S.role=el.dataset.r;render();toast('Now viewing as '+ROLES[S.role].n);return}
  if(k==='calSel'){if(e_isLink)return;CAL_SEL=CAL_SEL===el.dataset.id?null:el.dataset.id;render();return}
  if(k==='relAI'){relAI(el);return}
