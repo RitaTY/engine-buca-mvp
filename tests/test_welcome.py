@@ -18,8 +18,8 @@ async def main():
         await p.goto(U); await p.wait_for_timeout(2000)
         check("first visit shows the welcome page", "Which role" in await p.inner_text("h1"))
         check("six role cards", await p.locator(".rolecard").count() == 6)
-        waiting = await p.locator('.rolecard[data-r="finance"] .chip').all_inner_texts()
-        check("cards show what is waiting", any("waiting" in w for w in waiting), str(waiting))
+        
+        check("cards show the role action", "Validate the Lean BuCA" in await p.inner_text('.rolecard[data-r="finance"]'))
         await p.screenshot(path=OUT + "/w1-welcome.png", full_page=True)
         await p.click('.rolecard[data-r="finance"]'); await p.wait_for_timeout(400)
         check("picking sets the role", await p.evaluate("S.role") == "finance")

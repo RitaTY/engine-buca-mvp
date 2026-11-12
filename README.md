@@ -23,7 +23,7 @@ Automation prepares the work (quality and OKR-fit check, assumption check, deliv
 
 ## What's in the app
 
-- **Welcome page** for first-time visitors: six role cards (what each role does, where it starts, what is waiting for it). Picking one opens that role's Home; "All roles" next to the switcher brings it back. Deep links skip it.
+- **Welcome page** for first-time visitors: six role cards, each with the role name and a one-line action. Picking one opens that role's Home; "All roles" next to the switcher brings it back. Deep links skip it.
 - **Role switcher** for the six roles, with "Waiting for you" per role and a highlighted *Next step* on every initiative.
 - **Pipeline** by stage, and a **Calendar** with start/end, KPI target dates and suggested relationships (competing for capacity, same KPI, similar scope; Claude can suggest dependencies, sequencing and synergies).
 - **Triage board**: drag demand records onto an initiative to bundle them (dropdown fallback for touch).

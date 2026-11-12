@@ -207,13 +207,11 @@ table.cmp tr.grp td{background:var(--bg2);font-weight:700;font-size:12px;line-he
 @keyframes pulse{0%,60%{box-shadow:0 0 0 4px var(--green-l)}100%{box-shadow:0 0 0 0 transparent}}
 .rolebox select.pulse{animation:pulse 2.4s ease-out}
 .roles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
-.rolecard{display:flex;flex-direction:column;gap:14px;text-align:left;background:#fff;border:2px solid transparent;border-radius:16px;box-shadow:var(--sh);padding:20px 22px;cursor:pointer;font:inherit;color:var(--ink);transition:border-color .15s,background .15s}
+.rolecard{display:flex;align-items:center;gap:16px;text-align:left;background:#fff;border:2px solid transparent;border-radius:16px;box-shadow:var(--sh);padding:22px 20px;cursor:pointer;font:inherit;color:var(--ink);transition:border-color .15s,background .15s}
 .rolecard:hover,.rolecard:focus-visible{border-color:var(--green);outline:none}.rolecard:focus-visible{box-shadow:0 0 0 4px var(--green-l),var(--sh)}
-.rolecard.cur{background:var(--green-t)}
-.rc-top{display:flex;align-items:center;gap:14px}.rc-name{flex:1;display:flex;flex-direction:column}.rc-name b{font-size:20px;line-height:24px}.rc-name span{font-size:14px;line-height:20px;color:var(--ink2)}
-.rc-does{display:flex;flex-direction:column;gap:6px;font-size:15px;line-height:22px}.rc-does>span{display:flex;gap:8px}.rc-dot{color:var(--green);flex:none;padding-top:2px}
-.rc-foot{margin-top:auto;display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--bg3);padding-top:12px}
-.rc-go{display:inline-flex;align-items:center;gap:4px;color:var(--green);font-weight:700}
+.rolecard.cur{border-color:var(--green);background:var(--green-t)}
+.rolecard .chev{color:var(--green);flex:none}
+.rc-name{flex:1;display:flex;flex-direction:column;gap:2px}.rc-name b{font-size:20px;line-height:24px}.rc-name span{font-size:15px;line-height:22px;color:var(--ink2)}
 @media (max-width:900px){.roles{grid-template-columns:1fr}.rolehelp{display:none}}
 @media (prefers-reduced-motion:reduce){.rolebox select.pulse{animation:none}}
 .glance{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));background:#fff;border-radius:16px;box-shadow:var(--sh);overflow:hidden}
@@ -768,17 +766,13 @@ const ROLE_INFO={
  heads:{start:'Decision agenda',does:['See approved initiatives, ranked','Check the capacity signal per initiative','Decide Fund, Prove first, Queue or Stop'],signs:'Decision log',ico:'M12 3v18M5 7h14M5 7l-3 7h6zM19 7l-3 7h6z'},
  cap:{start:'Capacity view',does:['Confirm effort and delivery team','Watch demand against team capacity','Commit team, FTE and dates'],signs:'Capacity view',ico:'M4 20V10M10 20V4M16 20v-7M22 20H2'},
  po:{start:'Home › Waiting for you',does:['Generate the epic, features and acceptance criteria','Push to Aha/ADO (simulated)','Mark delivered so the loop can close'],signs:'Delivery structure',ico:'M5 12l5 5L20 7'}};
+const ROLE_ACTION={owner:'Bring in demand and build the business case',lead:'Triage demand and get it ready for decision',finance:'Validate the Lean BuCA and own the parameters',heads:'Decide what gets funded',cap:'Commit team capacity',po:'Turn funded work into delivery'};
 function vWelcome(){const first=!ROLE_CHOSEN;
- return `<div class="hero"><div class="meta">Engine · CS portfolio prototype</div><h1>${first?'Welcome. Which role do you want to try?':'Choose a role'}</h1><p>Every initiative passes through six roles and eight artifacts. Pick one to start; you can switch at any time with <b>Viewing as</b> at the top right.</p></div>
- <div class="roles" role="list" style="margin-top:32px">${Object.entries(ROLES).map(([k,v])=>{const inf=ROLE_INFO[k],n=(S.items||[]).filter(i=>turn(i).includes(k)).length,cur=!first&&k===S.role;
-  return `<button class="rolecard ${cur?'cur':''}" role="listitem" data-act="pickRole" data-r="${k}" aria-label="Start as ${esc(v.n)}">
-  <span class="rc-top"><span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${inf.ico}"/></svg></span><span class="rc-name"><b>${esc(v.n)}</b><span>${esc(v.s)}</span></span>${cur?'<span class="chip g">Current role</span>':n?`<span class="chip a">${n} waiting</span>`:''}</span>
-  <span class="rc-does">${inf.does.map(d=>`<span><span class="rc-dot" aria-hidden="true">${ic.check}</span>${esc(d)}</span>`).join('')}</span>
-  <span class="rc-foot"><span class="small muted">Starts at ${esc(inf.start)} · signs off ${esc(inf.signs)}</span><span class="rc-go">Start as ${esc(v.n)} ${ic.chev}</span></span></button>`}).join('')}</div>
- <p class="small muted" style="margin-top:16px">Not sure? Start as <b>Initiative owner</b>: that's where every initiative begins. Then switch role to follow it through triage, the Lean BuCA and the decision.</p>
- <div class="sec-title"><h2>The flow</h2></div>
- <div class="stepper" style="margin-top:0">${STAGES.map(s=>`<div class="st done"><b>${s.n} ${s.name}</b><span>${esc(s.art)} · ${esc(ROLES[s.who].n)}</span></div>`).join('')}</div>
- <div class="card"><ul class="check">${['Follow <b>Waiting for you</b> on Home: it lists what your role has to do now.','The orange <b>Next step</b> card on each initiative says who acts next.','Click a <b>history</b> entry to jump to its artifact; compare Lean BuCA versions.','All initiatives, parameters and OKRs are example data.'].map(t=>`<li><span style="color:var(--green)">${ic.check}</span><span>${t}</span></li>`).join('')}</ul></div>`}
+ return `<div class="hero"><h1>${first?'Which role do you want to try?':'Choose a role'}</h1><p>You can switch at any time at the top right.</p></div>
+ <div class="roles" role="list" style="margin-top:32px">${Object.entries(ROLES).map(([k,v])=>{const cur=!first&&k===S.role;
+  return `<button class="rolecard ${cur?'cur':''}" role="listitem" data-act="pickRole" data-r="${k}"${cur?' aria-current="true"':''}>
+  <span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${ROLE_INFO[k].ico}"/></svg></span>
+  <span class="rc-name"><b>${esc(v.n)}</b><span>${esc(ROLE_ACTION[k])}</span></span>${ic.chev}</button>`}).join('')}</div>`}
 function vHome(){const w=waiting(),r=S.role;
  const primary=r==='owner'?`<button class="btn" data-act="new">New demand</button>`:r==='heads'?`<a class="btn" href="#agenda">Open decision agenda</a>`:r==='finance'?`<a class="btn" href="#rules">Parameter library</a>`:r==='cap'?`<a class="btn" href="#capacity">Capacity view</a>`:r==='lead'?`<a class="btn" href="#triage">Open the triage board</a>`:`<a class="btn" href="#board">Open the pipeline</a>`;
  const counts=STAGES.map(s=>S.items.filter(i=>i.stage===s.n&&!dead(i)).length);
