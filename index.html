@@ -216,6 +216,20 @@ table.cmp tr.grp td{background:var(--bg2);font-weight:700;font-size:12px;line-he
 .rc-go{display:inline-flex;align-items:center;gap:4px;color:var(--green);font-weight:700}
 @media (max-width:900px){.roles{grid-template-columns:1fr}.rolehelp{display:none}}
 @media (prefers-reduced-motion:reduce){.rolebox select.pulse{animation:none}}
+.glance{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));background:#fff;border-radius:16px;box-shadow:var(--sh);overflow:hidden}
+.gl{display:flex;flex-direction:column;gap:2px;padding:16px 14px 14px;text-decoration:none;color:var(--ink);border-left:1px solid var(--bg3);transition:background .15s}
+.gl:first-child{border-left:0}.gl:hover{background:var(--bg2)}.gl:focus-visible{outline:3px solid var(--green-l);outline-offset:-3px}
+.gl-stage{display:flex;gap:8px;align-items:flex-start;min-height:52px}.gl-stage>span:last-child{display:flex;flex-direction:column}
+.gl-stage b{font-size:14px;line-height:18px}.gl-stage>span:last-child>span{font-size:12px;line-height:16px;color:var(--ink2)}
+.gl-num{flex:none;width:20px;height:20px;border-radius:9999px;border:1.5px solid var(--ink2);color:var(--ink2);font-size:11px;line-height:17px;font-weight:700;text-align:center}
+.gl-cnt{font-size:44px;line-height:48px;font-weight:800;margin-top:10px;letter-spacing:-.02em}
+.gl-unit{font-size:13px;line-height:18px;color:var(--ink2)}
+.gl-bar{display:block;height:6px;border-radius:9999px;background:var(--bg3);margin-top:10px;overflow:hidden}.gl-bar i{display:block;height:100%;background:var(--orange);border-radius:9999px}
+.gl-foot{margin-top:8px;min-height:24px}
+.gl.zero .gl-cnt{color:#BDB5B5}.gl.zero .gl-unit{color:#9A9292}
+.gl.mine{background:#FDF3EE}.gl.mine:hover{background:#FBE8DE}.gl.mine .gl-num{border-color:var(--red);color:var(--red)}
+@media (max-width:900px){.glance{grid-template-columns:repeat(4,minmax(0,1fr))}.gl:nth-child(5){border-left:0}.gl:nth-child(n+5){border-top:1px solid var(--bg3)}}
+@media (max-width:600px){.glance{grid-template-columns:repeat(2,minmax(0,1fr))}.gl:nth-child(odd){border-left:0}.gl:nth-child(5){border-left:0}.gl:nth-child(n+3){border-top:1px solid var(--bg3)}.gl-stage{min-height:40px}.gl-cnt{font-size:36px;line-height:40px;margin-top:6px}}
 .hl{font-weight:700;color:var(--green);text-decoration:none;box-shadow:inset 0 -6px 0 var(--green-l)}
 pre.code{background:var(--bg2);border-radius:8px;padding:12px;font-size:12px;line-height:16px;overflow:auto;max-height:220px}
 @media (max-width:900px){.grid2{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}.fg{grid-template-columns:1fr}.stepper{grid-template-columns:repeat(4,1fr)}h1{font-size:32px;line-height:36px}.artb{padding-left:20px}.topin{flex-wrap:wrap;height:auto;padding:10px 24px;gap:8px}nav.main{order:3;flex-basis:100%}}
@@ -772,8 +786,14 @@ function vHome(){const w=waiting(),r=S.role;
  <div class="row" style="margin-top:24px">${primary}</div>
  <div class="sec-title"><h2>Waiting for you <span class="muted" style="font-weight:400">(${w.length})</span></h2></div>
  ${w.length?`<div class="navlist">${w.map(i=>`<a class="navrow" href="#i-${i.id}"><span class="ico">${ic.inbox}</span><span class="t"><b>${keyTag(i)}${esc(i.title||'Untitled demand')}</b><span>Stage ${i.stage} · ${STAGES[i.stage-1].name}: ${esc(STAGES[i.stage-1].art)} ${i.status==='returned'?'· sent back':''}</span></span>${statusChip(i)}${ic.chev}</a>`).join('')}</div>`:`<div class="card"><p class="muted" style="margin:0">Nothing waiting for ${esc(ROLES[r].n)} right now. Try another role at the top right.</p></div>`}
- <div class="sec-title"><h2>Pipeline at a glance</h2><a class="hl" href="#board">See all</a></div>
- <div class="stepper" style="margin-top:0">${STAGES.map((s,k)=>`<a href="#board" class="st ${counts[k]?'now':''}" style="text-decoration:none;color:var(--ink)"><b>${counts[k]} · ${s.name}</b><span>${s.nl}</span></a>`).join('')}</div>
+ <div class="sec-title"><h2>Pipeline at a glance</h2><a class="hl" href="#board">Open the pipeline</a></div>
+ ${(()=>{const live=counts.reduce((a,b)=>a+b,0),closed=S.items.filter(i=>i.status==='closed').length,max=Math.max(1,...counts);const mine=STAGES.map(s=>S.items.filter(i=>i.stage===s.n&&turn(i).includes(r)).length);
+  return `<p class="small muted" style="margin:-6px 0 12px"><b style="color:var(--ink)">${live} initiative${live===1?'':'s'} in progress</b>${closed?` · ${closed} closed`:''} · the big number is how many initiatives are at each stage right now</p>
+  <div class="glance" role="list">${STAGES.map((s,k)=>{const n=counts[k],m=mine[k];return `<a href="#board" role="listitem" class="gl ${n?'':'zero'} ${m?'mine':''}" aria-label="${n} initiative${n===1?'':'s'} at stage ${s.n}, ${s.name}${m?', '+m+' waiting for you':''}">
+   <span class="gl-stage"><span class="gl-num" aria-hidden="true">${s.n}</span><span><b>${s.name}</b><span>${s.nl}</span></span></span>
+   <span class="gl-cnt">${n}</span><span class="gl-unit">${n===1?'initiative':'initiatives'}</span>
+   <span class="gl-bar" aria-hidden="true"><i style="width:${Math.round(n/max*100)}%"></i></span>
+   <span class="gl-foot">${m?`<span class="chip a">${m} for you</span>`:'&nbsp;'}</span></a>`}).join('')}</div>`})()}
  <div class="sec-title"><h2>How it works</h2></div>
  <div class="card"><ul class="check">${['Each initiative builds eight artifacts, one per stage. Every artifact has one owner who signs it off.','A stage only opens when the gate before it is met: the list under "Your step" shows what\'s missing.','AI checks quality and OKR fit, flags weak assumptions and drafts the delivery structure. It never decides.','The Lean BuCA uses Finance\'s central rules, so every business case can be compared.'].map(t=>`<li><span style="color:var(--green)">${ic.check}</span><span>${t}</span></li>`).join('')}</ul></div>`}
 function card(i){const mine=turn(i).includes(S.role);return `<a class="bc" href="#i-${i.id}" data-search="${esc((i.key+' '+i.title).toLowerCase())}">${keyTag(i)}<b style="margin-top:6px">${esc(i.title||'Untitled demand')}</b><div class="row" style="gap:6px">${i.overview.type?`<span class="chip o">${esc(i.overview.type)}</span>`:''}${statusChip(i)}${mine?'<span class="chip a">Your step</span>':''}</div><div class="muted" style="margin-top:6px">${esc(i.demand.source||'')}</div></a>`}
