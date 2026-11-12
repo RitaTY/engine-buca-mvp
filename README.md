@@ -37,6 +37,7 @@ Automation prepares the work (quality and OKR-fit check, assumption check, deliv
 - **Capacity view** per team: committed, funded, waiting for decision, over capacity.
 - **Traceable history**: every entry links to its artifact (`#i-<id>-a<stage>`).
 - Initiative IDs (`ENG-101` …), searchable on the pipeline.
+- **English and Dutch** (EN | NL at the top right, remembered per browser). English is the source; Dutch is applied on screen from a phrase table with patterns for texts that contain numbers or names, so stored data never changes language. Framework terms stay English in both: stage and artifact names, role titles, Run/CI/Change, Fund/Prove first/Queue/Stop. Example data and typed-in text are not translated. Claude answers in Dutch when NL is on.
 
 ## How it runs
 
@@ -67,6 +68,7 @@ python3 tests/test_calendar.py       # calendar rows, relationship suggestions, 
 python3 tests/test_history.py        # history deep links, role switch, artifact logging
 python3 tests/test_finance.py        # parameter library, photo moment, versions, overrides, CAPEX/OPEX
 python3 tests/test_welcome.py        # first-visit role picker, switching, deep links
+python3 tests/test_dutch.py          # EN | NL switch, persistence, switching back
 ```
 
 Screenshots are written to `tests/screenshots/` (ignored by git).
@@ -77,6 +79,7 @@ Screenshots are written to `tests/screenshots/` (ignored by git).
 - Owners' own edits between versions are captured in the version comparison, not one by one. Business Control overrides and parameter changes are logged individually.
 - Benefits start in year 1 at full size (no ramp-up), and the net value is not discounted (no NPV).
 - OKRs are placeholders; the similarity score is plain word overlap.
+- The Dutch was written by Claude and still needs a check by a native speaker.
 - Last write wins when two people edit the same initiative at the same moment.
 - Not connected to ADO, Aha, Power BI or Teams (the ADO push is simulated).
 
@@ -85,5 +88,4 @@ Screenshots are written to `tests/screenshots/` (ignored by git).
 1. Claude-based similarity and a warning before unlikely bundles
 2. Benefit ramp-up per year and an optional NPV with a Finance discount rate
 3. Server-side checks so only the right role can take each step
-4. Dutch (EN | NL)
 5. Connections to ADO/Aha, Power BI (baselines, AHT) and Teams notifications
