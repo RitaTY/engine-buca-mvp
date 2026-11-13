@@ -28,23 +28,20 @@ async def main():
         await B.goto(URL + "#i-a1"); await B.wait_for_timeout(600)
         print("B sees:", await B.inner_text(".hero h1"))
 
-        # A: triage drag as lead
+        # A: triage on the pipeline, drag as PO (lead)
         await A.select_option("#roleSel", "lead")
-        await A.goto(URL + "#triage"); await A.wait_for_timeout(400)
-        await A.screenshot(path=OUT+"/s1-triage.png", full_page=True)
-        await A.drag_and_drop('[data-drag="j1"]', '.icard[data-drop="a1"]')
+        await A.goto(URL + "#board"); await A.wait_for_timeout(400)
+        await A.screenshot(path=OUT+"/s1-pipeline.png", full_page=True)
+        await A.drag_and_drop('[data-drag="k1"]', '.bc[data-drop="e1"]')
         await A.wait_for_timeout(900)
         await A.screenshot(path=OUT+"/s2-after-drag.png", full_page=True)
-        bund = await A.evaluate("item('a1').overview.bundled")
-        print("a1 bundled (A):", bund)
+        print("e1 bundled (A):", await A.evaluate("item('e1').overview.bundled"))
         await B.wait_for_timeout(600)
-        print("a1 bundled (B, live):", await B.evaluate("item('a1').overview.bundled"))
-        # fallback select bundle k1 into e1
-        await A.select_option("#bs-k1", "e1"); await A.click('[data-act=bundleSel][data-src="k1"]'); await A.wait_for_timeout(500)
-        print("e1 bundled:", await A.evaluate("item('e1').overview.bundled"), "volume line:", await A.locator('.icard[data-drop="e1"]').inner_text())
-        # unbundle j1
-        await A.click('[data-act=unbundle][data-s="j1"]'); await A.wait_for_timeout(500)
-        print("j1 status after unbundle:", await A.evaluate("item('j1').status"))
+        print("e1 bundled (B, live):", await B.evaluate("item('e1').overview.bundled"))
+        # unbundle k1 from the triage decision on e1
+        await A.goto(URL + "#i-e1-a2"); await A.wait_for_timeout(500)
+        await A.click('[data-act=unbundle][data-s="k1"]'); await A.wait_for_timeout(500)
+        print("k1 status after unbundle:", await A.evaluate("item('k1').status"))
 
         # B: finance returns c1, owner adds levers
         await B.select_option("#roleSel", "finance")
@@ -73,7 +70,7 @@ async def main():
         print("history names:", hist.splitlines()[:2])
         # mobile triage
         await A.set_viewport_size({"width": 400, "height": 860})
-        await A.goto(URL + "#triage"); await A.wait_for_timeout(300)
+        await A.goto(URL + "#board"); await A.wait_for_timeout(300)
         await A.screenshot(path=OUT+"/s4-mobile.png")
         await b.close()
         # local mode

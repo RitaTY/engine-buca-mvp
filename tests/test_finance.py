@@ -41,8 +41,8 @@ async def main():
         check("pending c1 uses the new value", c1_after != c1_before, f"{c1_before} -> {c1_after}")
 
         # 2. Recalculate a1 with today's parameters
-        await p.goto(U + "#i-a1-a4"); await p.wait_for_timeout(500)
-        check("drift shown on a1", "Changed since then" in await p.inner_text("#art-4"))
+        await p.goto(U + "#i-a1-a3"); await p.wait_for_timeout(500)
+        check("drift shown on a1", "Changed since then" in await p.inner_text("#art-3"))
         await p.click("[data-act=recalc]"); await p.wait_for_timeout(200)
         check("recalc needs a reason", "reason" in (await p.inner_text("#recalcerr")).lower())
         await p.fill("#recalcWhy", "Align with the 2027 budget before the decision meeting"); await p.click("[data-act=recalc]"); await p.wait_for_timeout(400)
@@ -79,7 +79,7 @@ async def main():
         check("both overrides logged with old/new/why", await ev("item('c1').buca.changes.length===2"), chg)
         await p.click("[data-act=approve]"); await p.wait_for_timeout(400)
         check("approve freezes c1 and creates v4", await ev("!!item('c1').buca.photo && item('c1').buca.versions.length===4 && item('c1').stage===5"))
-        await p.goto(U + "#i-c1-a4"); await p.wait_for_timeout(500)
+        await p.goto(U + "#i-c1-a3"); await p.wait_for_timeout(500)
         await p.select_option("#cmpA", "1"); await p.wait_for_timeout(300)
         cmp = await p.inner_text("table.cmp")
         check("compare v1 vs v4 shows the cost line, the override and the result", "Cost line 3" in cmp and "Override" in cmp and "Benefit per year" in cmp, cmp[:300].replace("\n", " | "))

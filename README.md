@@ -1,41 +1,35 @@
-# Engine · Initiative prioritization and Lean BuCA (MVP prototype)
+# Engine · Initiative prioritization and Lean BuCA (MVP prototype, v3)
 
 A clickable prototype of one workflow for Customer Services portfolio intake: an employee submits an initiative, the system checks quality and strategic fit, Business Control validates a Lean Business Case (BuCA), the Heads decide, capability leads commit capacity, and delivery closes the loop.
 
 > **Prototype.** All initiatives, OKRs, Finance rules and team capacities in this repo are **made up** for testing. Don't use it with real customer data.
 
-## The process: 8 stages, 8 artifacts
+## v3: three steps, two roles
 
-Each initiative builds one artifact per stage. Every artifact has one owner who signs it off, and the next stage opens only when the gate is met.
+v3 simplifies v2 after PO feedback (see `docs/v3-plan.md`). Only the first four artifacts are in use, in three steps:
 
-| # | Stage | Artifact | Owner |
-|---|---|---|---|
-| 1 | Collect · *Vraag* | Demand record | Initiative owner (VC/VS, CoE, NextGen) |
-| 2 | Triage · *Schifting* | Initiative overview | Portfolio lead |
-| 3 | Outcome · *Meetbaarheid* | Outcome card | Initiative owner, checked by Portfolio lead |
-| 4 | Value · *Calculaties* | Lean BuCA | Business control (Finance) |
-| 5 | Decide · *Kiezen* | Decision log | Heads + MT |
-| 6 | Capacity · *Kunnen we dit?* | Capacity view | Capability lead |
-| 7 | Deliver · *Doorzetten* | Delivery structure | PO / delivery |
-| 8 | Review · *Leren* | Closed-loop overview | Portfolio lead |
+| Step | What happens | Who |
+|---|---|---|
+| 1 Idea + outcome | One card: the problem, the KPI that should move (baseline, target, date, how it is measured) and a rough size S/M/L | Owner |
+| 2 Triage | Accept (with a Run/CI/Change label), merge, send back or decline | Reviewer · PO decides; Reviewer · Finance and Reviewer · Product lead advise |
+| 3 Business case | Lean BuCA, built by the owner and approved by Business Control | Owner, Reviewer · Finance |
+| 4 Ready for decision | Approved business cases wait for the Heads. The decision step is not built in v3. | — |
 
-Automation prepares the work (quality and OKR-fit check, assumption check, delivery structure, relationship suggestions). People make every decision.
+The data model still has 8 stages, so Decide, Capacity, Deliver and Review can come back later. Internally: step 1 = stage 1, step 2 = stage 2, step 3 = stage 4 (stage 3 is merged into step 1; old stage-3 items move to stage 4), step 4 = stage 5 and up.
 
 ## What's in the app
 
-- **Welcome page** for first-time visitors: six role cards, each with the role name and a one-line action. Picking one opens that role's Home; "All roles" next to the switcher brings it back. Deep links skip it.
-- **Role switcher** for the six roles, with "Waiting for you" per role and a highlighted *Next step* on every initiative.
-- **Pipeline** by stage, and a **Calendar** with start/end, KPI target dates and suggested relationships (competing for capacity, same KPI, similar scope; Claude can suggest dependencies, sequencing and synergies).
-- **Triage board**: drag demand records onto an initiative to bundle them (dropdown fallback for touch).
+- **Navigation**: Pipeline · New idea · Parameters (Parameters for Reviewer · Finance only).
+- **Roles**: Owner, Reviewer · PO, Reviewer · Finance, Reviewer · Product lead. Switch at the top right.
+- **Pipeline** with two views. **Board**: four columns, one per step; at triage the PO drags one idea onto another to bundle them. **Table**: every idea with step, status, next role, size, KPI, OKR fit, net value and days waiting, for comparing. **Needs my action** filters both views; search by ID or name.
+- **Triage advice**: Finance and the product lead mark *Supports* or *Has concerns* (note required). The PO sees the advice in the triage decision and on the card, and can decide without it.
 - **Lean BuCA** with a lever library (avoided contacts, shorter handling time, fewer repeat contacts, lower contact ratio, less manual work, lower external cost, fewer customers lost), typed **cost lines** (FTE, licence, advisory, hardware, other; one-off or recurring; start year; CAPEX/OPEX) and a short / standard / long investment horizon. Results per year, CAPEX/OPEX split, and "Show the sum".
 - **Parameter library** (Business Control): price per FTE (customer service and delivery), cost per contact, paid hours, shrinkage, occupancy, contact ratio, AHT per queue, realisation, horizon, margin, CAPEX threshold. Every change has a valid-from date, a reason and who made it.
 - **Photo moment**: approving a Lean BuCA freezes the parameters it used. Later parameter changes don't touch it; Business Control can recalculate with today's parameters (reason required), which takes a new photo moment.
 - **Versions**: a new BuCA version on every send, return, approval and recalculation, with a side-by-side comparison of assumptions, parameters and results.
 - **Logged overrides**: Business Control can override any parameter or assumption for one case. A reason is required; who, when, old value and new value are logged.
 - **CAPEX/OPEX check**: flags recurring CAPEX, licence or advisory CAPEX, one-offs below the CAPEX threshold, and capitalised effort on Run/CI work (example rules, for Business Control to confirm).
-- **Decision agenda** for the Heads, ranked by 3-year net value × confidence × OKR fit, with a capacity signal per initiative.
-- **Capacity view** per team: committed, funded, waiting for decision, over capacity.
-- **Traceable history**: every entry links to its artifact (`#i-<id>-a<stage>`).
+- **Traceable history**: every entry links to its step (`#i-<id>-a<step>`, step 1-4).
 - Initiative IDs (`ENG-101` …), searchable on the pipeline.
 - **English and Dutch** (EN | NL at the top right, remembered per browser). English is the source; Dutch is applied on screen from a phrase table with patterns for texts that contain numbers or names, so stored data never changes language. Framework terms stay English in both: stage and artifact names, role titles, Run/CI/Change, Fund/Prove first/Queue/Stop. Example data and typed-in text are not translated. Claude answers in Dutch when NL is on.
 
@@ -63,12 +57,9 @@ End-to-end tests use Playwright against a fake shared database (`tests/fake-db.j
 
 ```bash
 pip install playwright && playwright install chromium
-python3 tests/test_shared_board.py   # two testers, live sync, drag-to-bundle, levers
-python3 tests/test_calendar.py       # calendar rows, relationship suggestions, confirm/dismiss
-python3 tests/test_history.py        # history deep links, role switch, artifact logging
+python3 tests/test_v3.py             # v3 journeys: pipeline, table, idea card, triage advice, PO decision, ready for decision, Dutch
+python3 tests/test_shared_board.py   # two testers, live sync, drag-to-bundle on the pipeline, levers
 python3 tests/test_finance.py        # parameter library, photo moment, versions, overrides, CAPEX/OPEX
-python3 tests/test_welcome.py        # first-visit role picker, switching, deep links
-python3 tests/test_dutch.py          # EN | NL switch, persistence, switching back
 ```
 
 Screenshots are written to `tests/screenshots/` (ignored by git).

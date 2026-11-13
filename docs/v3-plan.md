@@ -1,6 +1,6 @@
 # Engine v3 — plan (not built yet)
 
-Based on the PO's feedback on v2 (12 Nov 2026). This file is the plan only; the app on `main` is unchanged.
+Based on the PO's feedback on v2 (12 Nov 2026). **Built on the `v3` branch** (13 Nov 2026); `main` still serves v2 until the merge.
 
 ## What changes, and why
 
@@ -17,12 +17,12 @@ Based on the PO's feedback on v2 (12 Nov 2026). This file is the plan only; the 
 | # | Step | Who | Gate to move on |
 |---|---|---|---|
 | 1 | **Idea + outcome** (one card) | Owner | Problem, who/how often, KPI + baseline, target, **rough size S/M/L** |
-| 2 | **Triage** (on the Pipeline) | Reviewer (PO decides; Finance + product lead advise) | Accept as Improvement / Risk / Growth · Merge · Send back · Decline |
+| 2 | **Triage** (on the Pipeline) | Reviewer (PO decides; Finance + product lead advise) | Accept with a Run / CI / Change label · Merge · Send back · Decline |
 | 3 | **Lean BuCA** | Owner builds, Reviewer (Business Control) approves | Approved → **Ready for decision** |
 
 "Ready for decision" is the end state in v3.
 
-**Rough size (step 1):** volume × chosen lever, shown as S / M / L and labelled "Estimate, not a business case". It gives Finance something to judge at triage without asking owners to build a BuCA first.
+**Rough size (step 1):** the owner picks S (under €50k per year), M (€50k–250k) or L (over €250k), labelled "Estimate, not a business case". It gives Finance something to judge at triage without asking owners to build a BuCA first. (Built as a choice, not a calculation, to keep step 1 short.)
 
 ## Roles
 
@@ -54,4 +54,4 @@ Three items: **Pipeline · New idea · Parameters** (Parameters visible to Finan
 3. When approved, merge `v3` into `main`. Vercel redeploys production automatically: **same link, now v3**.
 4. Before merging, tag the current version (`v2`) so it can be restored in one step if needed.
 
-Note: v2 example data lives in the page's own database/seed. Check whether v3's changed stage model needs a fresh seed before the merge.
+Note: v3 keeps its browser data under a new key (`engine-buca-v3`), so testers start with the v3 example data. v2 example data lives in the page's own database/seed. Check whether v3's changed stage model needs a fresh seed before the merge.
