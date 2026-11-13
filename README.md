@@ -13,9 +13,15 @@ v3 simplifies v2 after PO feedback (see `docs/v3-plan.md`). Only the first four 
 | 1 Idea + outcome | One card: the problem, the KPI that should move (baseline, target, date, how it is measured) and a rough size S/M/L | Owner |
 | 2 Triage | Accept (with a Run/CI/Change label), merge, send back or decline | Reviewer · PO decides; Reviewer · Finance and Reviewer · Product lead advise |
 | 3 Business case | Lean BuCA, built by the owner and approved by Business Control | Owner, Reviewer · Finance |
-| 4 Ready for decision | Approved business cases wait for the Heads. The decision step is not built in v3. | — |
+| 4 Hand-off to Aha! | The Engine builds an Aha! initiative (preview, *Copy for Aha!*, API payload). The PO creates it in Aha! and records the reference. From there the B2C operating model takes over. | Reviewer · PO |
 
 The data model still has 8 stages, so Decide, Capacity, Deliver and Review can come back later. Internally: step 1 = stage 1, step 2 = stage 2, step 3 = stage 4 (stage 3 is merged into step 1; old stage-3 items move to stage 4), step 4 = stage 5 and up.
+
+## Where the Engine fits
+
+The B2C Product Operating Model starts at *Initiative + business case* in Aha!. The Engine is the front door before that: it turns a frontline problem into an Aha!-ready initiative with a measurable outcome and a comparable Lean BuCA, then hands it off. Prioritising, capacity, delivery and review happen in Aha! and the operating model's ceremonies, not in the Engine.
+
+**Aha! hand-off today:** copy and paste, then record the Aha! reference (for example CS-S-12) and link. The API payload matches Aha!'s *Create an initiative* call (`POST /api/v1/products/:product_id/initiatives`); the custom fields need matching fields in the Aha! workspace. **Next:** a Power Automate flow that sends the payload with an Aha! API key kept in the flow (never in this page) and writes the reference back.
 
 ## What's in the app
 

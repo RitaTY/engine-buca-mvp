@@ -55,3 +55,12 @@ Three items: **Pipeline · New idea · Parameters** (Parameters visible to Finan
 4. Before merging, tag the current version (`v2`) so it can be restored in one step if needed.
 
 Note: v3 keeps its browser data under a new key (`engine-buca-v3`), so testers start with the v3 example data. v2 example data lives in the page's own database/seed. Check whether v3's changed stage model needs a fresh seed before the merge.
+
+## Update 13 Nov: v3 as the front door to Aha!
+
+After reviewing the B2C Product Operating Model: the model starts at *Initiative + business case* in Aha!, but has no route for a frontline problem to get there, no standard business case method, and no outcome gate before commitment. v3 fills exactly that gap and stops at the hand-off:
+
+- Step 4 is now **Hand-off to Aha!**: an Aha! initiative preview built from the idea card, triage and Lean BuCA, with *Copy for Aha!* and an API payload in Aha!'s create-initiative format.
+- The PO creates the initiative in Aha! and records its reference; the idea then shows *In Aha! · <ref>* and leaves the Engine's to-do lists.
+- The v2 stages Decide, Capacity, Deliver and Review stay out for good: they duplicate steps 4–8 of the operating model.
+- Next: Power Automate flow for the real push (API key in the flow, reference written back). Check first whether Eneco licenses Aha! Ideas, which overlaps with step 1.
