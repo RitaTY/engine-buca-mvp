@@ -241,6 +241,12 @@ pre.code{background:var(--bg2);border-radius:8px;padding:12px;font-size:12px;lin
 .bhead{display:flex;align-items:center;gap:8px;min-height:40px}.bhead b{flex:1}.bhead .bname{flex:1;min-height:36px;padding:4px 10px;font-weight:700;font-size:15px}
 .bcol.over{background:var(--green-t);box-shadow:inset 0 0 0 2px var(--green)}.bc.bk{cursor:grab}.bmove{min-height:34px;padding:2px 8px;font-size:14px;margin-top:10px}
 .bnew{background:transparent;border:2px dashed var(--line)}
+.coachcta{display:flex;gap:16px;align-items:center;justify-content:space-between;background:var(--green-t);border-radius:12px;padding:14px 16px;margin-bottom:8px}
+.coach{background:var(--bg2);border-radius:12px;padding:14px 16px;margin-bottom:8px}.coach-msgs{max-height:320px;overflow-y:auto;margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.cm{max-width:85%;padding:10px 12px;border-radius:12px;font-size:15px;line-height:21px;background:#fff;box-shadow:var(--sh);align-self:flex-start;white-space:pre-wrap}.cm.me{align-self:flex-end;background:var(--green);color:#fff}
+.cfill{margin-top:6px;font-size:13px;color:var(--green);font-weight:700}.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.qr{border:1px solid var(--green);background:#fff;color:var(--green);border-radius:9999px;padding:6px 12px;font:inherit;font-size:14px;cursor:pointer}.qr:hover{background:var(--green-t)}
+.linkbtn{background:none;border:0;padding:0;font:inherit;color:var(--green);text-decoration:underline;cursor:pointer}
 .ahabox{background:var(--bg2);border-radius:12px;padding:16px;border-left:4px solid var(--green)}
 .chip.st1{background:#EEF1F6}.chip.st2{background:#FDF3EE}.chip.st3{background:#EAF5EE}.chip.st4{background:#E6F2EC;font-weight:700}
 .subh{font-size:16px;line-height:22px;margin:20px 0 8px}.artb .subh:first-of-type{margin-top:4px}
@@ -732,11 +738,79 @@ function canEdit(n,i){const r=S.role;if(dead(i))return false;
  return n===1?r==='owner'&&i.stage===1:n===2?r==='lead'&&i.stage===2:false}
 function artBody(n,i){
  if(n===1){const edO=!dead(i)&&!RO&&S.role==='owner'&&(i.stage===1||(i.stage===4&&['none','returned'].includes(i.buca.fin)));
-  return `<h4 class="subh">The idea</h4>${A1(i,canEdit(1,i))}<h4 class="subh">The outcome: what should move</h4>${A3(i,edO)}
+  return `${canEdit(1,i)&&!RO?coachPanel(i):''}<h4 class="subh">The idea</h4>${A1(i,canEdit(1,i))}<h4 class="subh">The outcome: what should move</h4>${A3(i,edO)}
   <div class="fg" style="margin-top:12px">${fld('demand.size','Rough value per year',i,canEdit(1,i),{options:SIZES,hint:'Estimate, not a business case'})}</div>`}
  if(n===2)return A2(i,canEdit(2,i))+adviceList(i);
  if(n===3)return A4(i);
  return readyBody(i)}
+/* ---------- coach: talk about the problem, it fills the idea card ---------- */
+const COACH={};let COACH_AI=null,COACH_FOCUS=false;
+const CFL=()=>[
+ {k:'demand.problem',l:'Problem',q:'What goes wrong today, and what does it cause? Describe it in a few sentences, without customer names or numbers.'},
+ {k:'demand.affected',l:'Who is affected',q:'Who is affected? For example: B2C customers who move house, or billing agents.'},
+ {k:'demand.frequency',l:'How often',q:'How often does it happen? A number helps, for example: about 2,000 calls per month.'},
+ {k:'title',l:'Short name',q:'Give it a short name, for example: Proactive meter-reading reminders.'},
+ {k:'demand.source',l:'Where it comes from',q:'Where does this come from?',opts:SOURCES.map(x=>({v:x,l:x}))},
+ {k:'demand.okr',l:'OKR it serves',q:'Which goal does it help most?',opts:S.okrs.map(o=>({v:o.id,l:o.t}))},
+ {k:'outcome.kpi',l:'KPI that should move',q:'Which number should move if this works?',opts:KPIS.map(x=>({v:x,l:x}))},
+ {k:'outcome.baseline',l:'Baseline today',q:'What is that number today? Just the number is fine.',num:1},
+ {k:'outcome.baselineSource',l:'Source of the baseline',q:'Where does that number come from? For example a Power BI report or Verint.'},
+ {k:'outcome.target',l:'Target',q:'What should the number become? Just the number is fine.',num:1},
+ {k:'outcome.targetDate',l:'Target date',q:'By when?',opts:['2026 Q4'].concat(QS).map(x=>({v:x,l:x}))},
+ {k:'outcome.method',l:'How it is measured',q:'How will you measure it? Name the report, how often, and any filter.'},
+ {k:'demand.size',l:'Rough value per year',q:'Roughly how much could it be worth per year? A guess is fine.',opts:SIZES}];
+const cEmpty=(i,f)=>{const v=gp(i,f.k);return f.num?!isNum(v):(v==null||String(v).trim()==='')};
+function cMissing(i,st){return CFL().filter(f=>cEmpty(i,f)&&!(st&&st.skip&&st.skip.includes(f.k)))}
+function cMatch(f,raw){const t=String(raw).trim().toLowerCase();if(!t)return null;const o=f.opts;
+ if(f.k==='demand.size'){const m=t.match(/^[sml]\b/);if(m)return m[0].toUpperCase();const n=t.replace(/[.,](?=\d{3}\b)/g,'').match(/(\d+(?:[.,]\d+)?)\s*(k|m|mln|miljoen|million|thousand|duizend)?/);
+  if(n){let v=+n[1].replace(',','.');const u=n[2]||'';if(/^m/.test(u))v*=1e6;else if(u)v*=1e3;else if(v<1000)v*=1e3;return v<50e3?'S':v<=250e3?'M':'L'}}
+ let h=o.find(x=>String(x.v).toLowerCase()===t||String(x.l).toLowerCase()===t);if(h)return h.v;
+ h=o.find(x=>String(x.l).toLowerCase().includes(t)&&t.length>=3)||o.find(x=>t.includes(String(x.l).toLowerCase()));if(h)return h.v;
+ if(f.k==='outcome.targetDate'){const q=t.match(/q([1-4])\s*(\d{4})|(\d{4})\s*q([1-4])/);if(q){const v=(q[2]||q[3])+' Q'+(q[1]||q[4]);if(o.some(x=>x.v===v))return v}}
+ return null}
+function cSet(i,f,raw){if(raw==null)return false;if(f.opts){const v=cMatch(f,raw);if(v==null)return false;sp(i,f.k,v);return true}
+ if(f.num){const m=String(raw).replace(/(\d)[.,](\d{3})\b/g,'$1$2').match(/-?\d+(?:[.,]\d+)?/);if(!m)return false;sp(i,f.k,+m[0].replace(',','.'));return true}
+ const v=String(raw).trim();if(!v)return false;sp(i,f.k,f.k==='title'?v.slice(0,80):v);return true}
+function cRule(i,st,text){const filled=[],t=text.trim(),low=t.toLowerCase();
+ if(/^(skip|overslaan|sla over|weet ik niet|i don'?t know|no idea)$/.test(low)){const f=st.ask&&CFL().find(x=>x.k===st.ask);if(f){st.skip=(st.skip||[]).concat(f.k)}return {filled,note:f?'Skipped. You can fill it in on the card later.':''}}
+ const fs=CFL();let f=st.ask&&fs.find(x=>x.k===st.ask&&cEmpty(i,x))||cMissing(i,st)[0];
+ if(f&&f.k==='demand.problem'&&t.length>=25){sp(i,'demand.problem',t);filled.push('Problem');
+  if(!i.title){const first=t.split(/[.!?\n]/)[0].trim();sp(i,'title',first.length>60?first.slice(0,57).replace(/\s+\S*$/,'')+'…':first);filled.push('Short name')}
+  const fr=t.match(/(about |around |ongeveer |zo'n |circa )?[\d.,]+\s*(\w+\s){0,2}(per|a|each|every|elke|per)\s+(day|week|month|year|dag|week|maand|jaar)/i);if(fr&&!i.demand.frequency){sp(i,'demand.frequency',fr[0]);filled.push('How often')}
+  return {filled}}
+ if(!f)return {filled};
+ if(cSet(i,f,t)){filled.push(f.l);return {filled}}
+ return {filled,note:f.opts?'I didn\'t catch that. Pick one of the options below, or type it the way it is shown.':f.num?'I need a number here, for example 41.':''}}
+async function cAI(i,st,text){if(COACH_AI===false)return null;const s=await Promise.race([sampler(),new Promise(r=>setTimeout(()=>r(null),4000))]);if(!s){COACH_AI=false;return null}COACH_AI=true;
+ const fs=CFL(),cur=fs.map(f=>`${f.k} (${f.l})${f.opts?' options: '+f.opts.map(o=>o.v===o.l?o.v:o.v+'='+o.l).join(' | '):''}${f.num?' number':''}: ${JSON.stringify(gp(i,f.k)??'')}`).join('\n');
+ const hist=st.msgs.slice(-8).map(m=>(m.who==='me'?'Employee: ':'Coach: ')+m.t).join('\n');
+ const p=`You are a friendly coach helping a Customer Services employee at an energy company turn a business problem into an idea card. Many users are not technical.
+Card fields (key, label, allowed options, current value):
+${cur}
+Conversation so far:
+${hist}
+Employee: ${text}
+Extract only values the employee clearly stated or that follow directly from what they said. Never invent numbers. For option fields use one of the option values exactly. For the title, write a short name (max 8 words) if none exists. Keep the employee's own words for problem, affected and method. Never put customer names, customer numbers or addresses on the card.
+Reply with JSON only: {"fields":{"<key>":"<value>"},"reply":"one short friendly sentence that confirms what you put on the card, then ONE question about the most important missing field (problem, who, how often, KPI, baseline, target first)"}${LANG==='nl'?' Write the reply in Dutch (je-form).':''}`;
+ const v=await s.json(p,{modelTier:'quick'});if(!v||typeof v!=='object')return null;const filled=[];
+ Object.entries(v.fields||{}).forEach(([k,val])=>{const f=fs.find(x=>x.k===k);if(f&&val!==''&&val!=null&&cSet(i,f,val))filled.push(f.l)});
+ return {filled,reply:String(v.reply||''),ai:true}}
+function cNext(i,st){const m=cMissing(i,st);if(!m.length){st.ask=null;return reqV3(i).length?'That covers my questions. Check the card below; anything still missing is listed under Your step.':'Everything needed is on the card. Check it below, change anything you like, then press Submit for triage.'}
+ const f=m[0];st.ask=f.k;let q=f.q;if(f.k==='outcome.kpi'&&KPI_HINT[i.demand.okr])q+=' For this goal it is often: '+KPI_HINT[i.demand.okr]+'.';return q}
+function coachPanel(i){const st=COACH[i.id];
+ if(!st||!st.open)return `<div class="coachcta"><div><b>Not sure how to fill this in?</b><div class="small muted">Tell the coach about the problem in your own words. It puts your answers on the card for you.</div></div><button class="btn sec sm" data-act="coachOpen">Talk it through</button></div>`;
+ const f=st.ask&&CFL().find(x=>x.k===st.ask);
+ return `<div class="coach"><div class="row" style="justify-content:space-between"><b>Coach</b><span class="small muted">${COACH_AI?'With Claude':'Built-in questions'} · <button class="linkbtn" data-act="coachClose">Close</button></span></div>
+ <div class="coach-msgs" id="coachMsgs" aria-live="polite">${st.msgs.map(m=>`<div class="cm ${m.who}"${m.who==='me'||m.ai?' data-notr':''}>${esc(m.t)}${m.filled&&m.filled.length?`<div class="cfill">✓ Put on the card: ${esc(m.filled.join(', '))}</div>`:''}</div>`).join('')}${st.busy?'<div class="cm bot muted">…</div>':''}</div>
+ ${f&&f.opts&&!st.busy?`<div class="chips">${(f.k==='outcome.kpi'&&KPI_HINT[i.demand.okr]?[{v:KPI_HINT[i.demand.okr],l:KPI_HINT[i.demand.okr]}].concat(f.opts.filter(o=>o.v!==KPI_HINT[i.demand.okr])):f.opts).map(o=>`<button class="qr" data-act="coachPick" data-v="${esc(o.v)}">${esc(o.l)}</button>`).join('')}</div>`:''}
+ <div class="row" style="flex-wrap:nowrap;margin-top:8px"><input class="i" id="coachIn" placeholder="Type your answer…" aria-label="Your answer to the coach" ${st.busy?'disabled':''}><button class="btn sm" data-act="coachSend" ${st.busy?'disabled':''}>Send</button></div>
+ <p class="small muted" style="margin:6px 0 0">Type "skip" to leave a question for later. Don't type customer names, numbers or addresses.</p></div>`}
+async function coachSay(i,text){const st=COACH[i.id];if(!st||st.busy)return;text=String(text||'').trim();if(!text)return;
+ st.msgs.push({who:'me',t:text});st.busy=true;render();let r=null;
+ try{if(!/^(skip|overslaan|sla over)$/i.test(text))r=await cAI(i,st,text)}catch(e){r=null}
+ if(!r){r=cRule(i,st,text);r.reply=(r.note?r.note+' ':'')+cNext(i,st)}else if(!cMissing(i,st).length)r.reply=r.reply||cNext(i,st);else{const n=cMissing(i,st)[0];st.ask=n.k;if(!r.reply)r.reply=cNext(i,st)}
+ if(r.filled.length)save(i,true);
+ st.msgs.push({who:'bot',t:r.reply,filled:r.filled,ai:!!r.ai});st.busy=false;COACH_FOCUS=true;render()}
 function adviceList(i){const a=i.overview.advice||[];
  return `<div style="margin-top:16px"><div class="f" style="font-size:14px;font-weight:700">Advice from reviewers</div>${a.length?`<ul class="advice">${a.map(x=>`<li><span class="chip ${x.view==='support'?'g':'a'}">${x.view==='support'?'Supports':'Has concerns'}</span> <b>${esc((ROLES[x.role]||{}).n||x.role)}</b>${x.by?' · '+who(x.by):''} · ${dt(x.at)}${x.note?`<div class="small" style="margin-top:4px">${esc(x.note)}</div>`:''}</li>`).join('')}</ul>`:'<div class="val empty">No advice yet. Finance and the product lead can add theirs; the PO decides.</div>'}</div>`}
 function ahaParts(i){const c=calc(i),o=i.outcome,d=i.demand,b=(i.overview.bundled||[]).map(item).filter(Boolean),R=rulesFor(i);
@@ -847,7 +921,7 @@ function vBuckets(its){const B=S.buckets||[],ed=!RO;
  <div class="board bks" style="margin-top:12px;grid-template-columns:repeat(${B.length+2},minmax(240px,1fr))">
  ${col('','Not sorted yet',its.filter(i=>!bucketOf(i)),'<b>Not sorted yet</b>')}
  ${B.map(b=>col(b.id,b.n,its.filter(i=>bucketOf(i)===b.id),ed?`<input class="i bname" data-bname="${b.id}" value="${esc(b.n)}" aria-label="Bucket name"><button class="xbtn sm" data-act="delBucket" data-b="${b.id}" aria-label="Remove bucket ${esc(b.n)}" title="Remove bucket">×</button>`:`<b>${esc(b.n)}</b>`)).join('')}
- ${ed?`<div class="col bnew"><label class="f" for="newBucket">New bucket</label><input class="i" id="newBucket" placeholder="For example: Now, Next, Later"><button class="btn sec sm" data-act="addBucket" style="margin-top:8px">Add bucket</button>${B.length?'':'<p class="small muted" style="margin-top:12px">No buckets yet. Add the first one, then drag ideas into it.</p>'}</div>`:''}</div>`}
+ ${ed?`<div class="col bnew"><button class="btn sm" data-act="autoBuckets" style="width:100%">Set up buckets for me</button><p class="small muted" style="margin:6px 0 16px">Makes one bucket per step and puts every unsorted idea in it. You can rename, move or remove anything after.</p>${B.length?`<button class="btn ghost sm" data-act="clearBuckets" id="clearB" style="width:100%;margin-bottom:16px">Start over: remove all buckets</button>`:''}<label class="f" for="newBucket">New bucket</label><input class="i" id="newBucket" placeholder="For example: Now, Next, Later"><button class="btn sec sm" data-act="addBucket" style="margin-top:8px">Add bucket</button>${B.length?'':'<p class="small muted" style="margin-top:12px">No buckets yet. Add the first one, then drag ideas into it.</p>'}</div>`:''}</div>`}
 function vBoard(view){const its=sortItems(boardItems()),mineN=S.items.filter(i=>turn(i).includes(S.role)).length,gone=S.items.filter(i=>['declined','merged'].includes(i.status)).length;
  const top=`<div class="hero"><h1>Pipeline</h1><p>Every idea in one place, from the idea card to Aha!. Sort them by any label, or drag them into your own buckets.</p></div>
  <div class="row" style="margin-top:24px;gap:16px;align-items:center"><div class="seg" role="tablist"><a href="#board" role="tab" class="${view==='board'?'on':''}">All ideas</a><a href="#buckets" role="tab" class="${view==='buckets'?'on':''}">Buckets</a><a href="#list" role="tab" class="${view==='list'?'on':''}">Table</a></div>
@@ -1040,6 +1114,7 @@ function render(){const r=route();const app=document.getElementById('app');
  Object.entries(keep).forEach(([k,v])=>{const el=document.getElementById(k);if(el&&v)el.value=v});
  if(typeof LANG!=='undefined'&&LANG==='nl')trNode(document.body);
  if(keep.find)document.getElementById('find')&&document.getElementById('find').dispatchEvent(new Event('input',{bubbles:true}));
+ {const cm=document.getElementById('coachMsgs');if(cm)cm.scrollTop=cm.scrollHeight;if(COACH_FOCUS){COACH_FOCUS=false;const ci=document.getElementById('coachIn');if(ci)ci.focus({preventScroll:true})}}
  fillNames();if(!render.did&&S.items&&curArt()){render.did=1;setTimeout(()=>focusArt(curArt()),0)}}
 function refresh(i){const g=document.getElementById('gate');if(g)g.innerHTML=gateHtml(i);{const ae=document.getElementById('acterr');if(ae&&/^Still missing/.test(ae.textContent)&&!reqV3(i).length)ae.textContent=''}{const RR=rulesFor(i);((i.buca||{}).levers||[]).forEach((l,k)=>{const e=document.getElementById('lv-'+k);if(e)e.textContent=eur(leverVal(l,RR).eur)+'/yr'})}
  const c=document.getElementById('calc');if(c)c.innerHTML=calcPanel(i);const sc=document.getElementById('side-calc');if(sc)sc.innerHTML=sideCalc(i)}
@@ -1068,7 +1143,7 @@ document.addEventListener('drop',e=>{if(!DRAG)return;const d=DRAG;let z;
  if(d.k==='bk'){z=e.target.closest('[data-bucket]');if(z){e.preventDefault();clearDrag();setBucket(d.id,z.dataset.bucket||'__none')}clearDrag();return}
  if(d.k==='lever'){z=e.target.closest('[data-leverdrop]');if(z){e.preventDefault();clearDrag();const i=item(curId());if(i)addLever(i,d.t)}}
  else{z=e.target.closest('[data-drop]');if(z&&z.dataset.drop!==d.id){e.preventDefault();clearDrag();bundle(d.id,z.dataset.drop)}}clearDrag()});
-document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.dataset.toggle){e.preventDefault();e.target.click()}});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='coachIn'){e.preventDefault();act('coachSend',e.target);return}if((e.key==='Enter'||e.key===' ')&&e.target.dataset.toggle){e.preventDefault();e.target.click()}});
 document.addEventListener('click',e=>{const ar=e.target.closest('a[data-art]');if(ar){const h=ar.getAttribute('href');if(location.hash===h){e.preventDefault();focusArt(+ar.dataset.art)}return}
  const tg=e.target.closest('[data-toggle]');if(tg){const id=curId(),n=+tg.dataset.toggle,i=item(id);if(i.status!=='closed'&&n>stepOf(i)){toast('Locked until step '+(n-1)+' is done');return}const s=OPEN[id];s.has(n)?s.delete(n):s.add(n);render();return}
  const nv=e.target.closest('[data-nav]');if(nv&&!e.target.closest('a')){location.hash=nv.dataset.nav;return}
@@ -1084,6 +1159,10 @@ async function act(k,el){
  if(k==='new'){if(RO)return;const id='n'+Date.now().toString(36);const it=migrate({id,key:newKey(),title:'',stage:1,status:'active',owner:'',ownerId:ME||null,created:Date.now(),demand:{},ai:null,overview:{bundled:[]},outcome:{},buca:{fin:'none',duration:4,levers:[]},decisions:[],capacity:{},delivery:{},review:{},log:[]});S.items.push(it);save(it,true);if(route()==='new')location.replace('#i-'+id);else location.hash='#i-'+id;return}
  if(k==='addBucket'){if(RO)return;const n=val('newBucket').trim();if(!n){toast('Type a name for the bucket first');const el2=document.getElementById('newBucket');if(el2)el2.focus();return}
   S.buckets=(S.buckets||[]).concat([{id:'b'+Date.now().toString(36),n:n.slice(0,40)}]);saveCfg(true);const el2=document.getElementById('newBucket');if(el2)el2.value='';render();toast('Bucket "'+n+'" added');return}
+ if(k==='autoBuckets'){if(RO)return;S.buckets=S.buckets||[];let made=0,placed=0;const ids=STEPS.map(st=>{let b=S.buckets.find(x=>x.n.toLowerCase()===st.name.toLowerCase());if(!b){b={id:'b'+Date.now().toString(36)+st.n,n:st.name};S.buckets.push(b);made++}return b.id});
+  S.items.filter(i=>!dead(i)&&!bucketOf(i)).forEach(i=>{i.bucket=ids[stepOf(i)-1];placed++;save(i,true)});saveCfg(true);render();toast(`${made} bucket${made===1?'':'s'} made, ${placed} idea${placed===1?'':'s'} placed. Rename, move or remove anything.`);return}
+ if(k==='clearBuckets'){if(RO)return;if(Date.now()-(act.clrArm||0)>5000){act.clrArm=Date.now();el.textContent='Click again to remove all buckets';return}act.clrArm=0;
+  S.items.filter(i=>i.bucket).forEach(i=>{i.bucket='';save(i,true)});S.buckets=[];saveCfg(true);render();toast('All buckets removed. Every idea is not sorted yet.');return}
  if(k==='delBucket'){if(RO)return;const b=(S.buckets||[]).find(x=>x.id===el.dataset.b);if(!b)return;S.items.filter(i=>i.bucket===b.id).forEach(i=>{i.bucket='';save(i,true)});S.buckets=S.buckets.filter(x=>x.id!==b.id);saveCfg(true);render();toast('Bucket "'+b.n+'" removed. Its ideas are not sorted yet.');return}
  if(k==='bundleSel'){const sel=document.getElementById('bs-'+el.dataset.src);if(sel&&sel.value)bundle(el.dataset.src,sel.value);else toast('Choose an initiative first');return}
  if(k==='unbundle'){unbundle(el.dataset.t,el.dataset.s);return}
@@ -1142,6 +1221,12 @@ async function act(k,el){
  case 'valueOk':i.review.valueOk=true;return go(0,'Realised value confirmed','Realised value confirmed');
  case 'kept':case 'partly':case 'notkept':{const v={kept:'Promise kept',partly:'Partly kept',notkept:'Not kept'}[k];let r='';if(k!=='kept'){r=needReason();if(!r)return}else r=((document.getElementById('reason')||{}).value||'').trim();
   i.review.verdict=v;i.review.verdictNote=r;i.status='closed';return go(0,'Closed: '+v,'Closed: '+v+(r?' · '+r:''))}
+ case 'coachOpen':{if(!canEdit(1,i))return;const st=COACH[i.id]=COACH[i.id]||{msgs:[],skip:[]};st.open=true;
+  if(!st.msgs.length){st.msgs.push({who:'bot',t:'Hi! Tell me about the problem in your own words. I\'ll put your answers on the card, and you can change anything afterwards.'});const q=cNext(i,st);if(st.ask!=='demand.problem')st.msgs.push({who:'bot',t:q})}
+  sampler().then(x=>{COACH_AI=!!x;if(COACH[i.id]&&COACH[i.id].open)softRender()});COACH_FOCUS=true;render();return}
+ case 'coachClose':{if(COACH[i.id])COACH[i.id].open=false;render();return}
+ case 'coachSend':{const t=val('coachIn');const e2=document.getElementById('coachIn');if(e2)e2.value='';return coachSay(i,t)}
+ case 'coachPick':return coachSay(i,el.dataset.v);
  case 'copyAha':case 'copyAhaJson':{const t=k==='copyAha'?ahaText(i):ahaJson(i);try{await navigator.clipboard.writeText(t);toast(k==='copyAha'?'Copied. Paste it into a new initiative in Aha!':'API payload copied')}catch(e){toast('Copy did not work. Open "What the API payload is for" and copy it there.')}return}
  case 'ahaDone':{if(R!=='lead'||i.stage!==5)return;const ref=val('ahaRef').trim(),url=val('ahaUrl').trim();if(ref.length<3)return errOut('Type the Aha! reference first, for example CS-S-12.');if(url&&!/^https:\/\//.test(url))return errOut('The link should start with https://');
   i.aha={ref:ref.slice(0,40),url,at:Date.now(),by:ME||null};return go(0,'Recorded. The initiative now lives in Aha!.','Created in Aha! as '+i.aha.ref)}
@@ -1177,6 +1262,41 @@ Return {"quality":0-100 (clarity and evidence of the problem, NOT its value),"fi
 let LANG='en';try{if(localStorage.getItem('engine-lang')==='nl')LANG='nl'}catch(e){}
 const LOC=()=>LANG==='nl'?'nl-NL':'en-GB';
 const NL={
+'Not sure how to fill this in?':'Weet je niet goed hoe je dit invult?',
+'Tell the coach about the problem in your own words. It puts your answers on the card for you.':'Vertel de coach in je eigen woorden over het probleem. Hij zet je antwoorden voor je op de kaart.',
+'Talk it through':'Bespreek het',
+'Coach':'Coach',
+'With Claude':'Met Claude',
+'Built-in questions':'Ingebouwde vragen',
+'Close':'Sluiten',
+'Type your answer…':'Typ je antwoord…',
+'Your answer to the coach':'Jouw antwoord aan de coach',
+'Send':'Versturen',
+'Type "skip" to leave a question for later. Don\'t type customer names, numbers or addresses.':'Typ "overslaan" om een vraag voor later te bewaren. Typ geen klantnamen, klantnummers of adressen.',
+"Hi! Tell me about the problem in your own words. I'll put your answers on the card, and you can change anything afterwards.":'Hoi! Vertel me in je eigen woorden over het probleem. Ik zet je antwoorden op de kaart, en je kunt alles daarna nog aanpassen.',
+'What goes wrong today, and what does it cause? Describe it in a few sentences, without customer names or numbers.':'Wat gaat er vandaag mis, en wat veroorzaakt het? Beschrijf het in een paar zinnen, zonder klantnamen of -nummers.',
+'Who is affected? For example: B2C customers who move house, or billing agents.':'Wie heeft er last van? Bijvoorbeeld: B2C-klanten die verhuizen, of billingmedewerkers.',
+'How often does it happen? A number helps, for example: about 2,000 calls per month.':'Hoe vaak gebeurt het? Een getal helpt, bijvoorbeeld: ongeveer 2.000 gesprekken per maand.',
+'Give it a short name, for example: Proactive meter-reading reminders.':'Geef het een korte naam, bijvoorbeeld: Proactieve herinneringen voor meterstanden.',
+'Where does this come from?':'Waar komt dit vandaan?',
+'Which goal does it help most?':'Welk doel helpt het het meest?',
+'Which number should move if this works?':'Welk getal moet bewegen als dit werkt?',
+'What is that number today? Just the number is fine.':'Wat is dat getal vandaag? Alleen het getal is genoeg.',
+'Where does that number come from? For example a Power BI report or Verint.':'Waar komt dat getal vandaan? Bijvoorbeeld een Power BI-rapport of Verint.',
+'What should the number become? Just the number is fine.':'Wat moet het getal worden? Alleen het getal is genoeg.',
+'By when?':'Wanneer?',
+'How will you measure it? Name the report, how often, and any filter.':'Hoe ga je het meten? Noem het rapport, hoe vaak, en eventuele filters.',
+'Roughly how much could it be worth per year? A guess is fine.':'Hoeveel zou het ongeveer per jaar waard kunnen zijn? Een schatting is prima.',
+'Skipped. You can fill it in on the card later.':'Overgeslagen. Je kunt het later op de kaart invullen.',
+"I didn't catch that. Pick one of the options below, or type it the way it is shown.":'Dat begreep ik niet. Kies een van de opties hieronder, of typ het zoals het er staat.',
+'I need a number here, for example 41.':'Hier heb ik een getal nodig, bijvoorbeeld 41.',
+'That covers my questions. Check the card below; anything still missing is listed under Your step.':'Dat waren mijn vragen. Controleer de kaart hieronder; wat nog ontbreekt staat onder Jouw stap.',
+'Everything needed is on the card. Check it below, change anything you like, then press Submit for triage.':'Alles wat nodig is staat op de kaart. Controleer hem hieronder, pas aan wat je wilt en klik op Indienen voor triage.',
+'Set up buckets for me':'Zet de bakken voor me klaar',
+'Makes one bucket per step and puts every unsorted idea in it. You can rename, move or remove anything after.':'Maakt één bak per stap en zet elk ongesorteerd idee erin. Je kunt daarna alles hernoemen, verplaatsen of verwijderen.',
+'Start over: remove all buckets':'Opnieuw beginnen: alle bakken verwijderen',
+'Click again to remove all buckets':'Klik nogmaals om alle bakken te verwijderen',
+'All buckets removed. Every idea is not sorted yet.':'Alle bakken verwijderd. Geen enkel idee is nog gesorteerd.',
 'Hand-off to Aha!':'Overdracht naar Aha!',
 'Aha! initiative':'Aha!-initiatief',
 'Created in Aha! by the PO':'In Aha! aangemaakt door de PO',
@@ -1412,6 +1532,7 @@ const NL={
 };
 const N='(−?-?€?[\\d][\\d.,]*[km]?)';
 const RXDEF=[
+ ['Put on the card: #T','Op de kaart gezet: $1'],['#T For this goal it is often: #T.','$1 Voor dit doel is het vaak: $2.'],['Coach put on the card: #T','Coach zette op de kaart: $1'],['#N buckets made, #N ideas placed. Rename, move or remove anything.','$1 bakken gemaakt, $2 ideeën geplaatst. Hernoem, verplaats of verwijder wat je wilt.'],['#N bucket made, #N ideas placed. Rename, move or remove anything.','$1 bak gemaakt, $2 ideeën geplaatst. Hernoem, verplaats of verwijder wat je wilt.'],['#N buckets made, #N idea placed. Rename, move or remove anything.','$1 bakken gemaakt, $2 idee geplaatst. Hernoem, verplaats of verwijder wat je wilt.'],
  ['Created in Aha! as #T','Aangemaakt in Aha! als $1'],['on #T. From here the work continues in Aha!.','op $1. Vanaf hier gaat het werk verder in Aha!.'],
  ['Bucket "#T" added','Bak "$1" toegevoegd'],['Bucket "#T" removed. Its ideas are not sorted yet.','Bak "$1" verwijderd. De ideeën erin zijn nog niet gesorteerd.'],['#T moved to #T','$1 verplaatst naar $2'],['#T is not sorted yet','$1 is nog niet gesorteerd'],['Moved to bucket "#T"','Verplaatst naar bak "$1"'],['Move #T to a bucket','Verplaats $1 naar een bak'],['Remove bucket #T','Bak $1 verwijderen'],
  ['Step #N','Stap $1'],['Size #T','Omvang $1'],['Needs my action (#N)','Wacht op mij ($1)'],['Next: #T','Volgende: $1'],['#N d','$1 d'],['Business case approved on #T','Businesscase goedgekeurd op $1'],['Locked until step #N is done','Vergrendeld tot stap $1 klaar is'],['Accepted at triage by the PO, labelled #T','Geaccepteerd bij triage door de PO, gelabeld $1'],['Label the initiative, check for similar ideas, then decide. Advice received from #N of 2 reviewers (see Triage decision).','Label het initiatief, kijk naar vergelijkbare ideeën en beslis. Advies ontvangen van $1 van de 2 beoordelaars (zie Triagebesluit).'],['#N declined or merged idea is not shown. Open the Table to see them.','$1 afgewezen of samengevoegd idee wordt niet getoond. Open de tabel om het te zien.'],['#N declined or merged ideas are not shown. Open the Table to see them.','$1 afgewezen of samengevoegde ideeën worden niet getoond. Open de tabel om ze te zien.'],['#N older initiative is already past the decision.','$1 ouder initiatief is al voorbij het besluit.'],['#N older initiatives are already past the decision.','$1 oudere initiatieven zijn al voorbij het besluit.'],['Advice received from #N of 2 reviewers (see Triage decision).','Advies ontvangen van $1 van de 2 beoordelaars (zie Triagebesluit).'],
