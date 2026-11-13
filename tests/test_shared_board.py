@@ -43,6 +43,13 @@ async def main():
         await A.click('[data-act=unbundle][data-s="k1"]'); await A.wait_for_timeout(500)
         print("k1 status after unbundle:", await A.evaluate("item('k1').status"))
 
+        # shared buckets: A makes one and sorts an idea, B sees it live
+        await A.goto(URL + "#buckets"); await A.wait_for_timeout(300)
+        await A.fill("#newBucket", "Now"); await A.click("[data-act=addBucket]"); await A.wait_for_timeout(400)
+        bid = await A.evaluate("S.buckets[0].id")
+        await A.select_option('[data-bmove="j1"]', bid); await A.wait_for_timeout(900)
+        print("B sees buckets:", await B.evaluate("S.buckets.map(b=>b.n)"), "j1 in bucket:", await B.evaluate("item('j1').bucket") == bid)
+
         # B: finance returns c1, owner adds levers
         await B.select_option("#roleSel", "finance")
         await B.goto(URL + "#i-c1"); await B.wait_for_timeout(400)

@@ -237,6 +237,11 @@ pre.code{background:var(--bg2);border-radius:8px;padding:12px;font-size:12px;lin
 @media (max-width:900px){.grid2{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}.fg{grid-template-columns:1fr}.stepper{grid-template-columns:repeat(4,1fr)}h1{font-size:32px;line-height:36px}.artb{padding-left:20px}.topin{flex-wrap:wrap;height:auto;padding:10px 24px;gap:8px}nav.main{order:3;flex-basis:100%}}
 .stepper.s4{grid-template-columns:repeat(4,1fr)}
 .board.b4{grid-template-columns:repeat(4,minmax(220px,1fr))}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}.cards .bc{margin-top:0}
+.bhead{display:flex;align-items:center;gap:8px;min-height:40px}.bhead b{flex:1}.bhead .bname{flex:1;min-height:36px;padding:4px 10px;font-weight:700;font-size:15px}
+.bcol.over{background:var(--green-t);box-shadow:inset 0 0 0 2px var(--green)}.bc.bk{cursor:grab}.bmove{min-height:34px;padding:2px 8px;font-size:14px;margin-top:10px}
+.bnew{background:transparent;border:2px dashed var(--line)}
+.chip.st1{background:#EEF1F6}.chip.st2{background:#FDF3EE}.chip.st3{background:#EAF5EE}.chip.st4{background:#E6F2EC;font-weight:700}
 .subh{font-size:16px;line-height:22px;margin:20px 0 8px}.artb .subh:first-of-type{margin-top:4px}
 ul.advice{list-style:none;padding:0;margin:8px 0 0}ul.advice li{padding:10px 0;border-bottom:1px solid var(--bg3)}
 .chk{display:inline-flex;align-items:center;gap:8px;font-size:16px;cursor:pointer}.chk input{width:18px;height:18px;accent-color:var(--green)}
@@ -386,7 +391,7 @@ function paramsAt(t,P){P=P||S.params||baseParams();const day=dayStr(t||Date.now(
  PARAM_DEFS.forEach(d=>{const h=(P[d.k]||[]).slice().sort((a,b)=>a.from<b.from?-1:a.from>b.from?1:a.at-b.at);let e=null;h.forEach(x=>{if(x.from<=day)e=x});if(!e)e=h[0];R[d.k]=e?+e.v:d.def});return R}
 function derive(R){R.prodHours=R.paidHours*(1-R.shrinkage/100)*(R.occupancy/100);R.hourly=Math.round(R.fteCostAgent/R.prodHours*100)/100;return R}
 function paramEntry(k,t,P){P=P||S.params;const day=dayStr(t||Date.now());const h=(P[k]||[]).slice().sort((a,b)=>a.from<b.from?-1:a.from>b.from?1:a.at-b.at);let e=null;h.forEach(x=>{if(x.from<=day)e=x});return e||h[0]}
-function defaultCfg(){return {cycle:'2027 Q1',links:[],dismissed:[],params:demoParams(),
+function defaultCfg(){return {cycle:'2027 Q1',links:[],dismissed:[],buckets:[],params:demoParams(),
   okrs:[{id:'o1',t:'Reduce failure demand',kw:'estimated bill dispute repeat error avoidable reminder meter'},{id:'o2',t:'Lower customer effort',kw:'wait queue transfer effort abandon route callback specialist'},{id:'o3',t:'Lower cost to serve',kw:'handling time aht agent manual cost hours automate search'},{id:'o4',t:'Grow self-service share',kw:'online self-service app flow digital portal'},{id:'o5',t:'Accurate first-time billing',kw:'bill correction accuracy invoice'}],
   teams:[{id:'dc',n:'Digital Care',supply:4},{id:'cct',n:'Contact Center Tech',supply:3},{id:'ai',n:'Data & AI',supply:2.5},{id:'bp',n:'Billing Platform',supply:3},{id:'wfm',n:'WFM & Planning',supply:1.5}]}}
 function migrate(i){i.buca=i.buca||{fin:'none',duration:4};const b=i.buca;
@@ -396,7 +401,7 @@ function migrate(i){i.buca=i.buca||{fin:'none',duration:4};const b=i.buca;
  b.ovr=b.ovr||{};if(b.horizonY==null)b.horizonY='';b.versions=b.versions||[];b.changes=b.changes||[];b.effortCls=b.effortCls||'opex';
  if(b.fin==='approved'&&!b.photo){const e=(i.log||[]).find(l=>/lean buca approved/i.test(l.text));b.photo={at:e?e.at:(i.created||Date.now()),rules:null,legacy:true}}
  i.overview=i.overview||{bundled:[]};i.overview.bundled=i.overview.bundled||[];i.log=i.log||[];i.decisions=i.decisions||[];['demand','outcome','capacity','delivery','review'].forEach(k=>i[k]=i[k]||{});i.overview.advice=i.overview.advice||[];if(i.stage===3){i.stage=4;i.outcome.ready=true}return i}
-const CFG_KEYS=['cycle','params','okrs','teams','links','dismissed'];
+const CFG_KEYS=['cycle','params','okrs','teams','links','dismissed','buckets'];
 const cfgBody=()=>{const o={};CFG_KEYS.forEach(k=>o[k]=S[k]);return o};
 function applyCfg(c){const d=defaultCfg();CFG_KEYS.forEach(k=>S[k]=c&&c[k]!=null?c[k]:d[k]);
  if(c&&!c.params){const P=baseParams();const old=c.rules||{};['contactCost','realisation','horizon','margin'].forEach(k=>{if(isNum(old[k])&&+old[k]!==P[k][0].v)P[k][0].v=+old[k]});S.params=P}
@@ -802,23 +807,44 @@ let MINE_ONLY=false;
 const sizeChip=i=>i.demand.size?`<span class="chip o" title="Rough value per year">${esc(i.demand.size)}</span>`:'';
 function card(i){const mine=turn(i).includes(S.role)&&!RO,tri=S.role==='lead'&&!RO&&!dead(i);const drag=tri&&i.stage===2,drop=tri&&i.stage>=2&&i.stage<=4;
  const adv=i.stage===2?(i.overview.advice||[]).map(a=>`<span class="chip ${a.view==='support'?'g':'a'}">${esc(a.role==='finance'?'Finance':'Product lead')} ${a.view==='support'?'✓':'!'}</span>`).join(''):'';
- return `<a class="bc" href="#i-${i.id}" data-search="${esc((i.key+' '+i.title).toLowerCase())}"${drag?` draggable="true" data-drag="${i.id}"`:''}${drop?` data-drop="${i.id}"`:''}>${keyTag(i)}<b style="margin-top:6px">${esc(i.title||'Untitled idea')}</b><div class="row" style="gap:6px">${sizeChip(i)}${i.overview.type?`<span class="chip o">${esc(i.overview.type)}</span>`:''}${statusChip(i)}${adv}${mine?'<span class="chip a">Your step</span>':''}</div><div class="muted" style="margin-top:6px">${esc(i.demand.source||'')}${i.outcome.kpi?' · '+esc(i.outcome.kpi):''}</div></a>`}
+ return `<a class="bc" href="#i-${i.id}" data-search="${esc((i.key+' '+i.title).toLowerCase())}"${drag?` draggable="true" data-drag="${i.id}"`:''}${drop?` data-drop="${i.id}"`:''}>${keyTag(i)}<b style="margin-top:6px">${esc(i.title||'Untitled idea')}</b><div class="row" style="gap:6px">${stepChip(i)}${sizeChip(i)}${i.overview.type?`<span class="chip o">${esc(i.overview.type)}</span>`:''}${statusChip(i)}${adv}${mine?'<span class="chip a">Your step</span>':''}</div><div class="muted" style="margin-top:6px">${esc(i.demand.source||'')}${i.outcome.kpi?' · '+esc(i.outcome.kpi):''}</div></a>`}
 function boardItems(){return S.items.filter(i=>!dead(i)&&(!MINE_ONLY||turn(i).includes(S.role)))}
-function vBoard(view){const its=boardItems(),mineN=S.items.filter(i=>turn(i).includes(S.role)).length,gone=S.items.filter(i=>['declined','merged'].includes(i.status)).length;
- const top=`<div class="hero"><h1>Pipeline</h1><p>Every idea in one place, from the idea card to ready for decision. Cards marked "Your step" wait on you.</p></div>
- <div class="row" style="margin-top:24px;gap:16px;align-items:center"><div class="seg" role="tablist"><a href="#board" role="tab" class="${view==='board'?'on':''}">Board</a><a href="#list" role="tab" class="${view==='list'?'on':''}">Table</a></div>
- <label class="chk"><input type="checkbox" id="mineOnly" ${MINE_ONLY?'checked':''}> Needs my action (${mineN})</label>
- <div style="flex:1;min-width:220px;max-width:360px"><input class="i" id="find" placeholder="Find by ID or name, for example ENG-103" aria-label="Find by ID or name"></div></div>`;
- const foot=gone?`<p class="small muted" style="margin-top:12px">${gone} declined or merged ${gone===1?'idea is':'ideas are'} not shown. Open the Table to see them.</p>`:'';
- if(view==='list'){const rows=S.items.filter(i=>!MINE_ONLY||turn(i).includes(S.role)).filter(i=>i.status!=='merged'||!MINE_ONLY).slice().sort((a,b)=>(dead(a)-dead(b))||(stepOf(a)-stepOf(b))||(daysWaiting(b)-daysWaiting(a)));
-  return top+`<div class="card" style="margin-top:16px;overflow-x:auto"><table class="t"><thead><tr><th>ID</th><th>Name</th><th>Step</th><th>Status</th><th>Size</th><th>KPI</th><th class="r">OKR fit</th><th class="r">Net value</th><th class="r">Waiting</th></tr></thead><tbody>
+let SORT='step';
+const SORTS=[['step','Step'],['size','Size (L first)'],['type','Label: Run, CI, Change'],['status','Status'],['okr','OKR'],['source','Where it comes from'],['kpi','KPI'],['waiting','Waiting longest'],['newest','Newest first']];
+function statusText(i){const t=document.createElement('div');t.innerHTML=statusChip(i)||'';return t.textContent||'~'}
+function sortItems(a){const by=SORT,txt={type:i=>({Run:'1',CI:'2',Change:'3'})[i.overview.type]||'9',okr:i=>(okr(i.demand.okr)||{}).t||'~',source:i=>i.demand.source||'~',kpi:i=>i.outcome.kpi||'~',status:i=>statusText(i)};
+ const cmp=by==='size'?(x,y)=>({L:0,M:1,S:2}[x.demand.size]??3)-({L:0,M:1,S:2}[y.demand.size]??3):by==='waiting'?(x,y)=>daysWaiting(y)-daysWaiting(x):by==='newest'?(x,y)=>(y.created||0)-(x.created||0):txt[by]?(x,y)=>txt[by](x).localeCompare(txt[by](y)):(x,y)=>stepOf(x)-stepOf(y);
+ return a.slice().sort((x,y)=>cmp(x,y)||(stepOf(x)-stepOf(y))||String(x.key).localeCompare(String(y.key)))}
+const stepChip=i=>{const st=STEPS[stepOf(i)-1];return `<span class="chip st${st.n}">${st.n} · ${esc(st.name)}</span>`};
+const bucketOf=i=>(S.buckets||[]).some(b=>b.id===i.bucket)?i.bucket:'';
+function bcard(i){const mine=turn(i).includes(S.role)&&!RO,ed=!RO;
+ return `<div class="bc bk" ${ed?`draggable="true" data-bdrag="${i.id}"`:''} data-search="${esc((i.key+' '+i.title).toLowerCase())}"><div class="row" style="gap:8px;justify-content:space-between">${keyTag(i)}<a class="small" href="#i-${i.id}">Open</a></div><b style="margin-top:6px">${esc(i.title||'Untitled idea')}</b><div class="row" style="gap:6px">${stepChip(i)}${sizeChip(i)}${i.overview.type?`<span class="chip o">${esc(i.overview.type)}</span>`:''}${statusChip(i)}${mine?'<span class="chip a">Your step</span>':''}</div>
+ ${ed&&(S.buckets||[]).length?`<select class="i bmove" data-bmove="${i.id}" aria-label="Move ${esc(i.key)} to a bucket"><option value="">Move to…</option><option value="__none">Not sorted yet</option>${S.buckets.map(b=>`<option value="${b.id}" ${b.id===bucketOf(i)?'disabled':''}>${esc(b.n)}</option>`).join('')}</select>`:''}</div>`}
+function vBuckets(its){const B=S.buckets||[],ed=!RO;
+ const col=(id,name,list,head)=>`<div class="col bcol" data-bucket="${id}"><div class="bhead">${head}<span class="muted small">${list.length}</span></div>${list.map(bcard).join('')||`<p class="small muted">${id?'Drag ideas here':'Everything is sorted'}</p>`}</div>`;
+ return `<p class="small muted" style="margin:16px 0 0">Make your own buckets and drag ideas into them. Everyone sees the same buckets. Sorting into buckets doesn't change an idea's step.</p>
+ <div class="board bks" style="margin-top:12px;grid-template-columns:repeat(${B.length+2},minmax(240px,1fr))">
+ ${col('','Not sorted yet',its.filter(i=>!bucketOf(i)),'<b>Not sorted yet</b>')}
+ ${B.map(b=>col(b.id,b.n,its.filter(i=>bucketOf(i)===b.id),ed?`<input class="i bname" data-bname="${b.id}" value="${esc(b.n)}" aria-label="Bucket name"><button class="xbtn sm" data-act="delBucket" data-b="${b.id}" aria-label="Remove bucket ${esc(b.n)}" title="Remove bucket">×</button>`:`<b>${esc(b.n)}</b>`)).join('')}
+ ${ed?`<div class="col bnew"><label class="f" for="newBucket">New bucket</label><input class="i" id="newBucket" placeholder="For example: Now, Next, Later"><button class="btn sec sm" data-act="addBucket" style="margin-top:8px">Add bucket</button>${B.length?'':'<p class="small muted" style="margin-top:12px">No buckets yet. Add the first one, then drag ideas into it.</p>'}</div>`:''}</div>`}
+function vBoard(view){const its=sortItems(boardItems()),mineN=S.items.filter(i=>turn(i).includes(S.role)).length,gone=S.items.filter(i=>['declined','merged'].includes(i.status)).length;
+ const top=`<div class="hero"><h1>Pipeline</h1><p>Every idea in one place. Sort them by any label, or drag them into your own buckets.</p></div>
+ <div class="row" style="margin-top:24px;gap:16px;align-items:center"><div class="seg" role="tablist"><a href="#board" role="tab" class="${view==='board'?'on':''}">All ideas</a><a href="#buckets" role="tab" class="${view==='buckets'?'on':''}">Buckets</a><a href="#list" role="tab" class="${view==='list'?'on':''}">Table</a></div>
+ <label class="chk"><input type="checkbox" id="mineOnly" ${MINE_ONLY?'checked':''}> Needs my action (${mineN})</label></div>
+ <div class="row" style="margin-top:12px;gap:16px;align-items:flex-end"><div><label class="f" for="sortSel">Sort by</label><select class="i" id="sortSel" style="min-width:220px">${SORTS.map(([k,l])=>`<option value="${k}" ${k===SORT?'selected':''}>${l}</option>`).join('')}</select></div>
+ <div style="flex:1;min-width:220px;max-width:360px"><label class="f" for="find">Find</label><input class="i" id="find" placeholder="Find by ID or name, for example ENG-103" aria-label="Find by ID or name"></div></div>`;
+ const foot=gone&&view!=='list'?`<p class="small muted" style="margin-top:12px">${gone} declined or merged ${gone===1?'idea is':'ideas are'} not shown. Open the Table to see them.</p>`:'';
+ if(view==='list'){const rows=sortItems(S.items.filter(i=>(!MINE_ONLY||turn(i).includes(S.role))&&(!MINE_ONLY||!dead(i)))).sort((a,b)=>dead(a)-dead(b));
+  return top+`<div class="card" style="margin-top:16px;overflow-x:auto"><table class="t"><thead><tr><th>ID</th><th>Name</th><th>Step</th><th>Status</th><th>Size</th><th>Label</th><th>KPI</th><th class="r">OKR fit</th><th class="r">Net value</th><th class="r">Waiting</th></tr></thead><tbody>
   ${rows.map(i=>{const st=STEPS[stepOf(i)-1],w=turn(i),c=(i.buca.levers||[]).length?calc(i):null,d=daysWaiting(i);
    const status=dead(i)?statusChip(i):(statusChip(i)||'')+(w.length?` <span class="small muted">Next: ${esc(w.map(x=>ROLES[x].n).join(', '))}</span>`:'');
-   return `<tr class="cl" data-nav="#i-${i.id}" data-search="${esc((i.key+' '+i.title).toLowerCase())}"><td>${keyTag(i)}</td><td><a href="#i-${i.id}" style="color:var(--ink)"><b>${esc(i.title||'Untitled idea')}</b></a>${w.includes(S.role)&&!RO?' <span class="chip a">Your step</span>':''}</td><td>${st.n} · ${esc(st.name)}</td><td>${status}</td><td>${esc(i.demand.size||'—')}</td><td>${esc(i.outcome.kpi||'—')}</td><td class="r">${i.ai?i.ai.fit:'—'}</td><td class="r">${c?eur(c.net):'—'}</td><td class="r">${dead(i)?'—':d+' d'}</td></tr>`}).join('')||'<tr><td colspan="9" class="muted">Nothing here.</td></tr>'}</tbody></table></div>
+   return `<tr class="cl" data-nav="#i-${i.id}" data-search="${esc((i.key+' '+i.title).toLowerCase())}"><td>${keyTag(i)}</td><td><a href="#i-${i.id}" style="color:var(--ink)"><b>${esc(i.title||'Untitled idea')}</b></a>${w.includes(S.role)&&!RO?' <span class="chip a">Your step</span>':''}</td><td>${st.n} · ${esc(st.name)}</td><td>${status}</td><td>${esc(i.demand.size||'—')}</td><td>${esc(i.overview.type||'—')}</td><td>${esc(i.outcome.kpi||'—')}</td><td class="r">${i.ai?i.ai.fit:'—'}</td><td class="r">${c?eur(c.net):'—'}</td><td class="r">${dead(i)?'—':d+' d'}</td></tr>`}).join('')||'<tr><td colspan="10" class="muted">Nothing here.</td></tr>'}</tbody></table></div>
   <p class="small muted">Net value is the Lean BuCA value over the horizon, once the owner has filled in levers. Size is the owner's rough estimate.</p>`}
- const tri=S.role==='lead'&&!RO;
- return top+`<div class="board b4" style="margin-top:16px">${STEPS.map(s=>{const col=its.filter(i=>stepOf(i)===s.n&&(s.n<4||i.stage===5));const past=s.n===4?its.filter(i=>i.stage>5).length:0;
-  return `<div class="col"><h4>${s.n} ${s.name} <span>· ${s.nl}</span></h4><div class="small muted">${esc(s.by)}</div>${s.n===2&&tri&&col.length>1?'<div class="small" style="margin-top:6px">Drag one idea onto another to bundle them.</div>':''}${col.map(card).join('')||'<p class="small muted">Empty</p>'}${past?`<p class="small muted" style="margin-top:10px">${past} older ${past===1?'initiative is':'initiatives are'} already past the decision.</p>`:''}</div>`}).join('')}</div>${foot}`}
+ if(view==='buckets')return top+vBuckets(its)+foot;
+ const tri=S.role==='lead'&&!RO&&its.filter(i=>i.stage===2).length>1;
+ return top+`${tri?'<p class="small" style="margin:16px 0 0">At triage you can drag one idea onto another to bundle them.</p>':''}<div class="cards" style="margin-top:16px">${its.map(card).join('')||'<p class="small muted">Nothing here.</p>'}</div>${foot}`}
+function setBucket(id,b){if(RO)return;const i=item(id);if(!i)return;const nb=b&&b!=='__none'&&(S.buckets||[]).some(x=>x.id===b)?b:'';if((i.bucket||'')===nb)return;
+ i.bucket=nb;const n=nb?S.buckets.find(x=>x.id===nb).n:'';log(i,nb?'Moved to bucket "'+n+'"':'Taken out of its bucket');save(i,true);render();toast(nb?i.key+' moved to '+n:i.key+' is not sorted yet')}
 function bchip(t,x){const ed=S.role==='lead'&&!RO&&t.stage<=5&&!dead(t);return `<span class="bchip">${keyTag(x)}<a href="#i-${x.id}">${esc(x.title)}</a>${ed?`<button class="xbtn sm" data-act="unbundle" data-t="${t.id}" data-s="${x.id}" aria-label="Take ${esc(x.key)} out again">×</button>`:''}</span>`}
 function volOf(i){const f=String(i.demand.frequency||'');const m=f.replace(/(\d),(\d{3})/g,'$1$2').match(/\d+(\.\d+)?/);return m&&/month/i.test(f)?+m[0]:null}
 function addLever(i,t){if(!LEVERS[t])return;i.buca.levers=i.buca.levers||[];i.buca.levers.push({t});save(i);render();const k=i.buca.levers.length-1;const el=document.getElementById('f_buca_levers_'+k+'_'+LEVERS[t].f[0][0]);if(el){el.focus();el.scrollIntoView({block:'center',behavior:'smooth'})}toast(LEVERS[t].n+' added')}
@@ -984,12 +1010,12 @@ function curArt(){const m=route().match(/^i-.+-a([1-4])$/);return m?+m[1]:0}
 function render(){const r=route();const app=document.getElementById('app');
  if(r==='new'){if(RO||!S.items){location.replace('#board');return}if(S.role!=='owner'){S.role='owner';toast('Switched to Owner to bring in a new idea')}act('new');return}
  const nav=[['board','Pipeline'],['new','New idea']].concat(S.role==='finance'?[['rules','Parameters']]:[]);
- document.getElementById('nav').innerHTML=nav.map(([h,l])=>`<a href="#${h}" class="${r===h||(h==='board'&&(r==='list'||r.startsWith('i-')))?'on':''}">${l}</a>`).join('');
+ document.getElementById('nav').innerHTML=nav.map(([h,l])=>`<a href="#${h}" class="${r===h||(h==='board'&&(r==='list'||r==='buckets'||r.startsWith('i-')))?'on':''}">${l}</a>`).join('');
  const rs=document.getElementById('roleSel');rs.innerHTML=V3_ROLES.map(k=>`<option value="${k}" ${k===S.role?'selected':''}>${ROLES[k].n}</option>`).join('');
- const keep={};['reason','cond','find','mergeSel','ovrSel','ovrVal','ovrWhy','recalcWhy','pSel','pVal','pFrom','pWhy'].forEach(k=>{const el=document.getElementById(k);if(el)keep[k]=el.value});
+ const keep={};['reason','cond','find','newBucket','mergeSel','ovrSel','ovrVal','ovrWhy','recalcWhy','pSel','pVal','pFrom','pWhy'].forEach(k=>{const el=document.getElementById(k);if(el)keep[k]=el.value});
  if(!S.items||!S.params){app.innerHTML=`<div class="hero"><h1>Loading the board…</h1><p>${esc(S.loadNote||'Connecting to the shared initiatives.')}</p></div>`;return}
  if(S.empty&&MODE==='shared'){app.innerHTML=`<div class="hero"><h1>The shared board is empty</h1><p>${CAN_ADMIN?'Load the example ideas to start a test round, or start with a new idea.':'Start with a new idea, or ask the page owner to load the example data.'}</p></div><div class="row" style="margin-top:24px">${RO?'':'<button class="btn" data-act="new">New idea</button>'}${CAN_ADMIN?'<button class="btn sec" data-act="reset" id="resetBtn2">Load example data</button>':''}</div>`;return}
- app.innerHTML=r.startsWith('i-')?vItem(curId()):r==='list'?vBoard('list'):r==='rules'?vRules():vBoard('board');
+ app.innerHTML=r.startsWith('i-')?vItem(curId()):r==='list'?vBoard('list'):r==='buckets'?vBoard('buckets'):r==='rules'?vRules():vBoard('board');
  Object.entries(keep).forEach(([k,v])=>{const el=document.getElementById(k);if(el&&v)el.value=v});
  if(typeof LANG!=='undefined'&&LANG==='nl')trNode(document.body);
  if(keep.find)document.getElementById('find')&&document.getElementById('find').dispatchEvent(new Event('input',{bubbles:true}));
@@ -1006,15 +1032,19 @@ document.addEventListener('input',e=>{const t=e.target;
   if(S.role==='cap'&&['buca.effort','buca.duration','buca.team'].includes(t.dataset.f))i.buca.effortBy='cap';save(i);refresh(i);
   if(t.tagName==='SELECT'&&(t.dataset.f==='capacity.team'||/^buca\.costs\.\d+\.(type|term)$/.test(t.dataset.f))){render()}}
  if(t.dataset.team){const v=+t.value.replace(',','.');if(!isNaN(v)&&v>=0){team(t.dataset.team).supply=v;saveCfg()}}});
-document.addEventListener('change',e=>{if(e.target.id==='mineOnly'){MINE_ONLY=e.target.checked;render();return}if(e.target.dataset.cmp){const id=curId();CMP[id]=CMP[id]||{};const o=CMP[id];o.a=val('cmpA');o.b=val('cmpB');render();return}if(e.target.dataset.team){render();toast('Team capacity saved')}});
+document.addEventListener('change',e=>{if(e.target.id==='mineOnly'){MINE_ONLY=e.target.checked;render();return}
+ if(e.target.id==='sortSel'){SORT=e.target.value;render();return}
+ if(e.target.dataset.bmove){if(e.target.value)setBucket(e.target.dataset.bmove,e.target.value);return}
+ if(e.target.dataset.bname){if(RO)return;const b=(S.buckets||[]).find(x=>x.id===e.target.dataset.bname),v=e.target.value.trim();if(b&&v&&v!==b.n){b.n=v.slice(0,40);saveCfg(true);render();toast('Bucket renamed')}else render();return}if(e.target.dataset.cmp){const id=curId();CMP[id]=CMP[id]||{};const o=CMP[id];o.a=val('cmpA');o.b=val('cmpB');render();return}if(e.target.dataset.team){render();toast('Team capacity saved')}});
 let DRAG=null;
-document.addEventListener('dragstart',e=>{const t=e.target.closest?e.target:e.target.parentElement;const lv=t.closest('[data-lever]'),dr=t.closest('[data-drag]');
- if(lv)DRAG={k:'lever',t:lv.dataset.lever};else if(dr){DRAG={k:'dr',id:dr.dataset.drag};dr.classList.add('dragging');setTimeout(()=>markTargets(dr.dataset.drag),0)}else return;
+document.addEventListener('dragstart',e=>{const t=e.target.closest?e.target:e.target.parentElement;const lv=t.closest('[data-lever]'),dr=t.closest('[data-drag]'),bk=t.closest('[data-bdrag]');
+ if(bk){DRAG={k:'bk',id:bk.dataset.bdrag};bk.classList.add('dragging')}else if(lv)DRAG={k:'lever',t:lv.dataset.lever};else if(dr){DRAG={k:'dr',id:dr.dataset.drag};dr.classList.add('dragging');setTimeout(()=>markTargets(dr.dataset.drag),0)}else return;
  try{e.dataTransfer.effectAllowed='copyMove';e.dataTransfer.setData('text/plain',DRAG.k+':'+(DRAG.t||DRAG.id))}catch(x){}});
 function clearDrag(){DRAG=null;document.querySelectorAll('.over,.cand,.dragging').forEach(x=>x.classList.remove('over','cand','dragging'));document.querySelectorAll('.simtag').forEach(x=>x.remove())}
 document.addEventListener('dragend',()=>{clearDrag();flushPending()});
-document.addEventListener('dragover',e=>{if(!DRAG)return;const z=DRAG.k==='lever'?e.target.closest('[data-leverdrop]'):e.target.closest('[data-drop]');if(!z||(DRAG.k==='dr'&&z.dataset.drop===DRAG.id))return;e.preventDefault();document.querySelectorAll('.over').forEach(x=>x!==z&&x.classList.remove('over'));z.classList.add('over')});
+document.addEventListener('dragover',e=>{if(!DRAG)return;const z=DRAG.k==='bk'?e.target.closest('[data-bucket]'):DRAG.k==='lever'?e.target.closest('[data-leverdrop]'):e.target.closest('[data-drop]');if(!z||(DRAG.k==='dr'&&z.dataset.drop===DRAG.id))return;e.preventDefault();document.querySelectorAll('.over').forEach(x=>x!==z&&x.classList.remove('over'));z.classList.add('over')});
 document.addEventListener('drop',e=>{if(!DRAG)return;const d=DRAG;let z;
+ if(d.k==='bk'){z=e.target.closest('[data-bucket]');if(z){e.preventDefault();clearDrag();setBucket(d.id,z.dataset.bucket||'__none')}clearDrag();return}
  if(d.k==='lever'){z=e.target.closest('[data-leverdrop]');if(z){e.preventDefault();clearDrag();const i=item(curId());if(i)addLever(i,d.t)}}
  else{z=e.target.closest('[data-drop]');if(z&&z.dataset.drop!==d.id){e.preventDefault();clearDrag();bundle(d.id,z.dataset.drop)}}clearDrag()});
 document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.dataset.toggle){e.preventDefault();e.target.click()}});
@@ -1031,6 +1061,9 @@ function gateOk(n,i){const m=req(n,i);if(m.length){errOut('Still missing: '+m.jo
 async function act(k,el){
  if(k==='reset'){resetData(el);return}
  if(k==='new'){if(RO)return;const id='n'+Date.now().toString(36);const it=migrate({id,key:newKey(),title:'',stage:1,status:'active',owner:'',ownerId:ME||null,created:Date.now(),demand:{},ai:null,overview:{bundled:[]},outcome:{},buca:{fin:'none',duration:4,levers:[]},decisions:[],capacity:{},delivery:{},review:{},log:[]});S.items.push(it);save(it,true);if(route()==='new')location.replace('#i-'+id);else location.hash='#i-'+id;return}
+ if(k==='addBucket'){if(RO)return;const n=val('newBucket').trim();if(!n){toast('Type a name for the bucket first');const el2=document.getElementById('newBucket');if(el2)el2.focus();return}
+  S.buckets=(S.buckets||[]).concat([{id:'b'+Date.now().toString(36),n:n.slice(0,40)}]);saveCfg(true);const el2=document.getElementById('newBucket');if(el2)el2.value='';render();toast('Bucket "'+n+'" added');return}
+ if(k==='delBucket'){if(RO)return;const b=(S.buckets||[]).find(x=>x.id===el.dataset.b);if(!b)return;S.items.filter(i=>i.bucket===b.id).forEach(i=>{i.bucket='';save(i,true)});S.buckets=S.buckets.filter(x=>x.id!==b.id);saveCfg(true);render();toast('Bucket "'+b.n+'" removed. Its ideas are not sorted yet.');return}
  if(k==='bundleSel'){const sel=document.getElementById('bs-'+el.dataset.src);if(sel&&sel.value)bundle(el.dataset.src,sel.value);else toast('Choose an initiative first');return}
  if(k==='unbundle'){unbundle(el.dataset.t,el.dataset.s);return}
  if(k==='paramChange'){if(S.role!=='finance'||RO)return;const pk=val('pSel'),v=val('pVal').replace(',','.'),from=val('pFrom'),why=val('pWhy').trim();
@@ -1120,6 +1153,30 @@ Return {"quality":0-100 (clarity and evidence of the problem, NOT its value),"fi
 let LANG='en';try{if(localStorage.getItem('engine-lang')==='nl')LANG='nl'}catch(e){}
 const LOC=()=>LANG==='nl'?'nl-NL':'en-GB';
 const NL={
+'All ideas':'Alle ideeën',
+'Buckets':'Bakken',
+'Sort by':'Sorteer op',
+'Find':'Zoek',
+'Size (L first)':'Omvang (L eerst)',
+'Label: Run, CI, Change':'Label: Run, CI, Change',
+'Waiting longest':'Langst wachtend',
+'Newest first':'Nieuwste eerst',
+'Every idea in one place. Sort them by any label, or drag them into your own buckets.':'Alle ideeën op één plek. Sorteer ze op elk label, of sleep ze in je eigen bakken.',
+"Make your own buckets and drag ideas into them. Everyone sees the same buckets. Sorting into buckets doesn't change an idea's step.":'Maak je eigen bakken en sleep ideeën erin. Iedereen ziet dezelfde bakken. Sorteren in bakken verandert de stap van een idee niet.',
+'Not sorted yet':'Nog niet gesorteerd',
+'Drag ideas here':'Sleep ideeën hierheen',
+'Everything is sorted':'Alles is gesorteerd',
+'New bucket':'Nieuwe bak',
+'For example: Now, Next, Later':'Bijvoorbeeld: Nu, Straks, Later',
+'Add bucket':'Bak toevoegen',
+'No buckets yet. Add the first one, then drag ideas into it.':'Nog geen bakken. Voeg de eerste toe en sleep er ideeën in.',
+'Move to…':'Verplaats naar…',
+'Bucket name':'Naam van de bak',
+'Remove bucket':'Bak verwijderen',
+'At triage you can drag one idea onto another to bundle them.':'Bij de triage kun je een idee op een ander slepen om ze te bundelen.',
+'Type a name for the bucket first':'Typ eerst een naam voor de bak',
+'Bucket renamed':'Bak hernoemd',
+'Taken out of its bucket':'Uit de bak gehaald',
 'Owner':'Eigenaar',
 'Reviewer':'Beoordelaar',
 'PO':'PO',
@@ -1297,6 +1354,7 @@ const NL={
 };
 const N='(−?-?€?[\\d][\\d.,]*[km]?)';
 const RXDEF=[
+ ['Bucket "#T" added','Bak "$1" toegevoegd'],['Bucket "#T" removed. Its ideas are not sorted yet.','Bak "$1" verwijderd. De ideeën erin zijn nog niet gesorteerd.'],['#T moved to #T','$1 verplaatst naar $2'],['#T is not sorted yet','$1 is nog niet gesorteerd'],['Moved to bucket "#T"','Verplaatst naar bak "$1"'],['Move #T to a bucket','Verplaats $1 naar een bak'],['Remove bucket #T','Bak $1 verwijderen'],
  ['Step #N','Stap $1'],['Size #T','Omvang $1'],['Needs my action (#N)','Wacht op mij ($1)'],['Next: #T','Volgende: $1'],['#N d','$1 d'],['Business case approved on #T','Businesscase goedgekeurd op $1'],['Locked until step #N is done','Vergrendeld tot stap $1 klaar is'],['Accepted at triage by the PO, labelled #T','Geaccepteerd bij triage door de PO, gelabeld $1'],['Label the initiative, check for similar ideas, then decide. Advice received from #N of 2 reviewers (see Triage decision).','Label het initiatief, kijk naar vergelijkbare ideeën en beslis. Advies ontvangen van $1 van de 2 beoordelaars (zie Triagebesluit).'],['#N declined or merged idea is not shown. Open the Table to see them.','$1 afgewezen of samengevoegd idee wordt niet getoond. Open de tabel om het te zien.'],['#N declined or merged ideas are not shown. Open the Table to see them.','$1 afgewezen of samengevoegde ideeën worden niet getoond. Open de tabel om ze te zien.'],['#N older initiative is already past the decision.','$1 ouder initiatief is al voorbij het besluit.'],['#N older initiatives are already past the decision.','$1 oudere initiatieven zijn al voorbij het besluit.'],['Advice received from #N of 2 reviewers (see Triage decision).','Advies ontvangen van $1 van de 2 beoordelaars (zie Triagebesluit).'],
  ['owned by #T','eigenaar: $1'],['#N Q#N to #N Q#N','$1 K$2 tot $3 K$4'],['Go to #T','Ga naar $1'],
  ['#N ÷ (#N h × #N% after shrinkage × #N% occupancy = #N h) = #N','$1 ÷ ($2 u × $3% na shrinkage × $4% bezetting = $5 u) = $6'],

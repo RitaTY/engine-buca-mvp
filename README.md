@@ -21,7 +21,7 @@ The data model still has 8 stages, so Decide, Capacity, Deliver and Review can c
 
 - **Navigation**: Pipeline · New idea · Parameters (Parameters for Reviewer · Finance only).
 - **Roles**: Owner, Reviewer · PO, Reviewer · Finance, Reviewer · Product lead. Switch at the top right.
-- **Pipeline** with two views. **Board**: four columns, one per step; at triage the PO drags one idea onto another to bundle them. **Table**: every idea with step, status, next role, size, KPI, OKR fit, net value and days waiting, for comparing. **Needs my action** filters both views; search by ID or name.
+- **Pipeline** with three views. **All ideas** (default): every open idea in one grid, each card showing its step, size, label and status; at triage the PO drags one idea onto another to bundle them. **Buckets**: the team adds, renames and removes its own buckets and drags ideas into them (or uses *Move to…*). Buckets are shared, start empty, and don't change an idea's step. **Table**: every idea, including declined and merged ones, for comparing. **Sort by** step, size, label (Run/CI/Change), status, OKR, source, KPI, waiting longest or newest; **Needs my action** filters; search by ID or name.
 - **Triage advice**: Finance and the product lead mark *Supports* or *Has concerns* (note required). The PO sees the advice in the triage decision and on the card, and can decide without it.
 - **Lean BuCA** with a lever library (avoided contacts, shorter handling time, fewer repeat contacts, lower contact ratio, less manual work, lower external cost, fewer customers lost), typed **cost lines** (FTE, licence, advisory, hardware, other; one-off or recurring; start year; CAPEX/OPEX) and a short / standard / long investment horizon. Results per year, CAPEX/OPEX split, and "Show the sum".
 - **Parameter library** (Business Control): price per FTE (customer service and delivery), cost per contact, paid hours, shrinkage, occupancy, contact ratio, AHT per queue, realisation, horizon, margin, CAPEX threshold. Every change has a valid-from date, a reason and who made it.
@@ -41,7 +41,7 @@ It is published as a Claude artifact and uses three artifact capabilities:
 
 | Capability | Used for | Without it |
 |---|---|---|
-| `db` | Shared board: `cfg/main` (rules, OKRs, teams, cycle, relationships) and one document per initiative in `items/` | Falls back to this browser's `localStorage` |
+| `db` | Shared board: `cfg/main` (rules, OKRs, teams, cycle, relationships, buckets) and one document per initiative in `items/` | Falls back to this browser's `localStorage` |
 | `user` (`profile` scope) | Names in the history; only opaque user ids are stored | History shows roles only |
 | `sample` | Claude quality/fit check and relationship suggestions | Rule-based check; no Claude suggestions |
 
